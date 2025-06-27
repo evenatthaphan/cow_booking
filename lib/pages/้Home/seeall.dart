@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cow_booking/pages/%E0%B9%89Home/seach.dart';
 
-
 class Allmramanpage extends StatefulWidget {
   const Allmramanpage({super.key});
 
@@ -56,7 +55,7 @@ class _AllmramanpageState extends State<Allmramanpage> {
                 child: Card(
                   color: Color.fromARGB(255, 217, 253, 204),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(left: 5, right: 5),
@@ -68,72 +67,69 @@ class _AllmramanpageState extends State<Allmramanpage> {
                       ),
                       Padding(
                         padding: const EdgeInsets.all(5.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('ซุปเปอร์แมน',
-                                style: GoogleFonts.notoSansThai(
-                                    textStyle: Theme.of(context)
-                                        .textTheme
-                                        .displayLarge,
-                                    fontSize: 16,
-                                    color: Colors.green[600],
-                                    fontWeight: FontWeight.bold)),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Text('พันธุ์ : บราห์มัน',
-                                style: GoogleFonts.notoSansThai(
-                                  textStyle:
-                                      Theme.of(context).textTheme.displayLarge,
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                )),
-                            Text('ฟาร์ม : บุญน้อมฟาร์ม',
-                                style: GoogleFonts.notoSansThai(
-                                  textStyle:
-                                      Theme.of(context).textTheme.displayLarge,
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                )),
-                            Text('จำนวนการผสม : 25 ครั้ง',
-                                style: GoogleFonts.notoSansThai(
-                                  textStyle:
-                                      Theme.of(context).textTheme.displayLarge,
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                )),
-                            Text('สำเร็จ : 20 ครั้ง',
-                                style: GoogleFonts.notoSansThai(
-                                  textStyle:
-                                      Theme.of(context).textTheme.displayLarge,
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                )),
-                            SizedBox(
-                              width: 175,
-                              height: 20,
-                              child: FilledButton(
-                                  onPressed: seedoctor,
-                                  style: ButtonStyle(
-                                    backgroundColor:
-                                        MaterialStateProperty.all<Color>(
-                                            Colors.green[900]!),
-                                  ),
-                                  child: Text(
-                                    'คลิคเพื่อดูสัตวบาล',
-                                    style: GoogleFonts.notoSansThai(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('ซุปเปอร์แมน',
+                                  style: GoogleFonts.notoSansThai(
                                       textStyle: Theme.of(context)
                                           .textTheme
                                           .displayLarge,
-                                      fontSize: 13,
-                                      color: Colors.white,
-                                    ),
+                                      fontSize: 16,
+                                      color: Colors.green[600],
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(
+                                width: 5,
+                              ),
+                              Text('พันธุ์ : บราห์มัน',
+                                  style: GoogleFonts.notoSansThai(
+                                    textStyle: Theme.of(context)
+                                        .textTheme
+                                        .displayLarge,
+                                    fontSize: 14,
+                                    color: Colors.black,
                                   )),
-                            ),
-                          ],
+                              Text('ฟาร์ม : บุญน้อมฟาร์ม',
+                                  style: GoogleFonts.notoSansThai(
+                                    textStyle: Theme.of(context)
+                                        .textTheme
+                                        .displayLarge,
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  )),
+                              Text('จำนวนการผสม : 25 ครั้ง',
+                                  style: GoogleFonts.notoSansThai(
+                                    textStyle: Theme.of(context)
+                                        .textTheme
+                                        .displayLarge,
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  )),
+                              Text('สำเร็จ : 20 ครั้ง',
+                                  style: GoogleFonts.notoSansThai(
+                                    textStyle: Theme.of(context)
+                                        .textTheme
+                                        .displayLarge,
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  )),
+                            ],
+                          ),
                         ),
-                      )
+                      ),
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: FilledButton(
+                            onPressed: seedoctor,
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.green[900]!),
+                            ),
+                            child: const Icon(Icons.arrow_forward)),
+                      ),
                     ],
                   ),
                 ),
@@ -147,7 +143,7 @@ class _AllmramanpageState extends State<Allmramanpage> {
                 child: Card(
                   color: Color.fromARGB(255, 217, 253, 204),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Padding(
                         padding: const EdgeInsets.only(left: 5, right: 5),
@@ -159,59 +155,69 @@ class _AllmramanpageState extends State<Allmramanpage> {
                       ),
                       Padding(
                         padding: const EdgeInsets.all(5.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('ซุปเปอร์แมน',
-                                style: GoogleFonts.notoSansThai(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('ซุปเปอร์แมน',
+                                  style: GoogleFonts.notoSansThai(
+                                      textStyle: Theme.of(context)
+                                          .textTheme
+                                          .displayLarge,
+                                      fontSize: 16,
+                                      color: Colors.green[600],
+                                      fontWeight: FontWeight.bold)),
+                              const SizedBox(
+                                width: 5,
+                              ),
+                              Text('พันธุ์ : บราห์มัน',
+                                  style: GoogleFonts.notoSansThai(
                                     textStyle: Theme.of(context)
                                         .textTheme
                                         .displayLarge,
-                                    fontSize: 16,
-                                    color: Colors.green[600],
-                                    fontWeight: FontWeight.bold)),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Text('พันธุ์ : บราห์มัน',
-                                style: GoogleFonts.notoSansThai(
-                                  textStyle:
-                                      Theme.of(context).textTheme.displayLarge,
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                )),
-                            Text('ฟาร์ม : บุญน้อมฟาร์ม',
-                                style: GoogleFonts.notoSansThai(
-                                  textStyle:
-                                      Theme.of(context).textTheme.displayLarge,
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                )),
-                            Text('จำนวนการผสม : 25 ครั้ง',
-                                style: GoogleFonts.notoSansThai(
-                                  textStyle:
-                                      Theme.of(context).textTheme.displayLarge,
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                )),
-                            Text('สำเร็จ : 20 ครั้ง',
-                                style: GoogleFonts.notoSansThai(
-                                  textStyle:
-                                      Theme.of(context).textTheme.displayLarge,
-                                  fontSize: 14,
-                                  color: Colors.black,
-                                )),
-                            
-                          ],
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  )),
+                              Text('ฟาร์ม : บุญน้อมฟาร์ม',
+                                  style: GoogleFonts.notoSansThai(
+                                    textStyle: Theme.of(context)
+                                        .textTheme
+                                        .displayLarge,
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  )),
+                              Text('จำนวนการผสม : 25 ครั้ง',
+                                  style: GoogleFonts.notoSansThai(
+                                    textStyle: Theme.of(context)
+                                        .textTheme
+                                        .displayLarge,
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  )),
+                              Text('สำเร็จ : 20 ครั้ง',
+                                  style: GoogleFonts.notoSansThai(
+                                    textStyle: Theme.of(context)
+                                        .textTheme
+                                        .displayLarge,
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  )),
+                            ],
+                          ),
                         ),
                       ),
-                      // FilledButton(
-                      //             onPressed: seedoctor,
-                      //             style: ButtonStyle(
-                      //               backgroundColor:
-                      //                   MaterialStateProperty.all<Color>(
-                      //                       Colors.green[900]!),
-                      //             ), child: IconButton(onPressed: seedetail, icon: ),),
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: FilledButton(
+                            onPressed: seedoctor,
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all<Color>(
+                                  Colors.green[900]!),
+                            ),
+                            child: const Icon(Icons.arrow_forward)),
+                      ),
                     ],
                   ),
                 ),
@@ -233,6 +239,5 @@ class _AllmramanpageState extends State<Allmramanpage> {
 
   void seedoctor() {}
 
-  void seedetail() {
-  }
+  void seedetail() {}
 }
