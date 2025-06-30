@@ -59,14 +59,14 @@ class _SeachpageState extends State<Seachpage> {
                       onPressed: chooseall,
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
-                            Colors.green[900]!),
+                            Colors.grey[350]!),
                       ),
                       child: Text(
                         'ทั้งหมด',
                         style: GoogleFonts.notoSansThai(
                           textStyle: Theme.of(context).textTheme.displayLarge,
                           fontSize: 14,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       )),
                 ),
@@ -80,14 +80,14 @@ class _SeachpageState extends State<Seachpage> {
                       onPressed: chooseall,
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
-                            Colors.green[400]!),
+                            Colors.grey[350]!),
                       ),
                       child: Text(
                         'จังหวัด',
                         style: GoogleFonts.notoSansThai(
                           textStyle: Theme.of(context).textTheme.displayLarge,
                           fontSize: 14,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       )),
                 ),
@@ -101,14 +101,14 @@ class _SeachpageState extends State<Seachpage> {
                       onPressed: chooseall,
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
-                            Colors.green[400]!),
+                            Colors.grey[350]!),
                       ),
                       child: Text(
                         'อำเภอ',
                         style: GoogleFonts.notoSansThai(
                           textStyle: Theme.of(context).textTheme.displayLarge,
                           fontSize: 14,
-                          color: Colors.white,
+                          color: Colors.black,
                         ),
                       )),
                 ),
@@ -144,8 +144,7 @@ class _SeachpageState extends State<Seachpage> {
           SizedBox(
             width: 500,
             height: 130,
-            child: Card(
-              color: const Color.fromARGB(255, 217, 253, 204),
+            child: Card.outlined(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
