@@ -145,6 +145,7 @@ class _SeachpageState extends State<Seachpage> {
             width: 500,
             height: 130,
             child: Card.outlined(
+              color: Colors.white,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
