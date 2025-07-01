@@ -1,3 +1,4 @@
+import 'package:cow_booking/pages/%E0%B9%89Home/cowdetail.dart';
 import 'package:cow_booking/pages/%E0%B9%89Home/seach.dart';
 import 'package:cow_booking/pages/%E0%B9%89Home/seeall.dart';
 import 'package:cow_booking/pages/farmers/profile.dart';
@@ -186,18 +187,34 @@ class _HomepageState extends State<Homepage> {
                     child: Card.outlined(
                       child: Column(
                         children: [
+                          // ClipRRect(
+                          //   borderRadius: const BorderRadius.only(
+                          //     topLeft: Radius.circular(12),
+                          //     topRight: Radius.circular(12),
+                          //   ),
+                          //   child: Image.asset(
+                          //     'assets/images/supperman.jpg',
+                          //     fit: BoxFit.cover,
+                          //     height: 120,
+                          //     width: double.infinity,
+                          //   ),
+                          // ),
                           ClipRRect(
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(12),
                               topRight: Radius.circular(12),
                             ),
-                            child: Image.asset(
-                              'assets/images/supperman.jpg',
-                              fit: BoxFit.cover,
-                              height: 120,
-                              width: double.infinity,
+                            child: InkWell(
+                              onTap: detailpage,
+                              child: Image.asset(
+                                'assets/images/supperman.jpg',
+                                fit: BoxFit.cover,
+                                height: 120,
+                                width: double.infinity,
+                              ),
                             ),
                           ),
+
                           Text('ซุปเปอร์แมน',
                               style: GoogleFonts.notoSansThai(fontSize: 16)),
                           Text('บุญน้อมฟาร์ม',
@@ -409,12 +426,20 @@ class _HomepageState extends State<Homepage> {
           builder: (context) => const Allmramanpage(),
         ));
   }
-  
+
   YourNewPage() {
     Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => const Profilepage(),
+        ));
+  }
+
+  void detailpage() {
+     Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const Cowdetailpage(),
         ));
   }
 }
