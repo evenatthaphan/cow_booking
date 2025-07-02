@@ -180,32 +180,64 @@ class _HomepageState extends State<Homepage> {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 5, left: 25),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 150,
-                    child: Card.outlined(
-                      child: Column(
-                        children: [
-                          // ClipRRect(
-                          //   borderRadius: const BorderRadius.only(
-                          //     topLeft: Radius.circular(12),
-                          //     topRight: Radius.circular(12),
-                          //   ),
-                          //   child: Image.asset(
-                          //     'assets/images/supperman.jpg',
-                          //     fit: BoxFit.cover,
-                          //     height: 120,
-                          //     width: double.infinity,
-                          //   ),
-                          // ),
-                          ClipRRect(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 150,
+                      child: Card.outlined(
+                        child: Column(
+                          children: [
+                            // ClipRRect(
+                            //   borderRadius: const BorderRadius.only(
+                            //     topLeft: Radius.circular(12),
+                            //     topRight: Radius.circular(12),
+                            //   ),
+                            //   child: Image.asset(
+                            //     'assets/images/supperman.jpg',
+                            //     fit: BoxFit.cover,
+                            //     height: 120,
+                            //     width: double.infinity,
+                            //   ),
+                            // ),
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
+                              child: InkWell(
+                                onTap: detailpage,
+                                child: Image.asset(
+                                  'assets/images/supperman.jpg',
+                                  fit: BoxFit.cover,
+                                  height: 120,
+                                  width: double.infinity,
+                                ),
+                              ),
                             ),
-                            child: InkWell(
-                              onTap: detailpage,
+                
+                            Text('ซุปเปอร์แมน',
+                                style: GoogleFonts.notoSansThai(fontSize: 16)),
+                            Text('บุญน้อมฟาร์ม',
+                                style: GoogleFonts.notoSansThai(
+                                    fontSize: 14,
+                                    color:
+                                        const Color.fromARGB(255, 52, 122, 55)))
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 150,
+                      child: Card.outlined(
+                        child: Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
                               child: Image.asset(
                                 'assets/images/supperman.jpg',
                                 fit: BoxFit.cover,
@@ -213,75 +245,46 @@ class _HomepageState extends State<Homepage> {
                                 width: double.infinity,
                               ),
                             ),
-                          ),
-
-                          Text('ซุปเปอร์แมน',
-                              style: GoogleFonts.notoSansThai(fontSize: 16)),
-                          Text('บุญน้อมฟาร์ม',
-                              style: GoogleFonts.notoSansThai(
-                                  fontSize: 14,
-                                  color:
-                                      const Color.fromARGB(255, 52, 122, 55)))
-                        ],
+                            Text('ซุปเปอร์แมน',
+                                style: GoogleFonts.notoSansThai(fontSize: 16)),
+                            Text('บุญน้อมฟาร์ม',
+                                style: GoogleFonts.notoSansThai(
+                                    fontSize: 14,
+                                    color:
+                                        const Color.fromARGB(255, 52, 122, 55)))
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: Card.outlined(
-                      child: Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
+                    SizedBox(
+                      width: 150,
+                      child: Card.outlined(
+                        child: Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
+                              child: Image.asset(
+                                'assets/images/supperman.jpg',
+                                fit: BoxFit.cover,
+                                height:
+                                    120,
+                                width: double.infinity,
+                              ),
                             ),
-                            child: Image.asset(
-                              'assets/images/supperman.jpg',
-                              fit: BoxFit.cover,
-                              height: 120,
-                              width: double.infinity,
-                            ),
-                          ),
-                          Text('ซุปเปอร์แมน',
-                              style: GoogleFonts.notoSansThai(fontSize: 16)),
-                          Text('บุญน้อมฟาร์ม',
-                              style: GoogleFonts.notoSansThai(
-                                  fontSize: 14,
-                                  color:
-                                      const Color.fromARGB(255, 52, 122, 55)))
-                        ],
+                            Text('ซุปเปอร์แมน',
+                                style: GoogleFonts.notoSansThai(fontSize: 16)),
+                            Text('บุญน้อมฟาร์ม',
+                                style: GoogleFonts.notoSansThai(
+                                    fontSize: 14, color: const Color.fromARGB(255, 52, 122, 55)))
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  // SizedBox(
-                  //   width: 150,
-                  //   child: Card.outlined(
-                  //     child: Column(
-                  //       children: [
-                  //         ClipRRect(
-                  //           borderRadius: const BorderRadius.only(
-                  //             topLeft: Radius.circular(12),
-                  //             topRight: Radius.circular(12),
-                  //           ),
-                  //           child: Image.asset(
-                  //             'assets/images/supperman.jpg',
-                  //             fit: BoxFit.cover,
-                  //             height:
-                  //                 120,
-                  //             width: double.infinity,
-                  //           ),
-                  //         ),
-                  //         Text('ซุปเปอร์แมน',
-                  //             style: GoogleFonts.notoSansThai(fontSize: 16)),
-                  //         Text('บุญน้อมฟาร์ม',
-                  //             style: GoogleFonts.notoSansThai(
-                  //                 fontSize: 14, color: const Color.fromARGB(255, 52, 122, 55)))
-                  //       ],
-                  //     ),
-                  //   ),
-                  // ),
-                ],
+                  ],
+                ),
               ),
             ),
             Padding(
@@ -309,92 +312,95 @@ class _HomepageState extends State<Homepage> {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 5, left: 25),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 150,
-                    child: Card.outlined(
-                      child: Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 150,
+                      child: Card.outlined(
+                        child: Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
+                              child: Image.asset(
+                                'assets/images/master.jpg',
+                                fit: BoxFit.cover,
+                                height: 120,
+                                width: double.infinity,
+                              ),
                             ),
-                            child: Image.asset(
-                              'assets/images/master.jpg',
-                              fit: BoxFit.cover,
-                              height: 120,
-                              width: double.infinity,
-                            ),
-                          ),
-                          Text('ซุปเปอร์แมน',
-                              style: GoogleFonts.notoSansThai(fontSize: 16)),
-                          Text('บุญน้อมฟาร์ม',
-                              style: GoogleFonts.notoSansThai(
-                                  fontSize: 14,
-                                  color:
-                                      const Color.fromARGB(255, 52, 122, 55)))
-                        ],
+                            Text('ซุปเปอร์แมน',
+                                style: GoogleFonts.notoSansThai(fontSize: 16)),
+                            Text('บุญน้อมฟาร์ม',
+                                style: GoogleFonts.notoSansThai(
+                                    fontSize: 14,
+                                    color:
+                                        const Color.fromARGB(255, 52, 122, 55)))
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    width: 150,
-                    child: Card.outlined(
-                      child: Column(
-                        children: [
-                          ClipRRect(
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(12),
-                              topRight: Radius.circular(12),
+                    SizedBox(
+                      width: 150,
+                      child: Card.outlined(
+                        child: Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
+                              child: Image.asset(
+                                'assets/images/master.jpg',
+                                fit: BoxFit.cover,
+                                height: 120,
+                                width: double.infinity,
+                              ),
                             ),
-                            child: Image.asset(
-                              'assets/images/master.jpg',
-                              fit: BoxFit.cover,
-                              height: 120,
-                              width: double.infinity,
-                            ),
-                          ),
-                          Text('ซุปเปอร์แมน',
-                              style: GoogleFonts.notoSansThai(fontSize: 16)),
-                          Text('บุญน้อมฟาร์ม',
-                              style: GoogleFonts.notoSansThai(
-                                  fontSize: 14,
-                                  color:
-                                      const Color.fromARGB(255, 52, 122, 55)))
-                        ],
+                            Text('ซุปเปอร์แมน',
+                                style: GoogleFonts.notoSansThai(fontSize: 16)),
+                            Text('บุญน้อมฟาร์ม',
+                                style: GoogleFonts.notoSansThai(
+                                    fontSize: 14,
+                                    color:
+                                        const Color.fromARGB(255, 52, 122, 55)))
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  // SizedBox(
-                  //   width: 150,
-                  //   child: Card.outlined(
-                  //     child: Column(
-                  //       children: [
-                  //         ClipRRect(
-                  //           borderRadius: const BorderRadius.only(
-                  //             topLeft: Radius.circular(12),
-                  //             topRight: Radius.circular(12),
-                  //           ),
-                  //           child: Image.asset(
-                  //             'assets/images/supperman.jpg',
-                  //             fit: BoxFit.cover,
-                  //             height:
-                  //                 120,
-                  //             width: double.infinity,
-                  //           ),
-                  //         ),
-                  //         Text('ซุปเปอร์แมน',
-                  //             style: GoogleFonts.notoSansThai(fontSize: 16)),
-                  //         Text('บุญน้อมฟาร์ม',
-                  //             style: GoogleFonts.notoSansThai(
-                  //                 fontSize: 14, color: const Color.fromARGB(255, 52, 122, 55)))
-                  //       ],
-                  //     ),
-                  //   ),
-                  // ),
-                ],
+                    SizedBox(
+                      width: 150,
+                      child: Card.outlined(
+                        child: Column(
+                          children: [
+                            ClipRRect(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                                topRight: Radius.circular(12),
+                              ),
+                              child: Image.asset(
+                                'assets/images/supperman.jpg',
+                                fit: BoxFit.cover,
+                                height:
+                                    120,
+                                width: double.infinity,
+                              ),
+                            ),
+                            Text('ซุปเปอร์แมน',
+                                style: GoogleFonts.notoSansThai(fontSize: 16)),
+                            Text('บุญน้อมฟาร์ม',
+                                style: GoogleFonts.notoSansThai(
+                                    fontSize: 14, color: const Color.fromARGB(255, 52, 122, 55)))
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             )
           ],
