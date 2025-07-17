@@ -22,7 +22,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
       //     },
       //   ),
       // ),
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.green[900],
       body: SafeArea(
         child: Column(
           children: [
@@ -53,9 +53,9 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                   bottom: 16,
                   left: 16,
                   child: Text(
-                    'Mr. Bluesky and my fearless',
+                    'ซุปเปอร์แมน',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),

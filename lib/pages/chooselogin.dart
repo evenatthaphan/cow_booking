@@ -45,7 +45,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
                         style: GoogleFonts.notoSansThai(
                             textStyle: Theme.of(context).textTheme.displayLarge,
                             fontSize: 14,
-                            color: Colors.green)),
+                            color: Colors.black)),
                   ],
                 ),
               ),
@@ -57,7 +57,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
                         style: GoogleFonts.notoSansThai(
                             textStyle: Theme.of(context).textTheme.displayLarge,
                             fontSize: 14,
-                            color: Colors.green)),
+                            color: Colors.black)),
                   ],
                 ),
               ),

@@ -64,10 +64,10 @@ class _HomepageState extends State<Homepage> {
           // รูปโปรไฟล์
           GestureDetector(
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => YourNewPage()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => YourNewPage()),
+              // );
             },
             child: const Padding(
               padding: EdgeInsets.only(right: 10),
@@ -383,7 +383,7 @@ class _HomepageState extends State<Homepage> {
                                 topRight: Radius.circular(12),
                               ),
                               child: Image.asset(
-                                'assets/images/supperman.jpg',
+                                'assets/images/master.jpg',
                                 fit: BoxFit.cover,
                                 height:
                                     120,
@@ -433,13 +433,13 @@ class _HomepageState extends State<Homepage> {
         ));
   }
 
-  YourNewPage() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const Profilepage(),
-        ));
-  }
+  // YourNewPage() {
+  //   Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => const Profilepage(),
+  //       ));
+  // }
 
   void detailpage() {
      Navigator.push(

@@ -45,7 +45,7 @@ class _ChooseregisState extends State<Chooseregis> {
                         style: GoogleFonts.notoSansThai(
                             textStyle: Theme.of(context).textTheme.displayLarge,
                             fontSize: 14,
-                            color: Colors.green)),
+                            color: Colors.black)),
                   ],
                 ),
               ),
