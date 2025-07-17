@@ -1,3 +1,4 @@
+import 'package:cow_booking/pages/farmers/seedocprofile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -50,33 +51,36 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                   ),
                 ),
                 const Positioned(
-                  bottom: 16,
-                  left: 16,
+                  bottom: 10,
+                  left: 14,
                   child: Text(
                     'ซุปเปอร์แมน',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 22,
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                // Positioned(
-                //   bottom: 16,
-                //   right: 16,
-                //   child: Container(
-                //     padding:
-                //         const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                //     decoration: BoxDecoration(
-                //       color: Colors.white24,
-                //       borderRadius: BorderRadius.circular(12),
-                //     ),
-                //     child: const Text(
-                //       '28 ตอน',
-                //       style: TextStyle(color: Colors.white),
-                //     ),
-                //   ),
-                // ),
+                Positioned(
+                  bottom: 16,
+                  right: 16,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color.fromARGB(142, 238, 229, 229),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'บราห์มัน',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
               ],
             ),
             Expanded(
@@ -87,82 +91,224 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 1),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'บุญน้อมฟาร์ม',
+                            style: TextStyle(
+                                color: Colors.green,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.favorite_border,
+                                color: Colors.white),
+                            label: const Text(
+                              "ชอบ",
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.pink,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 5),
+                      const Text(
+                        'ชนะรางวัล Resrve calf champion red bull',
+                        style: TextStyle(color: Colors.black),
+                      ),
                       const Row(
                         children: [
-                          CircleAvatar(
-                            backgroundImage:
-                                AssetImage('assets/images/logo.png'),
-                            radius: 16,
-                          ),
-                          SizedBox(width: 8),
                           Text(
-                            'Cynxweek 💗',
+                            'เคยผสมมาแล้ว 20 ครั้ง',
+                            style: TextStyle(color: Colors.black),
+                          ),
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Text(
+                            'ผสมสำเร็จ 18 ครั้ง',
                             style: TextStyle(color: Colors.black),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        'ใครจะคิดว่านักแข่งทีมที่ชอบจะมาสารภาพรัก...',
-                        style: TextStyle(color: Colors.black),
-                      ),
-                      const SizedBox(height: 16),
-                      const Row(
-                        children: [
-                          Icon(Icons.favorite, color: Colors.pinkAccent),
-                          SizedBox(width: 4),
-                          Text('715 คน', style: TextStyle(color: Colors.black)),
-                          SizedBox(width: 16),
-                          Icon(Icons.visibility, color: Colors.black),
-                          SizedBox(width: 4),
-                          Text('122k', style: TextStyle(color: Colors.black)),
-                          SizedBox(width: 16),
-                          Icon(Icons.comment, color: Colors.black),
-                          SizedBox(width: 4),
-                          Text('1.3k', style: TextStyle(color: Colors.black)),
-                          SizedBox(width: 16),
-                          Icon(Icons.bookmark, color: Colors.black),
-                          SizedBox(width: 4),
-                          Text('5.3k', style: TextStyle(color: Colors.black)),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.favorite_border),
-                              label: const Text("ชอบ"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.pink,
-                              ),
-                            ),
+                          SizedBox(
+                              height: 30,
+                              child: OutlinedButton(
+                                onPressed: () {},
+                                child: Text('โหนกใหญ่',
+                                    style: GoogleFonts.notoSansThai(
+                                        textStyle: Theme.of(context)
+                                            .textTheme
+                                            .displayLarge,
+                                        fontSize: 14,
+                                        color: Colors.black)),
+                              )),
+                          const SizedBox(
+                            width: 10,
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.bookmark_border),
-                              label: const Text("เพิ่มแล้ว"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blueGrey,
-                              ),
-                            ),
+                          SizedBox(
+                              height: 30,
+                              child: OutlinedButton(
+                                onPressed: () {},
+                                child: Text('ขนสั้น',
+                                    style: GoogleFonts.notoSansThai(
+                                        textStyle: Theme.of(context)
+                                            .textTheme
+                                            .displayLarge,
+                                        fontSize: 14,
+                                        color: Colors.black)),
+                              )),
+                          const SizedBox(
+                            width: 10,
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.remove_red_eye),
-                              label: const Text("อ่านเลย"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.lightBlue,
-                              ),
-                            ),
-                          ),
+                          SizedBox(
+                              height: 30,
+                              child: OutlinedButton(
+                                onPressed: () {},
+                                child: Text('สีแดง',
+                                    style: GoogleFonts.notoSansThai(
+                                        textStyle: Theme.of(context)
+                                            .textTheme
+                                            .displayLarge,
+                                        fontSize: 14,
+                                        color: Colors.black)),
+                              )),
                         ],
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 5, bottom: 5),
+                        child: Container(
+                          margin: const EdgeInsets.fromLTRB(5, 10, 5, 10),
+                          height: 2.0,
+                          color: const Color.fromARGB(255, 35, 121, 41),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 5),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('สัตวบาลที่มีน้ำเชื้อ',
+                                style: GoogleFonts.notoSansThai(
+                                    textStyle: Theme.of(context)
+                                        .textTheme
+                                        .displayLarge,
+                                    fontSize: 18,
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold)),
+                            TextButton(
+                                onPressed: seedocall,
+                                child: Text('ดูทั้งหมด',
+                                    style: GoogleFonts.notoSansThai(
+                                        textStyle: Theme.of(context)
+                                            .textTheme
+                                            .displayLarge,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green[400]))),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      SizedBox(
+                        width: 400,
+                        child: Card.outlined(
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10), // ขอบโค้งของ Card
+                            side: const BorderSide(
+                              color: Colors.black, // สีขอบ
+                              width: 1, // ความหนาของขอบ
+                            ),
+                          ),
+                          color: Colors.white,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(left: 16, right: 5),
+                                child: SizedBox(
+                                  child: CircleAvatar(
+                                    radius: 20,
+                                    backgroundImage:
+                                        AssetImage('assets/images/pin.jpg'),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(5.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('หมอธนัท',
+                                        style: GoogleFonts.notoSansThai(
+                                            textStyle: Theme.of(context)
+                                                .textTheme
+                                                .displayLarge,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold)),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text('เคยผสมมาแล้ว 54 ครั้ง',
+                                        style: GoogleFonts.notoSansThai(
+                                          textStyle: Theme.of(context)
+                                              .textTheme
+                                              .displayLarge,
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                        )),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    Text('ต.แวง อ.สว่างแดนดิน จ.สกลนคร',
+                                        style: GoogleFonts.notoSansThai(
+                                          textStyle: Theme.of(context)
+                                              .textTheme
+                                              .displayLarge,
+                                          fontSize: 14,
+                                          color: Colors.black,
+                                        )),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(left: 50),
+                                child: ElevatedButton(
+                                  onPressed: seedocprofile,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    minimumSize:
+                                        Size(40, 40), 
+                                    padding:
+                                        EdgeInsets.zero, 
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: const Icon(Icons.navigate_next,
+                                      color: Colors.white),
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -173,5 +319,15 @@ class _CowdetailpageState extends State<Cowdetailpage> {
         ),
       ),
     );
+  }
+
+  void seedocall() {}
+
+  void seedocprofile() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const Seedocprofilepage(),
+        ));
   }
 }

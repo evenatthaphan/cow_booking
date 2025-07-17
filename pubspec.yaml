@@ -70,6 +70,8 @@ flutter:
     - assets/images/imagecow.jpg
     - assets/images/supperman.jpg
     - assets/images/master.jpg
+    - assets/images/pin.jpg
+    - assets/images/profile.jpg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

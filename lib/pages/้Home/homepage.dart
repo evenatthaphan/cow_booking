@@ -1,7 +1,7 @@
 import 'package:cow_booking/pages/%E0%B9%89Home/cowdetail.dart';
 import 'package:cow_booking/pages/%E0%B9%89Home/seach.dart';
 import 'package:cow_booking/pages/%E0%B9%89Home/seeall.dart';
-import 'package:cow_booking/pages/farmers/profile.dart';
+import 'package:cow_booking/pages/farmers/farmerprofile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -64,10 +64,11 @@ class _HomepageState extends State<Homepage> {
           // รูปโปรไฟล์
           GestureDetector(
             onTap: () {
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (context) => YourNewPage()),
-              // );
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const Farmerprofilepage(),
+                  ));
             },
             child: const Padding(
               padding: EdgeInsets.only(right: 10),
@@ -216,7 +217,7 @@ class _HomepageState extends State<Homepage> {
                                 ),
                               ),
                             ),
-                
+
                             Text('ซุปเปอร์แมน',
                                 style: GoogleFonts.notoSansThai(fontSize: 16)),
                             Text('บุญน้อมฟาร์ม',
@@ -269,8 +270,7 @@ class _HomepageState extends State<Homepage> {
                               child: Image.asset(
                                 'assets/images/supperman.jpg',
                                 fit: BoxFit.cover,
-                                height:
-                                    120,
+                                height: 120,
                                 width: double.infinity,
                               ),
                             ),
@@ -278,7 +278,9 @@ class _HomepageState extends State<Homepage> {
                                 style: GoogleFonts.notoSansThai(fontSize: 16)),
                             Text('บุญน้อมฟาร์ม',
                                 style: GoogleFonts.notoSansThai(
-                                    fontSize: 14, color: const Color.fromARGB(255, 52, 122, 55)))
+                                    fontSize: 14,
+                                    color:
+                                        const Color.fromARGB(255, 52, 122, 55)))
                           ],
                         ),
                       ),
@@ -385,8 +387,7 @@ class _HomepageState extends State<Homepage> {
                               child: Image.asset(
                                 'assets/images/master.jpg',
                                 fit: BoxFit.cover,
-                                height:
-                                    120,
+                                height: 120,
                                 width: double.infinity,
                               ),
                             ),
@@ -394,7 +395,9 @@ class _HomepageState extends State<Homepage> {
                                 style: GoogleFonts.notoSansThai(fontSize: 16)),
                             Text('บุญน้อมฟาร์ม',
                                 style: GoogleFonts.notoSansThai(
-                                    fontSize: 14, color: const Color.fromARGB(255, 52, 122, 55)))
+                                    fontSize: 14,
+                                    color:
+                                        const Color.fromARGB(255, 52, 122, 55)))
                           ],
                         ),
                       ),
@@ -433,16 +436,8 @@ class _HomepageState extends State<Homepage> {
         ));
   }
 
-  // YourNewPage() {
-  //   Navigator.push(
-  //       context,
-  //       MaterialPageRoute(
-  //         builder: (context) => const Profilepage(),
-  //       ));
-  // }
-
   void detailpage() {
-     Navigator.push(
+    Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => const Cowdetailpage(),
