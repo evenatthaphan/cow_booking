@@ -78,8 +78,8 @@ class _ChooseLoginState extends State<ChooseLogin> {
                 child: TextField(
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(
-                      borderSide:
-                          BorderSide(width: 1, color: Colors.grey), // สีกรอบปกติ
+                      borderSide: BorderSide(
+                          width: 1, color: Colors.grey), // สีกรอบปกติ
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(
@@ -106,8 +106,8 @@ class _ChooseLoginState extends State<ChooseLogin> {
                 child: TextField(
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(
-                      borderSide:
-                          BorderSide(width: 1, color: Colors.grey), // สีกรอบปกติ
+                      borderSide: BorderSide(
+                          width: 1, color: Colors.grey), // สีกรอบปกติ
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(
@@ -133,11 +133,13 @@ class _ChooseLoginState extends State<ChooseLogin> {
                       children: [
                         Text('คลิก',
                             style: GoogleFonts.notoSansThai(
-                              textStyle: Theme.of(context).textTheme.displayLarge,
+                              textStyle:
+                                  Theme.of(context).textTheme.displayLarge,
                               fontSize: 16,
                               color: Colors.green,
                               fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline, // ขีดเส้นใต้
+                              decoration:
+                                  TextDecoration.underline, // ขีดเส้นใต้
                               decorationColor: Colors.green, // สีของเส้นใต้
                               decorationThickness: 2, // ความหนาของเส้นใต้
                             )),
@@ -154,8 +156,8 @@ class _ChooseLoginState extends State<ChooseLogin> {
                   child: FilledButton(
                       onPressed: login,
                       style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all<Color>(Colors.green[900]!),
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            Colors.green[900]!),
                       ),
                       child: Text(
                         'เข้าสู่ระบบ',
@@ -181,5 +183,11 @@ class _ChooseLoginState extends State<ChooseLogin> {
         MaterialPageRoute(
           builder: (context) => const Homepage(),
         ));
+
+    // Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder: (context) => const Homepage(),
+    //     ));
   }
 }

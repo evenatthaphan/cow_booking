@@ -17,7 +17,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
       appBar: AppBar(
         title: Text('โปรไฟล์',
             style: GoogleFonts.notoSansThai(
-              fontSize: 24,
+              fontSize: 22,
               color: Colors.white,
               fontWeight: FontWeight.bold,
             )),
@@ -48,7 +48,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                       Text('kunnoomnimm',
                           style: GoogleFonts.notoSansThai(
                               fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text('Username : seesahan',
+                      Text('0611254785',
                           style: GoogleFonts.notoSansThai(
                               fontSize: 14, color: Colors.grey[600])),
                     ],
@@ -67,6 +67,31 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
               ],
             ),
           ),
+
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            margin: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.favorite),
+                SizedBox(width: 16),
+                Expanded(
+                  child: Text("ที่ถูกใจ",
+                      style: GoogleFonts.notoSansThai(
+                        fontSize: 16,
+                      )),
+                ),
+                Text("5"),
+                Icon(Icons.arrow_forward_ios, size: 16),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 10),
 
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -118,7 +143,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
                   child: Text("ดู", style: GoogleFonts.notoSansThai(
-                          fontSize: 16,),),
+                          fontSize: 16, color: Colors.white),),
                 )
               ],
             ),
@@ -152,7 +177,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                 Expanded(
                     child: Text("ออกจากระบบ",
                         style: GoogleFonts.notoSansThai(
-                          fontSize: 20,
+                          fontSize: 18,
                           color: Colors.red,
                         ))),
                 const Spacer(),

@@ -46,7 +46,7 @@ class _HomepageState extends State<Homepage> {
           'หน้าหลัก',
           style: GoogleFonts.notoSansThai(
             textStyle: Theme.of(context).textTheme.displayLarge,
-            fontSize: 24,
+            fontSize: 22,
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),

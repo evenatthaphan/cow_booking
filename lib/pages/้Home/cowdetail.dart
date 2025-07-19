@@ -23,7 +23,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
       //     },
       //   ),
       // ),
-      backgroundColor: Colors.green[900],
+      backgroundColor: Colors.lightGreen[700],
       body: SafeArea(
         child: Column(
           children: [
@@ -288,23 +288,20 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                                   ],
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(left: 50),
-                                child: ElevatedButton(
-                                  onPressed: seedocprofile,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    minimumSize:
-                                        Size(40, 40), 
-                                    padding:
-                                        EdgeInsets.zero, 
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
+                              ElevatedButton(
+                                onPressed: seedocprofile,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  minimumSize:
+                                      Size(40, 40), 
+                                  padding:
+                                      EdgeInsets.zero, 
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(Icons.navigate_next,
-                                      color: Colors.white),
                                 ),
+                                child: const Icon(Icons.navigate_next,
+                                    color: Colors.white),
                               )
                             ],
                           ),
