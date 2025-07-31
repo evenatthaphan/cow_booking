@@ -10,7 +10,26 @@ class Seedocprofilepage extends StatefulWidget {
   State<Seedocprofilepage> createState() => _SeedocprofilepageState();
 }
 
+class Event {
+  final String title;
+  final String? time;
+  final String? location;
+
+  Event(this.title, {this.time, this.location});
+}
+
 class _SeedocprofilepageState extends State<Seedocprofilepage> {
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDay;
+
+  final Map<DateTime, List<Event>> _events = {
+    DateTime(2025, 8, 1): [Event('ผสมเทียมวัว')],
+    DateTime(2025, 7, 31): [
+      Event('นัดพบหมอ', time: '09:00 น.', location: 'คลินิกสัตว์'),
+      Event('ประชุมทีม', time: '13:00 น.')
+    ],
+  };
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -93,13 +112,16 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('บราห์มัน'),
-              Text('น้ำเชื้อจาก บุญน้อมฟาร์ม', style: TextStyle(fontSize: 12),),
+              Text(
+                'น้ำเชื้อจาก บุญน้อมฟาร์ม',
+                style: TextStyle(fontSize: 12),
+              ),
             ],
           ),
           // trailing: const Icon(Icons.arrow_forward_ios,),
           // onTap: () {},
           trailing: const Row(
-            mainAxisSize: MainAxisSize.min, 
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text('จอง', style: TextStyle(color: Colors.red)),
               SizedBox(width: 8),
@@ -121,21 +143,76 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: TableCalendar(
-          locale: 'th_TH', // ภาษาไทย
-          firstDay: DateTime.utc(2020, 1, 1),
-          lastDay: DateTime.utc(2030, 12, 31),
-          focusedDay: DateTime.now(),
-          calendarStyle: const CalendarStyle(
-            todayDecoration: BoxDecoration(
-              color: Colors.green,
-              shape: BoxShape.circle,
+        child: Column(
+          children: [
+            TableCalendar<Event>(
+              locale: 'th_TH',
+              firstDay: DateTime.utc(2020, 1, 1),
+              lastDay: DateTime.utc(2030, 12, 31),
+              focusedDay: _focusedDay,
+              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+              onDaySelected: (selectedDay, focusedDay) {
+                setState(() {
+                  _selectedDay = selectedDay;
+                  _focusedDay = focusedDay;
+                });
+              },
+              eventLoader: (day) {
+                return _events[DateTime.utc(day.year, day.month, day.day)] ??
+                    [];
+              },
+              calendarStyle: const CalendarStyle(
+                todayDecoration: BoxDecoration(
+                  color: Colors.green,
+                  shape: BoxShape.circle,
+                ),
+                selectedDecoration: BoxDecoration(
+                  color: Colors.lightGreen,
+                  shape: BoxShape.circle,
+                ),
+                markerDecoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  shape: BoxShape.circle,
+                ),
+              ),
             ),
-            selectedDecoration: BoxDecoration(
-              color: Colors.lightGreen,
-              shape: BoxShape.circle,
+            ElevatedButton.icon(
+              onPressed: () {
+                if (_selectedDay != null) {
+                  setState(() {
+                    final dateKey = DateTime(_selectedDay!.year,
+                        _selectedDay!.month, _selectedDay!.day);
+                    if (_events[dateKey] != null) {
+                      _events[dateKey]!.add(Event('กิจกรรมใหม่'));
+                    } else {
+                      _events[dateKey] = [Event('กิจกรรมใหม่')];
+                    }
+                  });
+                }
+              },
+              icon: Icon(Icons.add),
+              label: Text('เพิ่มตารางคิว'),
             ),
-          ),
+            const SizedBox(height: 16),
+            if  (_selectedDay != null)
+              ...(_events[DateTime.utc(_selectedDay!.year, _selectedDay!.month,
+                          _selectedDay!.day)] ??
+                      [])
+                  .map((event) => ListTile(
+                        leading: Icon(Icons.event_note),
+                        title: Text(event.title),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (event.time != null)
+                              Text('เวลา: ${event.time!}'),
+                            if (event.location != null)
+                              Text('สถานที่: ${event.location!}'),
+                          ],
+                        ),
+                      )) 
+            else const Text('ไม่มีงานในวันนี้')
+          ],
         ),
       ),
     );
