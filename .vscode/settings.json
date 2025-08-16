@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "D:/Senoir Project/cow_booking/linux"
+    "cmake.sourceDirectory": "D:/Senoir Project/cow_booking/linux",
+    "java.configuration.updateBuildConfiguration": "interactive"
 }

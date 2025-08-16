@@ -233,7 +233,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                           ),
                           color: Colors.white,
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               const Padding(
                                 padding: EdgeInsets.only(left: 16, right: 5),

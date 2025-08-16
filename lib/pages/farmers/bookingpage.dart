@@ -1,3 +1,4 @@
+import 'package:cow_booking/pages/farmers/acceptbooking.dart';
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -24,7 +25,7 @@ class _BookingpageState extends State<Bookingpage> {
         backgroundColor: Colors.lightGreen[700],
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Center(
+      body: SingleChildScrollView(
           child: Padding(
         padding: const EdgeInsets.only(top: 20),
         child: Column(
@@ -144,5 +145,10 @@ class _BookingpageState extends State<Bookingpage> {
   }
 
   void choose() {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const Acceptbookingpage(),
+        ));
   }
 }

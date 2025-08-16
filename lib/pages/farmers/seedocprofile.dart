@@ -176,23 +176,23 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                 ),
               ),
             ),
-            ElevatedButton.icon(
-              onPressed: () {
-                if (_selectedDay != null) {
-                  setState(() {
-                    final dateKey = DateTime(_selectedDay!.year,
-                        _selectedDay!.month, _selectedDay!.day);
-                    if (_events[dateKey] != null) {
-                      _events[dateKey]!.add(Event('กิจกรรมใหม่'));
-                    } else {
-                      _events[dateKey] = [Event('กิจกรรมใหม่')];
-                    }
-                  });
-                }
-              },
-              icon: Icon(Icons.add),
-              label: Text('เพิ่มตารางคิว'),
-            ),
+            // ElevatedButton.icon(
+            //   onPressed: () {
+            //     if (_selectedDay != null) {
+            //       setState(() {
+            //         final dateKey = DateTime(_selectedDay!.year,
+            //             _selectedDay!.month, _selectedDay!.day);
+            //         if (_events[dateKey] != null) {
+            //           _events[dateKey]!.add(Event('กิจกรรมใหม่'));
+            //         } else {
+            //           _events[dateKey] = [Event('กิจกรรมใหม่')];
+            //         }
+            //       });
+            //     }
+            //   },
+            //   icon: Icon(Icons.add),
+            //   label: Text('เพิ่มตารางคิว'),
+            // ),
             const SizedBox(height: 16),
             if  (_selectedDay != null)
               ...(_events[DateTime.utc(_selectedDay!.year, _selectedDay!.month,
