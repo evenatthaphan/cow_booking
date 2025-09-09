@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class Homepagedoc extends StatefulWidget {
-  const Homepagedoc({super.key});
+class HompageAdmin extends StatefulWidget {
+  const HompageAdmin({super.key});
 
   @override
-  State<Homepagedoc> createState() => _HomepagedocState();
+  State<HompageAdmin> createState() => _HompageAdminState();
 }
 
-class _HomepagedocState extends State<Homepagedoc> {
+class _HompageAdminState extends State<HompageAdmin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

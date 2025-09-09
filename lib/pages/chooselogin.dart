@@ -1,6 +1,9 @@
 import 'package:cow_booking/pages/%E0%B9%89Home/homepage.dart';
+import 'package:cow_booking/pages/Animal_husbandry/homepagedoc.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ChooseLogin extends StatefulWidget {
   const ChooseLogin({super.key});
@@ -10,6 +13,10 @@ class ChooseLogin extends StatefulWidget {
 }
 
 class _ChooseLoginState extends State<ChooseLogin> {
+  final TextEditingController loginIdController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isPasswordVisible = false; // ตัวแปรสำหรับเปิด/ปิดรหัสผ่าน
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,6 +83,8 @@ class _ChooseLoginState extends State<ChooseLogin> {
               Padding(
                 padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
                 child: TextField(
+                  controller: loginIdController, // login ID
+                  keyboardType: TextInputType.text,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(
                       borderSide: BorderSide(
@@ -104,15 +113,29 @@ class _ChooseLoginState extends State<ChooseLogin> {
               Padding(
                 padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
                 child: TextField(
+                  controller: passwordController,
+                  obscureText: !isPasswordVisible, // ปิด/เปิดรหัสผ่าน
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(
-                      borderSide: BorderSide(
-                          width: 1, color: Colors.grey), // สีกรอบปกติ
+                      borderSide:
+                          BorderSide(width: 1, color: Colors.grey),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                          width: 2,
-                          color: Colors.green[900]!), // สีกรอบเมื่อโฟกัส
+                          width: 2, color: Colors.green[900]!),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isPasswordVisible = !isPasswordVisible;
+                        });
+                      },
                     ),
                   ),
                 ),
@@ -154,7 +177,11 @@ class _ChooseLoginState extends State<ChooseLogin> {
                   width: 250,
                   height: 50,
                   child: FilledButton(
-                      onPressed: login,
+                      onPressed: () => login(
+                            loginIdController.text.trim(),
+                            passwordController.text.trim(),
+                            context,
+                          ),
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
                             Colors.green[900]!),
@@ -177,17 +204,78 @@ class _ChooseLoginState extends State<ChooseLogin> {
     );
   }
 
-  void login() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const Homepage(),
-        ));
+  // void login() {
+  //   Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => const Homepage(),
+  //       ));
 
-    // Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //       builder: (context) => const Homepage(),
-    //     ));
+  //   Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //         builder: (context) => const Homepage(),
+  //       ));
+  // }
+
+  //
+
+  void login(String loginId, String password, BuildContext context) async {
+    final url = Uri.parse("https://cowbooking-api.onrender.com/together/login");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json; charset=utf-8"},
+        body: jsonEncode({"loginId": loginId, "password": password}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final role = data['role'];
+
+        print("Login success: $role");
+
+        // ไปหน้าเฉพาะ role
+        if (role == 'farmer') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Homepage()),
+          );
+        } else if (role == 'vet') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const Homepagedoc()),
+          );
+        } else {
+          // กรณี role อื่น ๆ
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: const Text("Login Failed"),
+              content: Text("Unknown user role"),
+            ),
+          );
+        }
+      } else {
+        print("Login failed: ${response.body}");
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text("Login Failed"),
+            content: Text(response.body),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Error: $e");
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Login Error"),
+          content: Text(e.toString()),
+        ),
+      );
+    }
   }
 }

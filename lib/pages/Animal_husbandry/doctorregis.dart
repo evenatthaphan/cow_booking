@@ -10,6 +10,22 @@ class DoctorRegis extends StatefulWidget {
 }
 
 class _DoctorRegisState extends State<DoctorRegis> {
+    // ตัวแปรเก็บค่า dropdown
+  String? selectedProvince;
+  String? selectedDistrict;
+  String? selectedSubDistrict;
+
+  //example
+  final Map<String, Map<String, List<String>>> locationData = {
+    'ขอนแก่น': {
+      'เมืองขอนแก่น': ['ในเมือง', 'ศิลา', 'บ้านเป็ด'],
+      'ชุมแพ': ['ชุมแพเหนือ', 'ชุมแพใต้']
+    },
+    'อุดรธานี': {
+      'เมืองอุดรธานี': ['หมากแข้ง', 'หนองบัว'],
+      'กุดจับ': ['กุดจับเหนือ', 'กุดจับใต้']
+    },
+  };
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -149,6 +165,87 @@ class _DoctorRegisState extends State<DoctorRegis> {
                             color: Colors.green[900]!), // สีกรอบเมื่อโฟกัส
                       ),
                     ),
+                  ),
+                ),
+                //จังหวัด
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'จังหวัด *',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1, color: Colors.grey),
+                      ),
+                    ),
+                    value: selectedProvince,
+                    items: locationData.keys
+                        .map((prov) => DropdownMenuItem(
+                              value: prov,
+                              child: Text(prov),
+                            ))
+                        .toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        selectedProvince = val;
+                        selectedDistrict = null;
+                        selectedSubDistrict = null;
+                      });
+                    },
+                  ),
+                ),
+                //อำเภอ
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'อำเภอ *',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1, color: Colors.grey),
+                      ),
+                    ),
+                    value: selectedDistrict,
+                    items: selectedProvince == null
+                        ? []
+                        : locationData[selectedProvince]!
+                            .keys
+                            .map((district) => DropdownMenuItem(
+                                  value: district,
+                                  child: Text(district),
+                                ))
+                            .toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        selectedDistrict = val;
+                        selectedSubDistrict = null;
+                      });
+                    },
+                  ),
+                ),
+                //ตำบล
+                Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'ตำบล *',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1, color: Colors.grey),
+                      ),
+                    ),
+                    value: selectedSubDistrict,
+                    items:
+                        (selectedProvince == null || selectedDistrict == null)
+                            ? []
+                            : locationData[selectedProvince]![selectedDistrict]!
+                                .map((sub) => DropdownMenuItem(
+                                      value: sub,
+                                      child: Text(sub),
+                                    ))
+                                .toList(),
+                    onChanged: (val) {
+                      setState(() {
+                        selectedSubDistrict = val;
+                      });
+                    },
                   ),
                 ),
                 Padding(
