@@ -1,33 +1,29 @@
 // To parse this JSON data, do
 //
-//     final welcome = welcomeFromJson(jsonString);
+//     final vetRegsiterRequestPost = vetRegsiterRequestPostFromJson(jsonString);
 
 import 'dart:convert';
 
-VetExpert welcomeFromJson(String str) => VetExpert.fromJson(json.decode(str));
+VetRegsiterRequestPost vetRegsiterRequestPostFromJson(String str) => VetRegsiterRequestPost.fromJson(json.decode(str));
 
-String welcomeToJson(VetExpert data) => json.encode(data.toJson());
+String vetRegsiterRequestPostToJson(VetRegsiterRequestPost data) => json.encode(data.toJson());
 
-class VetExpert {
-    int id;
+class VetRegsiterRequestPost {
     String vetExpertName;
     String vetExpertPassword;
     String phonenumber;
     String vetExpertEmail;
-    String profileImage;
     String province;
     String district;
     String locality;
     String vetExpertAddress;
     String vetExpertPl;
 
-    VetExpert({
-        required this.id,
+    VetRegsiterRequestPost({
         required this.vetExpertName,
         required this.vetExpertPassword,
         required this.phonenumber,
         required this.vetExpertEmail,
-        required this.profileImage,
         required this.province,
         required this.district,
         required this.locality,
@@ -35,13 +31,11 @@ class VetExpert {
         required this.vetExpertPl,
     });
 
-    factory VetExpert.fromJson(Map<String, dynamic> json) => VetExpert(
-        id: json["id"],
+    factory VetRegsiterRequestPost.fromJson(Map<String, dynamic> json) => VetRegsiterRequestPost(
         vetExpertName: json["VetExpert_name"],
         vetExpertPassword: json["VetExpert_password"],
         phonenumber: json["phonenumber"],
         vetExpertEmail: json["VetExpert_email"],
-        profileImage: json["profile_image"],
         province: json["province"],
         district: json["district"],
         locality: json["locality"],
@@ -50,12 +44,10 @@ class VetExpert {
     );
 
     Map<String, dynamic> toJson() => {
-        "id": id,
         "VetExpert_name": vetExpertName,
         "VetExpert_password": vetExpertPassword,
         "phonenumber": phonenumber,
         "VetExpert_email": vetExpertEmail,
-        "profile_image": profileImage,
         "province": province,
         "district": district,
         "locality": locality,

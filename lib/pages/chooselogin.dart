@@ -1,9 +1,20 @@
 import 'package:cow_booking/pages/%E0%B9%89Home/homepage.dart';
 import 'package:cow_booking/pages/Animal_husbandry/homepagedoc.dart';
+import 'package:cow_booking/model/response/Farmers_response.dart';
+import 'package:cow_booking/model/response/Vet_response.dart';
+import 'package:cow_booking/model/response/LoginResponseGet.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:cow_booking/config/config.dart';
+import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/ShareWitget.dart';
+import 'package:provider/provider.dart';
+
+import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/model/request/login_Request.dart';
+
 
 class ChooseLogin extends StatefulWidget {
   const ChooseLogin({super.key});
@@ -16,9 +27,28 @@ class _ChooseLoginState extends State<ChooseLogin> {
   final TextEditingController loginIdController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false; // ตัวแปรสำหรับเปิด/ปิดรหัสผ่าน
+  String url = "";
+
+  final myWidget = MyWidget();
+  final handleError = HandleError();
+
+
+  void initState() {
+    super.initState();
+    Configuration.getConfig().then(
+      (value) {
+        // showCustomSnackbar("Message", 'Configuration loaded $value');
+        url = value['apiEndpoint'].toString();
+      },
+    ).catchError((err) {
+      myWidget.showCustomSnackbar("Message", 'Error in initState: $err');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+     final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -117,12 +147,11 @@ class _ChooseLoginState extends State<ChooseLogin> {
                   obscureText: !isPasswordVisible, // ปิด/เปิดรหัสผ่าน
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(
-                      borderSide:
-                          BorderSide(width: 1, color: Colors.grey),
+                      borderSide: BorderSide(width: 1, color: Colors.grey),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                          width: 2, color: Colors.green[900]!),
+                      borderSide:
+                          BorderSide(width: 2, color: Colors.green[900]!),
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
@@ -177,11 +206,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
                   width: 250,
                   height: 50,
                   child: FilledButton(
-                      onPressed: () => login(
-                            loginIdController.text.trim(),
-                            passwordController.text.trim(),
-                            context,
-                          ),
+                      onPressed: loginUser,
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
                             Colors.green[900]!),
@@ -204,6 +229,8 @@ class _ChooseLoginState extends State<ChooseLogin> {
     );
   }
 
+  
+
   // void login() {
   //   Navigator.push(
   //       context,
@@ -220,62 +247,64 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
   //
 
-  void login(String loginId, String password, BuildContext context) async {
-    final url = Uri.parse("https://cowbooking-api.onrender.com/together/login");
+Future<void> loginUser() async {
+  final loginId = loginIdController.text.trim();
+  final password = passwordController.text.trim();
 
-    try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json; charset=utf-8"},
-        body: jsonEncode({"loginId": loginId, "password": password}),
-      );
+  if (loginId.isEmpty || password.isEmpty) {
+    myWidget.showCustomSnackbar('Message', 'กรุณากรอกข้อมูลให้ครบ');
+    return;
+  }
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final role = data['role'];
+  final uri = Uri.parse('$apiEndpoint/together/login');
 
-        print("Login success: $role");
+  try {
+    final res = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json; charset=utf-8'},
+      body: jsonEncode({'loginId': loginId, 'password': password}),
+    );
+    debugPrint('Login URL: ' + uri.toString());
+    debugPrint('Status: ' + res.statusCode.toString());
+    debugPrint('Body: ' + res.body.toString());
 
-        // ไปหน้าเฉพาะ role
-        if (role == 'farmer') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const Homepage()),
-          );
-        } else if (role == 'vet') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const Homepagedoc()),
-          );
-        } else {
-          // กรณี role อื่น ๆ
-          showDialog(
-            context: context,
-            builder: (_) => AlertDialog(
-              title: const Text("Login Failed"),
-              content: Text("Unknown user role"),
-            ),
-          );
-        }
-      } else {
-        print("Login failed: ${response.body}");
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text("Login Failed"),
-            content: Text(response.body),
-          ),
+    if (res.statusCode == 200 && res.body.isNotEmpty) {
+      final data = jsonDecode(res.body);
+      // คาดรูปแบบ { role: 'farmer'|'vet', message, user: {...} }
+      final role = data['role'] as String?;
+      final user = data['user'] as Map<String, dynamic>?;
+
+      if (role == 'farmer' && user != null) {
+        // เก็บใน Provider เพื่อใช้ข้ามหน้า (ไม่จำเป็นต้องส่ง id)
+        final farmer = Farmers.fromJson(user);
+        context.read<DataFarmers>().setDataUser(farmer);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => Homepage()),
         );
+        return;
       }
-    } catch (e) {
-      print("Error: $e");
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Login Error"),
-          content: Text(e.toString()),
-        ),
-      );
+
+      if (role == 'vet' && user != null) {
+        final vet = VetExpert.fromJson(user);
+        context.read<DataVetExpert>().setDataUser(vet);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => Homepagedoc()),
+        );
+        return;
+      }
+
+      myWidget.showCustomSnackbar('Message', 'รูปแบบข้อมูลไม่ตรงที่คาดไว้');
+    } else {
+      handleError.handleError(res);
     }
+  } catch (e) {
+    debugPrint('Login error: ' + e.toString());
+    myWidget.showCustomSnackbar('Message', 'เกิดข้อผิดพลาดระหว่างล็อกอิน $e');
   }
 }
+}
+  
+
+

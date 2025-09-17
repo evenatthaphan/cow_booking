@@ -1,14 +1,38 @@
 // To parse this JSON data, do
 //
-//     final welcome = welcomeFromJson(jsonString);
+//     final loginResponseGet = loginResponseGetFromJson(jsonString);
 
 import 'dart:convert';
 
-Farmers welcomeFromJson(String str) => Farmers.fromJson(json.decode(str));
+LoginResponseGet loginResponseGetFromJson(String str) => LoginResponseGet.fromJson(json.decode(str));
 
-String welcomeToJson(Farmers data) => json.encode(data.toJson());
+String loginResponseGetToJson(LoginResponseGet data) => json.encode(data.toJson());
 
-class Farmers {
+class LoginResponseGet {
+    String role;
+    String message;
+    User user;
+
+    LoginResponseGet({
+        required this.role,
+        required this.message,
+        required this.user,
+    });
+
+    factory LoginResponseGet.fromJson(Map<String, dynamic> json) => LoginResponseGet(
+        role: json["role"],
+        message: json["message"],
+        user: User.fromJson(json["user"]),
+    );
+
+    Map<String, dynamic> toJson() => {
+        "role": role,
+        "message": message,
+        "user": user.toJson(),
+    };
+}
+
+class User {
     int id;
     String farmName;
     String farmPassword;
@@ -20,7 +44,7 @@ class Farmers {
     String district;
     String locality;
 
-    Farmers({
+    User({
         required this.id,
         required this.farmName,
         required this.farmPassword,
@@ -33,7 +57,7 @@ class Farmers {
         required this.locality,
     });
 
-    factory Farmers.fromJson(Map<String, dynamic> json) => Farmers(
+    factory User.fromJson(Map<String, dynamic> json) => User(
         id: json["id"],
         farmName: json["farm_name"],
         farmPassword: json["farm_password"],

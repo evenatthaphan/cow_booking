@@ -1,45 +1,39 @@
 // To parse this JSON data, do
 //
-//     final welcome = welcomeFromJson(jsonString);
+//     final farmersRegsiterRequestPost = farmersRegsiterRequestPostFromJson(jsonString);
 
 import 'dart:convert';
 
-Farmers welcomeFromJson(String str) => Farmers.fromJson(json.decode(str));
+FarmersRegsiterRequestPost farmersRegsiterRequestPostFromJson(String str) => FarmersRegsiterRequestPost.fromJson(json.decode(str));
 
-String welcomeToJson(Farmers data) => json.encode(data.toJson());
+String farmersRegsiterRequestPostToJson(FarmersRegsiterRequestPost data) => json.encode(data.toJson());
 
-class Farmers {
-    int id;
+class FarmersRegsiterRequestPost {
     String farmName;
     String farmPassword;
     String phonenumber;
     String farmerEmail;
-    String profileImage;
     String farmAddress;
     String province;
     String district;
     String locality;
 
-    Farmers({
-        required this.id,
+    FarmersRegsiterRequestPost({
         required this.farmName,
         required this.farmPassword,
         required this.phonenumber,
         required this.farmerEmail,
-        required this.profileImage,
         required this.farmAddress,
         required this.province,
         required this.district,
         required this.locality,
     });
 
-    factory Farmers.fromJson(Map<String, dynamic> json) => Farmers(
-        id: json["id"],
+    factory FarmersRegsiterRequestPost.fromJson(Map<String, dynamic> json) => FarmersRegsiterRequestPost(
         farmName: json["farm_name"],
         farmPassword: json["farm_password"],
         phonenumber: json["phonenumber"],
         farmerEmail: json["farmer_email"],
-        profileImage: json["profile_image"],
         farmAddress: json["farm_address"],
         province: json["province"],
         district: json["district"],
@@ -47,12 +41,10 @@ class Farmers {
     );
 
     Map<String, dynamic> toJson() => {
-        "id": id,
         "farm_name": farmName,
         "farm_password": farmPassword,
         "phonenumber": phonenumber,
         "farmer_email": farmerEmail,
-        "profile_image": profileImage,
         "farm_address": farmAddress,
         "province": province,
         "district": district,
