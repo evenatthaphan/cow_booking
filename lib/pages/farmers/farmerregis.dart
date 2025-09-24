@@ -4,6 +4,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
 
+import 'package:provider/provider.dart';
+import 'package:cow_booking/share/ShareData.dart';
+
 class FarmerRegister extends StatefulWidget {
   const FarmerRegister({super.key});
 
@@ -16,244 +19,124 @@ class _FarmerRegisterState extends State<FarmerRegister> {
   final TextEditingController farmNameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
+  final TextEditingController provinceCtrl = TextEditingController();
+  final TextEditingController districtCtrl = TextEditingController();
+  final TextEditingController subdistrictCtrl = TextEditingController();
   final TextEditingController farmAddressController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
-  
-  // ตัวแปรเก็บค่า dropdown
-  String? selectedProvince;
-  String? selectedDistrict;
-  String? selectedSubDistrict;
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
+
+  // // ตัวแปรเก็บค่า dropdown
+  // String? selectedProvince;
+  // String? selectedDistrict;
+  // String? selectedSubDistrict;
 
   // ตัวแปรสำหรับ loading state
   bool isLoading = false;
   bool isLoadingLocations = false;
-  
-  // ตัวแปรเก็บข้อมูล location จาก database
-  List<String> provinces = [];
-  List<String> districts = [];
-  List<String> subDistricts = [];
-  
+
+  // // ตัวแปรเก็บข้อมูล location จาก database
+  // List<String> provinces = [];
+  // List<String> districts = [];
+  // List<String> subDistricts = [];
+
   // ตัวแปรสำหรับ custom input
-  final TextEditingController customProvinceController = TextEditingController();
-  final TextEditingController customDistrictController = TextEditingController();
-  final TextEditingController customSubDistrictController = TextEditingController();
+  final TextEditingController customProvinceController =
+      TextEditingController();
+  final TextEditingController customDistrictController =
+      TextEditingController();
+  final TextEditingController customSubDistrictController =
+      TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    loadProvinces();
+    // loadProvinces();
   }
 
-  // ฟังก์ชันโหลดข้อมูลจังหวัด
-  Future<void> loadProvinces() async {
-    setState(() {
-      isLoadingLocations = true;
-    });
+  // // ฟังก์ชันโหลดข้อมูลจังหวัด
+  // Future<void> loadProvinces() async {
+  //   setState(() {
+  //     isLoadingLocations = true;
+  //   });
 
-    try {
-      final url = Uri.parse("$apiEndpoint/farmer/locations/provinces");
-      final response = await http.get(url);
+  //   try {
+  //     final url = Uri.parse("$apiEndpoint/farmer/locations/provinces");
+  //     final response = await http.get(url);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          provinces = List<String>.from(data['provinces'] ?? []);
-        });
-      }
-    } catch (e) {
-      print('Error loading provinces: $e');
-    } finally {
-      setState(() {
-        isLoadingLocations = false;
-      });
-    }
-  }
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       setState(() {
+  //         provinces = List<String>.from(data['provinces'] ?? []);
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error loading provinces: $e');
+  //   } finally {
+  //     setState(() {
+  //       isLoadingLocations = false;
+  //     });
+  //   }
+  // }
 
-  // ฟังก์ชันโหลดข้อมูลอำเภอ
-  Future<void> loadDistricts(String province) async {
-    setState(() {
-      isLoadingLocations = true;
-      districts = [];
-      subDistricts = [];
-      selectedDistrict = null;
-      selectedSubDistrict = null;
-    });
+  // // ฟังก์ชันโหลดข้อมูลอำเภอ
+  // Future<void> loadDistricts(String province) async {
+  //   setState(() {
+  //     isLoadingLocations = true;
+  //     districts = [];
+  //     subDistricts = [];
+  //     selectedDistrict = null;
+  //     selectedSubDistrict = null;
+  //   });
 
-    try {
-      final url = Uri.parse("$apiEndpoint/farmer/locations/districts/province=${Uri.encodeComponent(province)}");
-      final response = await http.get(url);
+  //   try {
+  //     final url = Uri.parse(
+  //         "$apiEndpoint/farmer/locations/districts/province=${Uri.encodeComponent(province)}");
+  //     final response = await http.get(url);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          districts = List<String>.from(data['districts'] ?? []);
-        });
-      }
-    } catch (e) {
-      print('Error loading districts: $e');
-    } finally {
-      setState(() {
-        isLoadingLocations = false;
-      });
-    }
-  }
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       setState(() {
+  //         districts = List<String>.from(data['districts'] ?? []);
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error loading districts: $e');
+  //   } finally {
+  //     setState(() {
+  //       isLoadingLocations = false;
+  //     });
+  //   }
+  // }
 
-  // ฟังก์ชันโหลดข้อมูลตำบล
-  Future<void> loadSubDistricts(String province, String district) async {
-    setState(() {
-      isLoadingLocations = true;
-      subDistricts = [];
-      selectedSubDistrict = null;
-    });
+  // // ฟังก์ชันโหลดข้อมูลตำบล
+  // Future<void> loadSubDistricts(String province, String district) async {
+  //   setState(() {
+  //     isLoadingLocations = true;
+  //     subDistricts = [];
+  //     selectedSubDistrict = null;
+  //   });
 
-    try {
-      final url = Uri.parse("$apiEndpoint/farmer/locations/localities/${Uri.encodeComponent(province)}/${Uri.encodeComponent(district)}");
-      final response = await http.get(url);
+  //   try {
+  //     final url = Uri.parse(
+  //         "$apiEndpoint/farmer/locations/localities/${Uri.encodeComponent(province)}/${Uri.encodeComponent(district)}");
+  //     final response = await http.get(url);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          subDistricts = List<String>.from(data['subdistricts'] ?? []);
-        });
-      }
-    } catch (e) {
-      print('Error loading subdistricts: $e');
-    } finally {
-      setState(() {
-        isLoadingLocations = false;
-      });
-    }
-  }
-
-  // ฟังก์ชันเพิ่มจังหวัดใหม่ (ตรวจสอบก่อนว่ามีหรือไม่)
-  Future<void> addNewProvince(String provinceName) async {
-    try {
-      // ตรวจสอบว่ามีจังหวัดนี้อยู่แล้วหรือไม่
-      if (provinces.contains(provinceName)) {
-        // ถ้ามีแล้ว ให้เลือกใน dropdown
-        setState(() {
-          selectedProvince = provinceName;
-        });
-        customProvinceController.clear();
-        return;
-      }
-
-      // ถ้าไม่มี ให้ insert ลงฐานข้อมูล
-      final url = Uri.parse("$apiEndpoint/farmer/register");
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"type": "province", "name": provinceName}),
-      );
-
-      if (response.statusCode == 201) {
-        setState(() {
-          provinces.add(provinceName);
-          selectedProvince = provinceName;
-        });
-        customProvinceController.clear();
-      } else if (response.statusCode == 409) {
-        // ถ้า server ส่ง 409 (Conflict) หมายความว่ามีอยู่แล้ว
-        setState(() {
-          provinces.add(provinceName);
-          selectedProvince = provinceName;
-        });
-        customProvinceController.clear();
-      }
-    } catch (e) {
-      _showErrorDialog('ไม่สามารถเพิ่มจังหวัดได้: ${e.toString()}');
-    }
-  }
-
-  // ฟังก์ชันเพิ่มอำเภอใหม่ (ตรวจสอบก่อนว่ามีหรือไม่)
-  Future<void> addNewDistrict(String districtName) async {
-    try {
-      // ตรวจสอบว่ามีอำเภอนี้อยู่แล้วหรือไม่
-      if (districts.contains(districtName)) {
-        // ถ้ามีแล้ว ให้เลือกใน dropdown
-        setState(() {
-          selectedDistrict = districtName;
-        });
-        customDistrictController.clear();
-        return;
-      }
-
-      // ถ้าไม่มี ให้ insert ลงฐานข้อมูล
-      final url = Uri.parse("$apiEndpoint/farmer/register");
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "type": "district",
-          "name": districtName,
-          "province": selectedProvince,
-        }),
-      );
-
-      if (response.statusCode == 201) {
-        setState(() {
-          districts.add(districtName);
-          selectedDistrict = districtName;
-        });
-        customDistrictController.clear();
-      } else if (response.statusCode == 409) {
-        // ถ้า server ส่ง 409 (Conflict) หมายความว่ามีอยู่แล้ว
-        setState(() {
-          districts.add(districtName);
-          selectedDistrict = districtName;
-        });
-        customDistrictController.clear();
-      }
-    } catch (e) {
-      _showErrorDialog('ไม่สามารถเพิ่มอำเภอได้: ${e.toString()}');
-    }
-  }
-
-  // ฟังก์ชันเพิ่มตำบลใหม่ (ตรวจสอบก่อนว่ามีหรือไม่)
-  Future<void> addNewSubDistrict(String subDistrictName) async {
-    try {
-      // ตรวจสอบว่ามีตำบลนี้อยู่แล้วหรือไม่
-      if (subDistricts.contains(subDistrictName)) {
-        // ถ้ามีแล้ว ให้เลือกใน dropdown
-        setState(() {
-          selectedSubDistrict = subDistrictName;
-        });
-        customSubDistrictController.clear();
-        return;
-      }
-
-      // ถ้าไม่มี ให้ insert ลงฐานข้อมูล
-      final url = Uri.parse("$apiEndpoint/farmer/register");
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "type": "subdistrict",
-          "name": subDistrictName,
-          "province": selectedProvince,
-          "district": selectedDistrict,
-        }),
-      );
-
-      if (response.statusCode == 201) {
-        setState(() {
-          subDistricts.add(subDistrictName);
-          selectedSubDistrict = subDistrictName;
-        });
-        customSubDistrictController.clear();
-      } else if (response.statusCode == 409) {
-        // ถ้า server ส่ง 409 (Conflict) หมายความว่ามีอยู่แล้ว
-        setState(() {
-          subDistricts.add(subDistrictName);
-          selectedSubDistrict = subDistrictName;
-        });
-        customSubDistrictController.clear();
-      }
-    } catch (e) {
-      _showErrorDialog('ไม่สามารถเพิ่มตำบลได้: ${e.toString()}');
-    }
-  }
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       setState(() {
+  //         subDistricts = List<String>.from(data['subdistricts'] ?? []);
+  //       });
+  //     }
+  //   } catch (e) {
+  //     print('Error loading subdistricts: $e');
+  //   } finally {
+  //     setState(() {
+  //       isLoadingLocations = false;
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -401,63 +284,58 @@ class _FarmerRegisterState extends State<FarmerRegister> {
                     ),
                   ),
                 ),
+
                 //จังหวัด
                 Padding(
                   padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
-                  child: _buildLocationDropdown(
-                    label: 'จังหวัด *',
-                    value: selectedProvince,
-                    items: provinces,
-                    onChanged: (val) {
-                      setState(() {
-                        selectedProvince = val;
-                        selectedDistrict = null;
-                        selectedSubDistrict = null;
-                      });
-                      if (val != null) {
-                        loadDistricts(val);
+                  child: TextFormField(
+                    controller: provinceCtrl,
+                    decoration: InputDecoration(
+                      labelText: "จังหวัด *",
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "กรุณากรอกจังหวัด";
                       }
+                      return null;
                     },
-                    onAddNew: (name) => addNewProvince(name),
-                    customController: customProvinceController,
                   ),
                 ),
+
                 //อำเภอ
                 Padding(
                   padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
-                  child: _buildLocationDropdown(
-                    label: 'อำเภอ *',
-                    value: selectedDistrict,
-                    items: districts,
-                    onChanged: (val) {
-                      setState(() {
-                        selectedDistrict = val;
-                        selectedSubDistrict = null;
-                      });
-                      if (val != null && selectedProvince != null) {
-                        loadSubDistricts(selectedProvince!, val);
+                  child: TextFormField(
+                    controller: districtCtrl,
+                    decoration: InputDecoration(
+                      labelText: "อำเภอ *",
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "กรุณากรอกอำเภอ";
                       }
+                      return null;
                     },
-                    onAddNew: (name) => addNewDistrict(name),
-                    customController: customDistrictController,
-                    enabled: selectedProvince != null,
                   ),
                 ),
+
                 //ตำบล
                 Padding(
                   padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
-                  child: _buildLocationDropdown(
-                    label: 'ตำบล *',
-                    value: selectedSubDistrict,
-                    items: subDistricts,
-                    onChanged: (val) {
-                      setState(() {
-                        selectedSubDistrict = val;
-                      });
+                  child: TextFormField(
+                    controller: subdistrictCtrl,
+                    decoration: InputDecoration(
+                      labelText: "ตำบล *",
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "กรุณากรอกตำบล";
+                      }
+                      return null;
                     },
-                    onAddNew: (name) => addNewSubDistrict(name),
-                    customController: customSubDistrictController,
-                    enabled: selectedProvince != null && selectedDistrict != null,
                   ),
                 ),
                 Padding(
@@ -602,18 +480,19 @@ class _FarmerRegisterState extends State<FarmerRegister> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.green),
                           ),
                         )
                       : Text(
-                    'ลงทะเบียน',
-                    style: GoogleFonts.notoSansThai(
-                      textStyle: Theme.of(context).textTheme.displayLarge,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green[900],
-                    ),
-                  )),
+                          'ลงทะเบียน',
+                          style: GoogleFonts.notoSansThai(
+                            textStyle: Theme.of(context).textTheme.displayLarge,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green[900],
+                          ),
+                        )),
             ),
           ],
         ),
@@ -634,7 +513,7 @@ class _FarmerRegisterState extends State<FarmerRegister> {
 
     try {
       final url = Uri.parse("$apiEndpoint/farmer/register");
-      
+
       final response = await http.post(
         url,
         headers: {
@@ -643,12 +522,14 @@ class _FarmerRegisterState extends State<FarmerRegister> {
         body: jsonEncode({
           "farm_name": farmNameController.text.trim(),
           "phonenumber": phoneNumberController.text.trim(),
-          "farmer_email": emailController.text.trim().isEmpty ? null : emailController.text.trim(),
+          "farmer_email": emailController.text.trim().isEmpty
+              ? null
+              : emailController.text.trim(),
           "farm_password": passwordController.text.trim(),
           "farm_address": farmAddressController.text.trim(),
-          "province": selectedProvince,
-          "district": selectedDistrict,
-          "locality": selectedSubDistrict,
+          "province": provinceCtrl.text.trim(),
+          "district": districtCtrl.text.trim(),
+          "locality": subdistrictCtrl.text.trim(),
         }),
       );
 
@@ -674,47 +555,48 @@ class _FarmerRegisterState extends State<FarmerRegister> {
       _showErrorDialog('กรุณากรอกชื่อผู้ใช้');
       return false;
     }
-    
+
     if (phoneNumberController.text.trim().isEmpty) {
       _showErrorDialog('กรุณากรอกเบอร์โทรศัพท์');
       return false;
     }
-    
+
     if (passwordController.text.trim().isEmpty) {
       _showErrorDialog('กรุณากรอกรหัสผ่าน');
       return false;
     }
-    
+
     if (confirmPasswordController.text.trim().isEmpty) {
       _showErrorDialog('กรุณายืนยันรหัสผ่าน');
       return false;
     }
-    
-    if (passwordController.text.trim() != confirmPasswordController.text.trim()) {
+
+    if (passwordController.text.trim() !=
+        confirmPasswordController.text.trim()) {
       _showErrorDialog('รหัสผ่านไม่ตรงกัน');
       return false;
     }
-    
-    if (selectedProvince == null) {
-      _showErrorDialog('กรุณาเลือกจังหวัด');
-      return false;
-    }
-    
-    if (selectedDistrict == null) {
-      _showErrorDialog('กรุณาเลือกอำเภอ');
-      return false;
-    }
-    
-    if (selectedSubDistrict == null) {
-      _showErrorDialog('กรุณาเลือกตำบล');
-      return false;
-    }
-    
+
+    // if (selectedProvince == null) {
+    //   _showErrorDialog('กรุณาเลือกจังหวัด');
+    //   return false;
+    // }
+
+    // if (selectedDistrict == null) {
+    //   _showErrorDialog('กรุณาเลือกอำเภอ');
+    //   return false;
+    // }
+
+    // if (selectedSubDistrict == null) {
+    //   _showErrorDialog('กรุณาเลือกตำบล');
+    //   return false;
+    // }
+
     if (farmAddressController.text.trim().isEmpty) {
       _showErrorDialog('กรุณากรอกที่อยู่');
       return false;
     }
-    
+
     return true;
   }
 
@@ -785,9 +667,9 @@ class _FarmerRegisterState extends State<FarmerRegister> {
           value: value,
           items: [
             ...items.map((item) => DropdownMenuItem(
-              value: item,
-              child: Text(item),
-            )),
+                  value: item,
+                  child: Text(item),
+                )),
             const DropdownMenuItem(
               value: '__ADD_NEW__',
               child: Row(
@@ -799,13 +681,15 @@ class _FarmerRegisterState extends State<FarmerRegister> {
               ),
             ),
           ],
-          onChanged: enabled ? (val) {
-            if (val == '__ADD_NEW__') {
-              _showAddNewDialog(label, customController, onAddNew);
-            } else {
-              onChanged(val);
-            }
-          } : null,
+          onChanged: enabled
+              ? (val) {
+                  if (val == '__ADD_NEW__') {
+                    _showAddNewDialog(label, customController, onAddNew);
+                  } else {
+                    onChanged(val);
+                  }
+                }
+              : null,
         ),
         if (isLoadingLocations)
           const Padding(
@@ -827,7 +711,8 @@ class _FarmerRegisterState extends State<FarmerRegister> {
   }
 
   // ฟังก์ชันแสดง dialog สำหรับเพิ่มรายการใหม่
-  void _showAddNewDialog(String label, TextEditingController controller, Function(String) onAddNew) {
+  void _showAddNewDialog(String label, TextEditingController controller,
+      Function(String) onAddNew) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
