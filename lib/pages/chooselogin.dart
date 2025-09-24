@@ -15,7 +15,6 @@ import 'package:provider/provider.dart';
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/request/login_Request.dart';
 
-
 class ChooseLogin extends StatefulWidget {
   const ChooseLogin({super.key});
 
@@ -32,7 +31,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
   final myWidget = MyWidget();
   final handleError = HandleError();
 
-
   void initState() {
     super.initState();
     Configuration.getConfig().then(
@@ -47,7 +45,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
   @override
   Widget build(BuildContext context) {
-     final screenSize = MediaQuery.of(context).size;
+    final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
       appBar: AppBar(
@@ -229,8 +227,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
     );
   }
 
-  
-
   // void login() {
   //   Navigator.push(
   //       context,
@@ -247,64 +243,137 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
   //
 
-Future<void> loginUser() async {
-  final loginId = loginIdController.text.trim();
-  final password = passwordController.text.trim();
+  // Future<void> loginUser() async {
+  //   final loginId = loginIdController.text.trim();
+  //   final password = passwordController.text.trim();
 
-  if (loginId.isEmpty || password.isEmpty) {
-    myWidget.showCustomSnackbar('Message', 'กรุณากรอกข้อมูลให้ครบ');
-    return;
-  }
+  //   if (loginId.isEmpty || password.isEmpty) {
+  //     myWidget.showCustomSnackbar('Message', 'กรุณากรอกข้อมูลให้ครบ');
+  //     return;
+  //   }
 
-  final uri = Uri.parse('$apiEndpoint/together/login');
+  //   final uri = Uri.parse('$apiEndpoint/together/login');
 
-  try {
-    final res = await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json; charset=utf-8'},
-      body: jsonEncode({'loginId': loginId, 'password': password}),
-    );
-    debugPrint('Login URL: ' + uri.toString());
-    debugPrint('Status: ' + res.statusCode.toString());
-    debugPrint('Body: ' + res.body.toString());
+  //   try {
+  //     final res = await http.post(
+  //       uri,
+  //       headers: {'Content-Type': 'application/json; charset=utf-8'},
+  //       body: jsonEncode({'loginId': loginId, 'password': password}),
+  //     );
+  //     debugPrint('Login URL: ' + uri.toString());
+  //     debugPrint('Status: ' + res.statusCode.toString());
+  //     debugPrint('Body: ' + res.body.toString());
 
-    if (res.statusCode == 200 && res.body.isNotEmpty) {
-      final data = jsonDecode(res.body);
-      // คาดรูปแบบ { role: 'farmer'|'vet', message, user: {...} }
-      final role = data['role'] as String?;
-      final user = data['user'] as Map<String, dynamic>?;
+  //     if (res.statusCode == 200 && res.body.isNotEmpty) {
+  //       final data = jsonDecode(res.body);
+  //       // คาดรูปแบบ { role: 'farmer'|'vet', message, user: {...} }
+  //       final role = data['role'] as String?;
+  //       final user = data['user'] as Map<String, dynamic>?;
 
-      if (role == 'farmer' && user != null) {
-        // เก็บใน Provider เพื่อใช้ข้ามหน้า (ไม่จำเป็นต้องส่ง id)
-        final farmer = Farmers.fromJson(user);
-        context.read<DataFarmers>().setDataUser(farmer);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => Homepage()),
-        );
-        return;
-      }
+  //       if (role == 'farmer' && user != null) {
+  //         // เก็บใน Provider เพื่อใช้ข้ามหน้า (ไม่จำเป็นต้องส่ง id)
+  //         final farmer = Farmers.fromJson(user);
+  //         context.read<DataFarmers>().setDataUser(farmer);
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(builder: (_) => Homepage()),
+  //         );
+  //         return;
+  //       }
 
-      if (role == 'vet' && user != null) {
-        final vet = VetExpert.fromJson(user);
-        context.read<DataVetExpert>().setDataUser(vet);
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => Homepagedoc()),
-        );
-        return;
-      }
+  //       if (role == 'vet' && user != null) {
+  //         final vet = VetExpert.fromJson(user);
+  //         context.read<DataVetExpert>().setDataUser(vet);
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(builder: (_) => Homepagedoc()),
+  //         );
+  //         return;
+  //       }
 
-      myWidget.showCustomSnackbar('Message', 'รูปแบบข้อมูลไม่ตรงที่คาดไว้');
-    } else {
-      handleError.handleError(res);
+  //       myWidget.showCustomSnackbar('Message', 'รูปแบบข้อมูลไม่ตรงที่คาดไว้');
+  //     } else {
+  //       handleError.handleError(res);
+  //     }
+  //   } catch (e) {
+  //     debugPrint('Login error: ' + e.toString());
+  //     myWidget.showCustomSnackbar('Message', 'เกิดข้อผิดพลาดระหว่างล็อกอิน $e');
+  //   }
+  // }
+
+  Future<void> loginUser() async {
+    final loginId = loginIdController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (loginId.isEmpty || password.isEmpty) {
+      myWidget.showCustomSnackbar('Message', 'กรุณากรอกข้อมูลให้ครบ');
+      return;
     }
-  } catch (e) {
-    debugPrint('Login error: ' + e.toString());
-    myWidget.showCustomSnackbar('Message', 'เกิดข้อผิดพลาดระหว่างล็อกอิน $e');
+
+    final uri = Uri.parse('$apiEndpoint/together/login');
+
+    try {
+      final res = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+        body: jsonEncode({'loginId': loginId, 'password': password}),
+      );
+      debugPrint('Login URL: ' + uri.toString());
+      debugPrint('Status: ' + res.statusCode.toString());
+      debugPrint('Body: ' + res.body.toString());
+
+      if (res.statusCode == 200 && res.body.isNotEmpty) {
+        final data = jsonDecode(res.body);
+        final role = data['role'] as String?;
+        final user = data['user'] as Map<String, dynamic>?;
+
+        if (role == 'farmer' && user != null) {
+          final farmer = Farmers.fromJson(user);
+          context.read<DataFarmers>().setDataUser(farmer);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => Homepage()),
+          );
+          return;
+        }
+
+        if (role == 'vet' && user != null) {
+          final vet = VetExpert.fromJson(user);
+          context.read<DataVetExpert>().setDataUser(vet);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => Homepagedoc()),
+          );
+          return;
+        }
+
+        // กรณี role/user ไม่ตรงตามที่คาด
+        _showErrorDialog(context, "รูปแบบข้อมูลไม่ถูกต้อง");
+      } else if (res.statusCode == 401) {
+        // กรณี Username/Password ผิด
+        _showErrorDialog(context, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      } else {
+        handleError.handleError(res);
+      }
+    } catch (e) {
+      debugPrint('Login error: ' + e.toString());
+      myWidget.showCustomSnackbar('Message', 'เกิดข้อผิดพลาดระหว่างล็อกอิน $e');
+    }
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("เข้าสู่ระบบไม่สำเร็จ"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text("ตกลง"),
+          ),
+        ],
+      ),
+    );
   }
 }
-}
-  
-
-

@@ -80,6 +80,7 @@ flutter:
     - assets/images/master.jpg
     - assets/images/pin.jpg
     - assets/images/profile.jpg
+    - assets/images/map.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
