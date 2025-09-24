@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 
-class Homepagedoc extends StatefulWidget {
-  //const Homepagedoc({super.key});
-  // final String userId;
-  // const Homepagedoc ({super.key, required this.userId});
+class HompageAdmin extends StatefulWidget {
+  const HompageAdmin({super.key});
 
   @override
-  State<Homepagedoc> createState() => _HomepagedocState();
+  State<HompageAdmin> createState() => _HompageAdminState();
 }
 
-class _HomepagedocState extends State<Homepagedoc> {
+class _HompageAdminState extends State<HompageAdmin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,9 +22,6 @@ class _HomepagedocState extends State<Homepagedoc> {
         centerTitle: true,
         backgroundColor: Colors.lightGreen[700],
         iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: Center(
-        //child: Text("Welcome Vet, ID: $userId"),
       ),
     );
   }
