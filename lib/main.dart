@@ -1,10 +1,31 @@
 import 'package:cow_booking/pages/login.dart';
+import 'package:provider/provider.dart';
+import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 
-void main() {
-  runApp(const MyApp());
+// void main() {
+//   runApp(const MyApp());
+// }
+
+void main(List<String> arguments) async {
+ WidgetsFlutterBinding.ensureInitialized(); // async ก่อน runApp
+  // await fetchSomething();ม
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => DataFarmers()),
+        ChangeNotifierProvider(create: (_) => DataVetExpert()),
+      ],
+      child: const MyApp(),
+    ),
+  );
+}
+
+Future<void> testAsync() {
+  return Future.delayed(const Duration(seconds: 2), () => print("BBB"));
 }
 
 class MyApp extends StatelessWidget {

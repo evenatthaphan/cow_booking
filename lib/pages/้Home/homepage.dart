@@ -4,9 +4,13 @@ import 'package:cow_booking/pages/%E0%B9%89Home/seeall.dart';
 import 'package:cow_booking/pages/farmers/farmerprofile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+  //const Homepage({super.key});
+  // final String userId;
+  // const Homepage({super.key, required this.userId});
 
   @override
   State<Homepage> createState() => _HomepageState();
@@ -15,6 +19,8 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   final PageController _pageController = PageController(viewportFraction: 0.7);
   double _currentPage = 0.0;
+  Map<String, dynamic>? userData; // เก็บข้อมูล user
+  late Future<void> loadData;
 
   final List<String> imagePaths = [
     'assets/images/imagecow.jpg',
@@ -30,6 +36,7 @@ class _HomepageState extends State<Homepage> {
         _currentPage = _pageController.page!;
       });
     });
+    fetchUserData();
   }
 
   @override
@@ -411,6 +418,37 @@ class _HomepageState extends State<Homepage> {
       ),
     );
   }
+
+  Future<void> fetchUserData() async {
+    try {
+      final url = Uri.parse(
+        "https://cowbooking-api.onrender.com/farmer/getfarmer",
+      );
+
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          userData = data;
+        });
+      } else {
+        print("Failed to load user: ${response.body}");
+      }
+    } catch (e) {
+      print("Error fetching user: $e");
+    }
+  }
+
+  // Future<void> loadDataAsync() async {
+  //   var config = await Configuration.getConfig();
+  //   url = config['apiEndpoint'];
+
+  //   var res = await http.get(Uri.parse('$url/trips'));
+  //   log(res.body);
+  //   tripGetResponses = tripGetResponseFromJson(res.body);
+  //   log(tripGetResponses.length.toString());
+  // }
 
   void taptoseach() {
     Navigator.push(
