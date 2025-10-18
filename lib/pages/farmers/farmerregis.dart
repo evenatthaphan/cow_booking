@@ -27,11 +27,6 @@ class _FarmerRegisterState extends State<FarmerRegister> {
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
-  // // ตัวแปรเก็บค่า dropdown
-  // String? selectedProvince;
-  // String? selectedDistrict;
-  // String? selectedSubDistrict;
-
   // ตัวแปรสำหรับ loading state
   bool isLoading = false;
   bool isLoadingLocations = false;
