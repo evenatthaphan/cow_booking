@@ -1,5 +1,8 @@
 import 'package:cow_booking/pages/Animal_husbandry/detailQueue.dart';
+import 'package:cow_booking/pages/Animal_husbandry/docprofile.dart';
+import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Homepagedoc extends StatefulWidget {
   //const Homepagedoc({super.key});
@@ -12,26 +15,6 @@ class Homepagedoc extends StatefulWidget {
 
 class _HomepagedocState extends State<Homepagedoc> {
   @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     backgroundColor: const Color(0xFFF8F1E8),
-  //     appBar: AppBar(
-  //       title: const Text('หน้าหลัก',
-  //           style: TextStyle(
-  //             fontSize: 22,
-  //             color: Colors.white,
-  //             fontWeight: FontWeight.bold,
-  //           )),
-  //       centerTitle: true,
-  //       backgroundColor: Colors.lightGreen[700],
-  //       iconTheme: const IconThemeData(color: Colors.white),
-  //     ),
-  //     body: Center(
-  //       //child: Text("Welcome Vet, ID: $userId"),
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -55,9 +38,30 @@ class _HomepagedocState extends State<Homepagedoc> {
           ),
           //centerTitle: true,
           actions: [
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.account_circle, color: Colors.white),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const VetProfilePage()),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Consumer<DataVetExpert>(
+                  builder: (context, dataVet, _) {
+                    final imageUrl = dataVet.datauser.profileImage;
+                    return CircleAvatar(
+                      radius: 20,
+                      backgroundImage: (imageUrl.isNotEmpty)
+                          ? NetworkImage(imageUrl)
+                          : const NetworkImage(
+                              'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
+                            ),
+                    );
+                  },
+                ),
+              ),
             ),
           ],
         ),
@@ -119,8 +123,7 @@ class _HomepagedocState extends State<Homepagedoc> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("ชื่อ : นายสิริ พรศรี",
-                    style: TextStyle(fontSize: 16)),
+                Text("ชื่อ : นายสิริ พรศรี", style: TextStyle(fontSize: 16)),
                 Text("วันที่ : 12 กันยายน 2025   เวลา : 10.30",
                     style: TextStyle(fontSize: 16)),
                 Text("เพิ่มเติม : แม้วัวอายุ 5 ปี",

@@ -47,6 +47,8 @@ dependencies:
   provider: ^6.1.2
   get: ^4.6.6
   dropdown_textfield: ^1.2.0
+  recaptcha_v3: ^0.2.0
+  
 
 dev_dependencies:
   flutter_test:

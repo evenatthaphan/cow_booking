@@ -12,7 +12,7 @@ import 'package:http/http.dart' as http;
 
 void main(List<String> arguments) async {
  WidgetsFlutterBinding.ensureInitialized(); // async ก่อน runApp
-  // await fetchSomething();ม
+  // await fetchSomething();
   runApp(
     MultiProvider(
       providers: [

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cow_booking/pages/%E0%B9%89Home/seach.dart';
+import 'package:cow_booking/pages/Home/seach.dart';
 
 class Allmramanpage extends StatefulWidget {
   const Allmramanpage({super.key});

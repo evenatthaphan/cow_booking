@@ -1,11 +1,14 @@
-import 'package:cow_booking/pages/%E0%B9%89Home/cowdetail.dart';
-import 'package:cow_booking/pages/%E0%B9%89Home/seach.dart';
-import 'package:cow_booking/pages/%E0%B9%89Home/seeall.dart';
+import 'package:cow_booking/pages/Home/cowdetail.dart';
+import 'package:cow_booking/pages/Home/seach.dart';
+import 'package:cow_booking/pages/Home/seeall.dart';
 import 'package:cow_booking/pages/farmers/farmerprofile.dart';
+import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:provider/provider.dart';
 
 class Homepage extends StatefulWidget {
   //const Homepage({super.key});
@@ -72,31 +75,38 @@ class _HomepageState extends State<Homepage> {
           GestureDetector(
             onTap: () {
               Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const Farmerprofilepage(),
-                  ));
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const Farmerprofilepage()),
+              );
             },
-            child: const Padding(
-              padding: EdgeInsets.only(right: 10),
-              child: CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(
-                  'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
-                ),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: Consumer<DataFarmers>(
+                builder: (context, dataVet, _) {
+                  final imageUrl = dataVet.datauser.profileImage;
+                  return CircleAvatar(
+                    radius: 20,
+                    backgroundImage: (imageUrl.isNotEmpty)
+                        ? NetworkImage(imageUrl)
+                        : const NetworkImage(
+                            'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
+                          ),
+                  );
+                },
               ),
             ),
           ),
-
-          // const Padding(
-          //   padding: EdgeInsets.only(right: 10),
-          //   child: CircleAvatar(
-          //     radius: 20,
-          //     backgroundImage: NetworkImage(
-          //         'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png'),
-          //   ),
-          // ),
         ],
+
+        // const Padding(
+        //   padding: EdgeInsets.only(right: 10),
+        //   child: CircleAvatar(
+        //     radius: 20,
+        //     backgroundImage: NetworkImage(
+        //         'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png'),
+        //   ),
+        // ),
       ),
       body: SingleChildScrollView(
         child: Column(

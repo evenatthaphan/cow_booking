@@ -1,22 +1,23 @@
-import 'package:cow_booking/pages/farmers/viewprofile.dart';
+import 'package:cow_booking/pages/Animal_husbandry/manageSchedule.dart';
+import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
-class Farmerprofilepage extends StatefulWidget {
-  const Farmerprofilepage({super.key});
+class VetProfilePage extends StatefulWidget {
+  const VetProfilePage({super.key});
 
   @override
-  State<Farmerprofilepage> createState() => _FarmerprofilepageState();
+  State<VetProfilePage> createState() => _VetProfilePageState();
 }
 
-class _FarmerprofilepageState extends State<Farmerprofilepage> {
+class _VetProfilePageState extends State<VetProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F1E8),
       appBar: AppBar(
-        title: Text('โปรไฟล์',
-            style: GoogleFonts.notoSansThai(
+        title: const Text('โปรไฟล์',
+            style: TextStyle(
               fontSize: 22,
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -36,34 +37,52 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
             ),
             child: Row(
               children: [
-                const CircleAvatar(
-                  radius: 32,
-                  backgroundImage: AssetImage('assets/images/profile.jpg'),
+                Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Consumer<DataVetExpert>(
+                  builder: (context, dataVet, _) {
+                    final imageUrl = dataVet.datauser.profileImage;
+                    return CircleAvatar(
+                      radius: 20,
+                      backgroundImage: (imageUrl.isNotEmpty)
+                          ? NetworkImage(imageUrl)
+                          : const NetworkImage(
+                              'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
+                            ),
+                    );
+                  },
+                ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('kunnoomnimm',
-                          style: GoogleFonts.notoSansThai(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text('0611254785',
-                          style: GoogleFonts.notoSansThai(
-                              fontSize: 14, color: Colors.grey[600])),
+                      Consumer<DataVetExpert>(
+                  builder: (context, dataVet, _) {
+                    final Vetname = dataVet.datauser.vetExpertName;
+                    return Text(Vetname, style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.bold),);
+                  },
+                ),
+                     Consumer<DataVetExpert>(
+                  builder: (context, dataVet, _) {
+                    final Vetphone = dataVet.datauser.phonenumber;
+                    return Text(Vetphone, style: TextStyle(fontSize: 14, color: Colors.grey[600]),);
+                  },
+                ),
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_forward_ios, size: 16),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const Viewprofile()),
-                    );
-                  },
-                ),
+                // IconButton(
+                //   icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                //   onPressed: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //           builder: (context) => const Viewprofile()),
+                //     );
+                //   },
+                // ),
               ],
             ),
           ),
@@ -77,15 +96,24 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
             ),
             child: Row(
               children: [
-                Icon(Icons.favorite),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Text("ที่ถูกใจ",
-                      style: GoogleFonts.notoSansThai(
+                const Icon(Icons.edit_calendar_outlined),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: const Text("จัดการตารางงาน",
+                      style: TextStyle(
                         fontSize: 16,
                       )),
                 ),
-                Icon(Icons.arrow_forward_ios, size: 16),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward_ios, size: 14),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const ManageschedulePage()),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -99,18 +127,18 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                Icon(Icons.library_books_sharp),
+                Icon(Icons.edit_document),
                 SizedBox(width: 16),
                 Expanded(
-                  child: Text("ประวัติการผสม",
-                      style: GoogleFonts.notoSansThai(
+                  child: Text("จัดการข้อมูลพ่อพันธ์ุ",
+                      style: TextStyle(
                         fontSize: 16,
                       )),
                 ),
                 Text("5"),
-                Icon(Icons.arrow_forward_ios, size: 16),
+                Icon(Icons.arrow_forward_ios, size: 16,),
               ],
             ),
           ),
@@ -126,8 +154,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
             ),
             child: Row(
               children: [
-                Text("สถิติทั้งหมด",
-                    style: GoogleFonts.notoSansThai(
+                const Text("สถิติทั้งหมด",
+                    style: TextStyle(
                       fontSize: 18,
                     )),
                 const Spacer(),
@@ -141,7 +169,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
-                  child: Text("ดู", style: GoogleFonts.notoSansThai(
+                  child: const Text("ดู", style: TextStyle(
                           fontSize: 16, color: Colors.white),),
                 )
               ],
@@ -151,9 +179,9 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
           const SizedBox(height: 10),
 
           // รายการเมนู
-          _buildMenuItem("ผสมสำเร็จแล้วแล้ว"),
-          _buildMenuItem("อยู่ในการรอผล"),
-          _buildMenuItem("ผสมไม่สำเร็จ"),
+          // _buildMenuItem("ผสมสำเร็จแล้วแล้ว"),
+          // _buildMenuItem("อยู่ในการรอผล"),
+          // _buildMenuItem("ผสมไม่สำเร็จ"),
           const SizedBox(height: 10),
           // _buildMenuItem("ตั้งค่าการแสดงผล"),
           // _buildMenuItem("ตั้งค่าประสิทธิภาพ"),
@@ -170,35 +198,21 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Row(
+            child: const Row(
               children: [
-                const Spacer(),
+                Spacer(),
                 Expanded(
                     child: Text("ออกจากระบบ",
-                        style: GoogleFonts.notoSansThai(
+                        style: TextStyle(
                           fontSize: 18,
                           color: Colors.red,
                         ))),
-                const Spacer(),
+                Spacer(),
               ],
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildMenuItem(String title) {
-    return Column(
-      children: [
-        ListTile(
-          tileColor: Colors.white,
-          title: Text(title, style: GoogleFonts.notoSansThai(fontSize: 16)),
-          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-          onTap: () {},
-        ),
-        const Divider(height: 1),
-      ],
     );
   }
 }
