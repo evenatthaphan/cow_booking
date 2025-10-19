@@ -18,6 +18,7 @@ void main(List<String> arguments) async {
       providers: [
         ChangeNotifierProvider(create: (_) => DataFarmers()),
         ChangeNotifierProvider(create: (_) => DataVetExpert()),
+        ChangeNotifierProvider(create: (_) => DataBull()),
       ],
       child: const MyApp(),
     ),

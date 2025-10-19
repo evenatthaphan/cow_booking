@@ -1,15 +1,25 @@
+import 'package:cow_booking/pages/farmers/farmerprofile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cow_booking/pages/Home/seach.dart';
+import 'package:provider/provider.dart';
+import 'package:cow_booking/share/ShareData.dart';
 
-class Allmramanpage extends StatefulWidget {
-  const Allmramanpage({super.key});
+class SeeallPage extends StatefulWidget {
+  final String breed;
+  final List<dynamic> bulls;
+
+  const SeeallPage({
+    super.key,
+    required this.breed,
+    required this.bulls,
+  });
 
   @override
-  State<Allmramanpage> createState() => _AllmramanpageState();
+  State<SeeallPage> createState() => _SeeallPageState();
 }
 
-class _AllmramanpageState extends State<Allmramanpage> {
+class _SeeallPageState extends State<SeeallPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,145 +44,128 @@ class _AllmramanpageState extends State<Allmramanpage> {
             onPressed: seach,
           ),
           // รูปโปรไฟล์
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(right: 10),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundImage: NetworkImage(
-                  'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png'),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const Farmerprofilepage()),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Consumer<DataFarmers>(
+                  builder: (context, dataVet, _) {
+                    final imageUrl = dataVet.datauser.profileImage;
+                    return CircleAvatar(
+                      radius: 20,
+                      backgroundImage: (imageUrl.isNotEmpty)
+                          ? NetworkImage(imageUrl)
+                          : const NetworkImage(
+                              'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
+                            ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-            width: 400,
-            height: 130,
-            child: Card.outlined(
+      body: ListView.builder(
+        itemCount: widget.bulls.length,
+        itemBuilder: (context, index) {
+          final bull = widget.bulls[index];
+          final bullImages = bull['images'] as List<dynamic>? ?? [];
+          final firstImage = bullImages.isNotEmpty ? bullImages[0] : '';
+
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Card(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10), // ขอบโค้งของ Card
-                side: const BorderSide(
-                  color: Colors.black, // สีขอบ
-                  width: 1, // ความหนาของขอบ
-                ),
+                borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(color: Colors.black, width: 1),
               ),
               color: Colors.white,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start, // ให้สูงตามเนื้อหา
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 5, right: 5),
+                    padding: const EdgeInsets.all(5.0),
                     child: SizedBox(
-                      width: 130,
+                          width: 130,
+                          height: 120,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: Image.asset(
-                          'assets/images/supperman.jpg',
-                          fit: BoxFit.cover,
-                        ),
+                        child: firstImage.isNotEmpty
+                            ? Image.network(firstImage, fit: BoxFit.cover)
+                            : Image.asset('assets/images/supperman.jpg',
+                                fit: BoxFit.cover),
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('ซุปเปอร์แมน',
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            bull['Bullname'] ?? '',
                             style: GoogleFonts.notoSansThai(
-                                textStyle:
-                                    Theme.of(context).textTheme.displayLarge,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold)),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text('บุญน้อมฟาร์ม',
-                            style: GoogleFonts.notoSansThai(
-                              textStyle:
-                                  Theme.of(context).textTheme.displayLarge,
-                              fontSize: 14,
-                              color: Colors.black,
-                            )),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        Text('Resrve calf champion red bull',
-                            style: GoogleFonts.notoSansThai(
-                              textStyle:
-                                  Theme.of(context).textTheme.displayLarge,
-                              fontSize: 12,
-                              color: Colors.black,
-                            )),
-                        const SizedBox(
-                          height: 5,
-                        ),
-                        SizedBox(
-                          height: 40,
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                    height: 30,
-                                    child: OutlinedButton(
-                                      onPressed: () {},
-                                      child: Text('โหนกใหญ่',
-                                          style: GoogleFonts.notoSansThai(
-                                              textStyle: Theme.of(context)
-                                                  .textTheme
-                                                  .displayLarge,
-                                              fontSize: 10,
-                                              color: Colors.black)),
-                                    )),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                SizedBox(
-                                    height: 30,
-                                    child: OutlinedButton(
-                                      onPressed: () {},
-                                      child: Text('ขนสั้น',
-                                          style: GoogleFonts.notoSansThai(
-                                              textStyle: Theme.of(context)
-                                                  .textTheme
-                                                  .displayLarge,
-                                              fontSize: 10,
-                                              color: Colors.black)),
-                                    )),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                // SizedBox(
-                                //     height: 30,
-                                //     child: OutlinedButton(
-                                //       onPressed: () {},
-                                //       child: Text('สีแดง',
-                                //           style: GoogleFonts.notoSansThai(
-                                //               textStyle: Theme.of(context)
-                                //                   .textTheme
-                                //                   .displayLarge,
-                                //               fontSize: 10,
-                                //               color: Colors.black)),
-                                //     )),
-                              ],
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 5),
+                          Text(
+                            bull['farm_name'] ?? '',
+                            style: GoogleFonts.notoSansThai(
+                                fontSize: 14, color: Colors.black),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            bull['contest_records'] ?? '',
+                            style: GoogleFonts.notoSansThai(
+                                fontSize: 12, color: Colors.black),
+                          ),
+                          const SizedBox(height: 5),
+                          SizedBox(
+                            height: 40,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: (bull['characteristics'] as String)
+                                    .split(' ')
+                                    .map((c) => Padding(
+                                          padding:
+                                              const EdgeInsets.only(right: 5),
+                                          child: OutlinedButton(
+                                            onPressed: () {},
+                                            child: Text(
+                                              c,
+                                              style: GoogleFonts.notoSansThai(
+                                                  fontSize: 10,
+                                                  color: Colors.green[900]),
+                                            ),
+                                          ),
+                                        ))
+                                    .toList(),
+                              ),
+                            ),
+                          )
+                        ],
+                      ),
                     ),
                   )
                 ],
               ),
             ),
-          ),
-            )
-          ],
-        ),
+          );
+        },
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:cow_booking/model/response/Farms_response.dart';
 import 'package:flutter/material.dart';
 import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
@@ -84,6 +85,45 @@ class DataVetExpert with ChangeNotifier {
 
   void updateProfileImage(String newProfileImage) {
     _datauser.profileImage = newProfileImage;
+    notifyListeners();
+  }
+}
+
+
+class DataBull with ChangeNotifier {
+  FarmbullRequestResponse _selectedBull = FarmbullRequestResponse(
+    id: 0,
+    bullname: '',
+    bullbreed: '',
+    bullage: 0,
+    characteristics: '',
+    farmId: 0,
+    pricePerDose: 0,
+    semenStock: 0,
+    contestRecords: '',
+    addedBy: 0,
+    farmName: '',
+    province: '',
+    district: '',
+    locality: '',
+    address: '',
+    image1: '',
+    image2: '',
+    image3: '',
+    image4: '',
+    image5: '',
+    images: [],
+  );
+
+  FarmbullRequestResponse get selectedBull => _selectedBull;
+
+  void setSelectedBull(FarmbullRequestResponse bull) {
+    _selectedBull = bull;
+    notifyListeners();
+  }
+
+  void updateSemenStock(int newStock) {
+    _selectedBull.semenStock = newStock;
     notifyListeners();
   }
 }

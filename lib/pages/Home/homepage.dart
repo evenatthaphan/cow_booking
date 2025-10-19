@@ -1,3 +1,5 @@
+import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/model/response/Farms_response.dart';
 import 'package:cow_booking/pages/Home/cowdetail.dart';
 import 'package:cow_booking/pages/Home/seach.dart';
 import 'package:cow_booking/pages/Home/seeall.dart';
@@ -31,6 +33,26 @@ class _HomepageState extends State<Homepage> {
     'assets/images/imagecow.jpg',
   ];
 
+  Map<String, List<dynamic>> bullGroups = {}; // เก็บข้อมูลแยกตามพันธุ์
+
+  Future<void> fetchBulls() async {
+    try {
+      final url = Uri.parse("$apiEndpoint/bull/getbull");
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          bullGroups = Map<String, List<dynamic>>.from(data);
+        });
+      } else {
+        print("Failed to load bulls: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching bulls: $e");
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -40,12 +62,123 @@ class _HomepageState extends State<Homepage> {
       });
     });
     fetchUserData();
+    fetchBulls();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Widget buildBullSection(String breed, List<dynamic> bulls) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // หัวข้อพันธุ์ + ปุ่มดูทั้งหมด
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "พ่อพันธุ์${breed}",
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  //
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          SeeallPage(breed: breed, bulls: bulls),
+                    ),
+                  );
+                },
+                child: Text(
+                  'ดูทั้งหมด',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green[900],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // รายการพ่อพันธุ์แนวนอน
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: bulls.map((bull) {
+                final bullImages = bull['images'] as List<dynamic>? ?? [];
+                final firstImage = bullImages.isNotEmpty ? bullImages[0] : '';
+                return Container(
+                  width: 150,
+                  margin: const EdgeInsets.only(right: 10),
+                  child: Card.outlined(
+                    child: Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                            topRight: Radius.circular(12),
+                          ),
+                          child: InkWell(
+                            onTap: () {
+                              final dataBull =
+                                  Provider.of<DataBull>(context, listen: false);
+                              dataBull.setSelectedBull(
+                                  FarmbullRequestResponse.fromJson(bull));
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const Cowdetailpage(),
+                                ),
+                              );
+                            },
+                            child: firstImage.isNotEmpty
+                                ? Image.network(firstImage, fit: BoxFit.cover)
+                                : Image.asset('assets/images/supperman.jpg',
+                                    fit: BoxFit.cover),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(6.0),
+                          child: Column(
+                            children: [
+                              Text(
+                                bull["Bullname"] ?? "",
+                                style: GoogleFonts.notoSansThai(fontSize: 16),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                bull["farm_name"] ?? "",
+                                style: GoogleFonts.notoSansThai(
+                                  fontSize: 14,
+                                  color: const Color.fromARGB(255, 52, 122, 55),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -117,13 +250,9 @@ class _HomepageState extends State<Homepage> {
               children: [
                 Text('สุดยอดพ่อพันธุ์   ',
                     style: GoogleFonts.notoSansThai(
-                        textStyle: Theme.of(context).textTheme.displayLarge,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black)),
+                        fontSize: 20, fontWeight: FontWeight.bold)),
                 Text('ยอดนิยม',
                     style: GoogleFonts.notoSansThai(
-                        textStyle: Theme.of(context).textTheme.displayLarge,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.green[900])),
@@ -139,7 +268,6 @@ class _HomepageState extends State<Homepage> {
                   final scale = (_currentPage - index).abs() < 1
                       ? 1 - (_currentPage - index).abs() * 0.3
                       : 0.7;
-
                   return TweenAnimationBuilder(
                     duration: const Duration(milliseconds: 350),
                     tween: Tween<double>(begin: scale, end: scale),
@@ -165,264 +293,19 @@ class _HomepageState extends State<Homepage> {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5, bottom: 5),
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(30, 5, 30, 10),
-                height: 2.0,
-                color: const Color.fromARGB(255, 35, 121, 41),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5, left: 25, right: 25),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("พ่อพันธุ์บราห์มัน",
-                      style: GoogleFonts.notoSansThai(
-                          textStyle: Theme.of(context).textTheme.displayLarge,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black)),
-                  TextButton(
-                      onPressed: seeabramanll,
-                      child: Text('ดูทั้งหมด',
-                          style: GoogleFonts.notoSansThai(
-                              textStyle:
-                                  Theme.of(context).textTheme.displayLarge,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[900]))),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5, left: 25),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 150,
-                      child: Card.outlined(
-                        child: Column(
-                          children: [
-                            // ClipRRect(
-                            //   borderRadius: const BorderRadius.only(
-                            //     topLeft: Radius.circular(12),
-                            //     topRight: Radius.circular(12),
-                            //   ),
-                            //   child: Image.asset(
-                            //     'assets/images/supperman.jpg',
-                            //     fit: BoxFit.cover,
-                            //     height: 120,
-                            //     width: double.infinity,
-                            //   ),
-                            // ),
-                            ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              ),
-                              child: InkWell(
-                                onTap: detailpage,
-                                child: Image.asset(
-                                  'assets/images/supperman.jpg',
-                                  fit: BoxFit.cover,
-                                  height: 120,
-                                  width: double.infinity,
-                                ),
-                              ),
-                            ),
-
-                            Text('ซุปเปอร์แมน',
-                                style: GoogleFonts.notoSansThai(fontSize: 16)),
-                            Text('บุญน้อมฟาร์ม',
-                                style: GoogleFonts.notoSansThai(
-                                    fontSize: 14,
-                                    color:
-                                        const Color.fromARGB(255, 52, 122, 55)))
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: Card.outlined(
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              ),
-                              child: Image.asset(
-                                'assets/images/supperman.jpg',
-                                fit: BoxFit.cover,
-                                height: 120,
-                                width: double.infinity,
-                              ),
-                            ),
-                            Text('ซุปเปอร์แมน',
-                                style: GoogleFonts.notoSansThai(fontSize: 16)),
-                            Text('บุญน้อมฟาร์ม',
-                                style: GoogleFonts.notoSansThai(
-                                    fontSize: 14,
-                                    color:
-                                        const Color.fromARGB(255, 52, 122, 55)))
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: Card.outlined(
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              ),
-                              child: Image.asset(
-                                'assets/images/supperman.jpg',
-                                fit: BoxFit.cover,
-                                height: 120,
-                                width: double.infinity,
-                              ),
-                            ),
-                            Text('ซุปเปอร์แมน',
-                                style: GoogleFonts.notoSansThai(fontSize: 16)),
-                            Text('บุญน้อมฟาร์ม',
-                                style: GoogleFonts.notoSansThai(
-                                    fontSize: 14,
-                                    color:
-                                        const Color.fromARGB(255, 52, 122, 55)))
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 10, left: 25, right: 25),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("พ่อพันธุ์บีฟมาสเตอร์",
-                      style: GoogleFonts.notoSansThai(
-                          textStyle: Theme.of(context).textTheme.displayLarge,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black)),
-                  TextButton(
-                      onPressed: seemasterall,
-                      child: Text('ดูทั้งหมด',
-                          style: GoogleFonts.notoSansThai(
-                              textStyle:
-                                  Theme.of(context).textTheme.displayLarge,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[900]))),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 5, left: 25),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 150,
-                      child: Card.outlined(
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              ),
-                              child: Image.asset(
-                                'assets/images/master.jpg',
-                                fit: BoxFit.cover,
-                                height: 120,
-                                width: double.infinity,
-                              ),
-                            ),
-                            Text('ซุปเปอร์แมน',
-                                style: GoogleFonts.notoSansThai(fontSize: 16)),
-                            Text('บุญน้อมฟาร์ม',
-                                style: GoogleFonts.notoSansThai(
-                                    fontSize: 14,
-                                    color:
-                                        const Color.fromARGB(255, 52, 122, 55)))
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: Card.outlined(
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              ),
-                              child: Image.asset(
-                                'assets/images/master.jpg',
-                                fit: BoxFit.cover,
-                                height: 120,
-                                width: double.infinity,
-                              ),
-                            ),
-                            Text('ซุปเปอร์แมน',
-                                style: GoogleFonts.notoSansThai(fontSize: 16)),
-                            Text('บุญน้อมฟาร์ม',
-                                style: GoogleFonts.notoSansThai(
-                                    fontSize: 14,
-                                    color:
-                                        const Color.fromARGB(255, 52, 122, 55)))
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: Card.outlined(
-                        child: Column(
-                          children: [
-                            ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
-                                topRight: Radius.circular(12),
-                              ),
-                              child: Image.asset(
-                                'assets/images/master.jpg',
-                                fit: BoxFit.cover,
-                                height: 120,
-                                width: double.infinity,
-                              ),
-                            ),
-                            Text('ซุปเปอร์แมน',
-                                style: GoogleFonts.notoSansThai(fontSize: 16)),
-                            Text('บุญน้อมฟาร์ม',
-                                style: GoogleFonts.notoSansThai(
-                                    fontSize: 14,
-                                    color:
-                                        const Color.fromARGB(255, 52, 122, 55)))
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            )
+            const SizedBox(height: 10),
+            if (bullGroups.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(20),
+                child: CircularProgressIndicator(),
+              )
+            else
+              //  Section
+              ...bullGroups.entries.map((entry) {
+                final breed = entry.key;
+                final bulls = entry.value;
+                return buildBullSection(breed, bulls);
+              }).toList(),
           ],
         ),
       ),
@@ -465,22 +348,6 @@ class _HomepageState extends State<Homepage> {
         context,
         MaterialPageRoute(
           builder: (context) => const Seachpage(),
-        ));
-  }
-
-  void seeabramanll() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const Allmramanpage(),
-        ));
-  }
-
-  void seemasterall() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const Allmramanpage(),
         ));
   }
 

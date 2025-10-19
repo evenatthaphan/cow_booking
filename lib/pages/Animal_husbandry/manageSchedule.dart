@@ -148,7 +148,7 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
     final vet = context.read<DataVetExpert>().datauser;
     if (vet == null) return;
 
-    final uri = Uri.parse('$apiEndpoint/schedules');
+    final uri = Uri.parse('$apiEndpoint/vet/vet/schedule');
     final body = {
       "vet_expert_id": vet.id,
       "available_date": day.toIso8601String().split("T")[0],
