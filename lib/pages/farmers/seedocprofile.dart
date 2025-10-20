@@ -309,9 +309,8 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     return _isLoading
         ? const Center(child: CircularProgressIndicator())
         : ListView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(12),
             children: [
-              const SizedBox(height: 12),
               TableCalendar(
                 locale: 'th_TH',
                 focusedDay: _focusedDay,
@@ -349,11 +348,9 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                     return Container(
                       decoration: BoxDecoration(
                         color: bgColor,
-                        // shape: BoxShape.circle,
-                        borderRadius: BorderRadius.circular(8.0),
+                        borderRadius: BorderRadius.circular(8),
                       ),
-                      width: 35,
-                      height: 35,
+                      margin: const EdgeInsets.all(6.0),
                       alignment: Alignment.center,
                       child: Text(
                         '${day.day}',
@@ -364,6 +361,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                   },
                 ),
               ),
+              const SizedBox(height: 12),
               const SizedBox(height: 12),
               if (_selectedDay != null)
                 ..._getEventsForDay(_selectedDay!).map((event) {
