@@ -1,6 +1,12 @@
-import 'package:cow_booking/pages/farmers/seedocprofile.dart';
+import 'dart:convert';
+
+import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'package:cow_booking/pages/farmers/seedocprofile.dart';
+import 'package:http/http.dart' as http;
 
 class Cowdetailpage extends StatefulWidget {
   const Cowdetailpage({super.key});
@@ -10,58 +16,114 @@ class Cowdetailpage extends StatefulWidget {
 }
 
 class _CowdetailpageState extends State<Cowdetailpage> {
+  List<dynamic> vets = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchVets(); //
+  }
+
+  Future<void> fetchVets() async {
+    final bull = Provider.of<DataBull>(context, listen: false).selectedBull;
+    final bullId = bull.id;
+
+    setState(() {
+      isLoading = true;
+      vets = [];
+    });
+
+    try {
+      final response = await http
+          .get(Uri.parse('$apiEndpoint/together/vet-by-bull/$bullId'));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data is List) {
+          setState(() {
+            vets = data;
+            isLoading = false;
+          });
+        } else {
+          print('Unexpected vets format');
+          setState(() => isLoading = false);
+        }
+      } else {
+        print('Error fetching vets: ${response.statusCode}');
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      print('Exception: $e');
+      setState(() => isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final bull = Provider.of<DataBull>(context).selectedBull;
+
     return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: Colors.transparent,
-      //   elevation: 0,
-      //   leading: IconButton(
-      //     icon: Icon(Icons.arrow_back, color: Colors.white),
-      //     onPressed: () {
-      //       Navigator.pop(context);
-      //     },
-      //   ),
-      // ),
       backgroundColor: Colors.lightGreen[700],
       body: SafeArea(
         child: Column(
           children: [
-            // ภาพบน
             Stack(
               children: [
-                Image.asset(
-                  'assets/images/imagecow.jpg',
-                  fit: BoxFit.cover,
+                SizedBox(
                   width: double.infinity,
                   height: 350,
+                  child: bull.images != null && bull.images!.isNotEmpty
+                      ? PageView.builder(
+                          itemCount: bull.images!.length,
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context, index) {
+                            return Image.network(
+                              bull.images![index],
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: 350,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset('assets/images/imagecow.jpg',
+                                      fit: BoxFit.cover),
+                            );
+                          },
+                        )
+                      : Image.asset(
+                          'assets/images/imagecow.jpg',
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: 350,
+                        ),
                 ),
+
+                // ปุ่มย้อนกลับ
                 Positioned(
                   top: 20,
                   left: 16,
-                  child: Positioned(
-                    top: 20,
-                    left: 16,
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context); // กลับไปหน้าก่อนหน้า
-                      },
-                      child: Icon(Icons.arrow_back, color: Colors.white),
-                    ),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(Icons.arrow_back, color: Colors.white),
                   ),
                 ),
-                const Positioned(
+
+                // ชื่อวัว
+                Positioned(
                   bottom: 10,
                   left: 14,
                   child: Text(
-                    'ซุปเปอร์แมน',
-                    style: TextStyle(
+                    bull.bullname.isNotEmpty ? bull.bullname : "ไม่ทราบชื่อ",
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
+
+                // แสดงสายพันธุ์
                 Positioned(
                   bottom: 16,
                   right: 16,
@@ -72,12 +134,15 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                       color: const Color.fromARGB(142, 238, 229, 229),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Text(
-                      'บราห์มัน',
-                      style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold),
+                    child: Text(
+                      bull.bullbreed.isNotEmpty
+                          ? bull.bullbreed
+                          : "ไม่ระบุสายพันธุ์",
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -95,9 +160,9 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'บุญน้อมฟาร์ม',
-                            style: TextStyle(
+                          Text(
+                            bull.farmName ?? "ไม่ระบุฟาร์ม",
+                            style: const TextStyle(
                                 color: Colors.green,
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold),
@@ -117,72 +182,30 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                         ],
                       ),
                       const SizedBox(height: 5),
-                      const Text(
-                        'ชนะรางวัล Resrve calf champion red bull',
-                        style: TextStyle(color: Colors.black),
+                      Text(
+                        bull.contestRecords ?? "ไม่มีข้อมูลเพิ่มเติม",
+                        style: const TextStyle(color: Colors.black),
                       ),
-                      const Row(
-                        children: [
-                          Text(
-                            'เคยผสมมาแล้ว 20 ครั้ง',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Text(
-                            'ผสมสำเร็จ 18 ครั้ง',
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        ],
-                      ),
+
                       const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          SizedBox(
-                              height: 30,
-                              child: OutlinedButton(
-                                onPressed: () {},
-                                child: Text('โหนกใหญ่',
-                                    style: GoogleFonts.notoSansThai(
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .displayLarge,
-                                        fontSize: 14,
-                                        color: Colors.black)),
-                              )),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          SizedBox(
-                              height: 30,
-                              child: OutlinedButton(
-                                onPressed: () {},
-                                child: Text('ขนสั้น',
-                                    style: GoogleFonts.notoSansThai(
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .displayLarge,
-                                        fontSize: 14,
-                                        color: Colors.black)),
-                              )),
-                          const SizedBox(
-                            width: 10,
-                          ),
-                          SizedBox(
-                              height: 30,
-                              child: OutlinedButton(
-                                onPressed: () {},
-                                child: Text('สีแดง',
-                                    style: GoogleFonts.notoSansThai(
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .displayLarge,
-                                        fontSize: 14,
-                                        color: Colors.black)),
-                              )),
-                        ],
+                      //
+                      Wrap(
+                        spacing: 8,
+                        children: (bull.characteristics ?? ["ไม่มีข้อมูล"])
+                            .map((trait) {
+                          return OutlinedButton(
+                            onPressed: () {},
+                            child: Text(
+                              trait,
+                              style: GoogleFonts.notoSansThai(
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
+
                       Padding(
                         padding: const EdgeInsets.only(top: 5, bottom: 5),
                         child: Container(
@@ -191,6 +214,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                           color: const Color.fromARGB(255, 35, 121, 41),
                         ),
                       ),
+
                       Padding(
                         padding: const EdgeInsets.only(left: 5),
                         child: Row(
@@ -198,9 +222,6 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                           children: [
                             Text('สัตวบาลที่มีน้ำเชื้อ',
                                 style: GoogleFonts.notoSansThai(
-                                    textStyle: Theme.of(context)
-                                        .textTheme
-                                        .displayLarge,
                                     fontSize: 18,
                                     color: Colors.grey,
                                     fontWeight: FontWeight.bold)),
@@ -208,105 +229,61 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                                 onPressed: seedocall,
                                 child: Text('ดูทั้งหมด',
                                     style: GoogleFonts.notoSansThai(
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .displayLarge,
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.green[400]))),
                           ],
                         ),
                       ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      SizedBox(
-                        width: 400,
-                        child: Card.outlined(
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(10), // ขอบโค้งของ Card
-                            side: const BorderSide(
-                              color: Colors.black, // สีขอบ
-                              width: 1, // ความหนาของขอบ
-                            ),
-                          ),
-                          color: Colors.white,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              const Padding(
-                                padding: EdgeInsets.only(left: 16, right: 5),
-                                child: SizedBox(
-                                  child: CircleAvatar(
-                                    radius: 20,
-                                    backgroundImage:
-                                        AssetImage('assets/images/pin.jpg'),
-                                  ),
+
+                      isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : vets.isEmpty
+                              ? const Text('ไม่มีข้อมูลสัตวบาล')
+                              : Column(
+                                  children: vets.map((vet) {
+                                    return Card(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: ListTile(
+                                        leading: CircleAvatar(
+                                          backgroundImage: vet[
+                                                      'profile_image'] !=
+                                                  null
+                                              ? NetworkImage(
+                                                  vet['profile_image'])
+                                              : const AssetImage(
+                                                      'assets/images/pin.jpg')
+                                                  as ImageProvider,
+                                        ),
+                                        title: Text(
+                                          vet['VetExpert_name'],
+                                          style: TextStyle(
+                                              color: Colors.green[900],
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        subtitle: Text(
+                                          'จังหวัด:${vet['province'] ?? ''} อำเภอ:${vet['district'] ?? ''} ตำบล:${vet['locality'] ?? ''}',
+                                        ),
+                                        trailing: ElevatedButton(
+                                          onPressed: () => seedocprofile(vet['id']),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.green,
+                                            minimumSize: const Size(40, 40),
+                                            padding: EdgeInsets.zero,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                          child: const Icon(Icons.navigate_next,
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
                                 ),
-                              ),
-                              const SizedBox(
-                                width: 10,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text('หมอธนัท',
-                                        style: GoogleFonts.notoSansThai(
-                                            textStyle: Theme.of(context)
-                                                .textTheme
-                                                .displayLarge,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold)),
-                                    const SizedBox(
-                                      height: 5,
-                                    ),
-                                    Text('เคยผสมมาแล้ว 54 ครั้ง',
-                                        style: GoogleFonts.notoSansThai(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .displayLarge,
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                        )),
-                                    const SizedBox(
-                                      height: 5,
-                                    ),
-                                    Text('ต.แวง อ.สว่างแดนดิน จ.สกลนคร',
-                                        style: GoogleFonts.notoSansThai(
-                                          textStyle: Theme.of(context)
-                                              .textTheme
-                                              .displayLarge,
-                                          fontSize: 14,
-                                          color: Colors.black,
-                                        )),
-                                    const SizedBox(
-                                      height: 5,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ElevatedButton(
-                                onPressed: seedocprofile,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  minimumSize:
-                                      Size(40, 40), 
-                                  padding:
-                                      EdgeInsets.zero, 
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                ),
-                                child: const Icon(Icons.navigate_next,
-                                    color: Colors.white),
-                              )
-                            ],
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -320,11 +297,13 @@ class _CowdetailpageState extends State<Cowdetailpage> {
 
   void seedocall() {}
 
-  void seedocprofile() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const Seedocprofilepage(),
-        ));
-  }
+  void seedocprofile(int vetId) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => Seedocprofilepage(vetId: vetId),
+    ),
+  );
+}
+
 }

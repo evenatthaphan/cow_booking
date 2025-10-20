@@ -62,7 +62,8 @@ class DataVetExpert with ChangeNotifier {
       province: "",
       district: "",
       locality: "",
-      vetExpertPl: "");
+      vetExpertPl: "",
+      totalSemenStock: 0,);
 
   VetExpert get datauser => _datauser;  
   int get period => _period;
@@ -96,12 +97,11 @@ class DataBull with ChangeNotifier {
     bullname: '',
     bullbreed: '',
     bullage: 0,
-    characteristics: '',
+    characteristics: [],
     farmId: 0,
     pricePerDose: 0,
     semenStock: 0,
     contestRecords: '',
-    addedBy: 0,
     farmName: '',
     province: '',
     district: '',
@@ -127,3 +127,5 @@ class DataBull with ChangeNotifier {
     notifyListeners();
   }
 }
+
+

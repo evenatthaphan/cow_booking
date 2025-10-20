@@ -61,7 +61,6 @@ class _HomepageState extends State<Homepage> {
         _currentPage = _pageController.page!;
       });
     });
-    fetchUserData();
     fetchBulls();
   }
 
@@ -312,26 +311,7 @@ class _HomepageState extends State<Homepage> {
     );
   }
 
-  Future<void> fetchUserData() async {
-    try {
-      final url = Uri.parse(
-        "https://cowbooking-api.onrender.com/farmer/getfarmer",
-      );
-
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          userData = data;
-        });
-      } else {
-        print("Failed to load user: ${response.body}");
-      }
-    } catch (e) {
-      print("Error fetching user: $e");
-    }
-  }
+  
 
   // Future<void> loadDataAsync() async {
   //   var config = await Configuration.getConfig();

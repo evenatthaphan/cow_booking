@@ -18,12 +18,11 @@ class FarmbullRequestResponse {
   String bullname;
   String bullbreed;
   int bullage;
-  String characteristics;
+  List<String> characteristics;
   int farmId;
-  int pricePerDose;
+  double pricePerDose;
   int semenStock;
   String contestRecords;
-  int addedBy;
   String farmName;
   String province;
   String district;
@@ -46,7 +45,6 @@ class FarmbullRequestResponse {
     required this.pricePerDose,
     required this.semenStock,
     required this.contestRecords,
-    required this.addedBy,
     required this.farmName,
     required this.province,
     required this.district,
@@ -60,41 +58,74 @@ class FarmbullRequestResponse {
     required this.images,
   });
 
-  factory FarmbullRequestResponse.fromJson(Map<String, dynamic> json) =>
-      FarmbullRequestResponse(
-        id: json["id"],
-        bullname: json["Bullname"],
-        bullbreed: json["Bullbreed"],
-        bullage: json["Bullage"],
-        characteristics: json["characteristics"],
-        farmId: json["farm_id"],
-        pricePerDose: json["price_per_dose"],
-        semenStock: json["semen_stock"],
-        contestRecords: json["contest_records"],
-        addedBy: json["added_by"],
-        farmName: json["farm_name"],
-        province: json["province"],
-        district: json["district"],
-        locality: json["locality"],
-        address: json["address"],
-        image1: json["image1"] ?? "",
-        image2: json["image2"] ?? "",
-        image3: json["image3"] ?? "",
-        image4: json["image4"] ?? "",
-        image5: json["image5"] ?? "",
-        images: [
-          if (json["image1"] != null && json["image1"].toString().isNotEmpty)
-            json["image1"],
-          if (json["image2"] != null && json["image2"].toString().isNotEmpty)
-            json["image2"],
-          if (json["image3"] != null && json["image3"].toString().isNotEmpty)
-            json["image3"],
-          if (json["image4"] != null && json["image4"].toString().isNotEmpty)
-            json["image4"],
-          if (json["image5"] != null && json["image5"].toString().isNotEmpty)
-            json["image5"],
-        ],
-      );
+  // factory FarmbullRequestResponse.fromJson(Map<String, dynamic> json) =>
+  //     FarmbullRequestResponse(
+  //       id: json["id"],
+  //       bullname: json["Bullname"],
+  //       bullbreed: json["Bullbreed"],
+  //       bullage: json["Bullage"],
+  //       characteristics: json['characteristics'] is List
+  //           ? (json['characteristics'] as List<dynamic>)
+  //               .map((e) => e.toString())
+  //               .toList()
+  //           : (json['characteristics']?.toString().split(' ') ?? []),
+  //       farmId: json["farm_id"],
+  //       pricePerDose: json["price_per_dose"],
+  //       semenStock: json["semen_stock"],
+  //       contestRecords: json["contest_records"],
+  //       addedBy: json["added_by"],
+  //       farmName: json["farm_name"],
+  //       province: json["province"],
+  //       district: json["district"],
+  //       locality: json["locality"],
+  //       address: json["address"],
+  //       image1: json["image1"] ?? "",
+  //       image2: json["image2"] ?? "",
+  //       image3: json["image3"] ?? "",
+  //       image4: json["image4"] ?? "",
+  //       image5: json["image5"] ?? "",
+  //       images: [
+  //         if (json["image1"] != null && json["image1"].toString().isNotEmpty)
+  //           json["image1"],
+  //         if (json["image2"] != null && json["image2"].toString().isNotEmpty)
+  //           json["image2"],
+  //         if (json["image3"] != null && json["image3"].toString().isNotEmpty)
+  //           json["image3"],
+  //         if (json["image4"] != null && json["image4"].toString().isNotEmpty)
+  //           json["image4"],
+  //         if (json["image5"] != null && json["image5"].toString().isNotEmpty)
+  //           json["image5"],
+  //       ],
+  //     );
+
+  factory FarmbullRequestResponse.fromJson(Map<String, dynamic> json) {
+    return FarmbullRequestResponse(
+      id: (json['id'] ?? 0) as int,
+      bullname: json['Bullname'] ?? '',
+      bullbreed: json['Bullbreed'] ?? '',
+      bullage: ((json['Bullage'] ?? 0) as num).toInt(),
+      characteristics: json['characteristics'] is List
+          ? (json['characteristics'] as List).map((e) => e.toString()).toList()
+          : (json['characteristics']?.toString().split(RegExp(r'[, ]+')) ?? []),
+      farmId: ((json['farm_id'] ?? 0) as num).toInt(),
+      pricePerDose: ((json['price_per_dose'] ?? 0) as num).toDouble(),
+      semenStock: ((json['semen_stock'] ?? 0) as num).toInt(),
+      contestRecords: json['contest_records'] ?? '',
+      farmName: json['farm_name'] ?? '',
+      province: json['province'] ?? '',
+      district: json['district'] ?? '',
+      locality: json['locality'] ?? '',
+      address: json['address'] ?? '',
+      image1: json['image1'] ?? '',
+      image2: json['image2'] ?? '',
+      image3: json['image3'] ?? '',
+      image4: json['image4'] ?? '',
+      image5: json['image5'] ?? '',
+      images: (json['images'] is List)
+          ? (json['images'] as List).map((e) => e.toString()).toList()
+          : [],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "id": id,
@@ -106,7 +137,6 @@ class FarmbullRequestResponse {
         "price_per_dose": pricePerDose,
         "semen_stock": semenStock,
         "contest_records": contestRecords,
-        "added_by": addedBy,
         "farm_name": farmName,
         "province": province,
         "district": district,

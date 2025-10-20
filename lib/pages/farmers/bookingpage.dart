@@ -5,7 +5,15 @@ import 'package:provider/provider.dart';
 import 'package:cow_booking/share/ShareData.dart';
 
 class Bookingpage extends StatefulWidget {
-  const Bookingpage({super.key});
+  final String selectedTime;
+  final DateTime selectedDay;
+
+
+  const Bookingpage({
+    super.key,
+    required this.selectedTime,
+    required this.selectedDay,
+  });
 
   @override
   State<Bookingpage> createState() => _BookingpageState();

@@ -1,14 +1,10 @@
-// To parse this JSON data, do
-//
-//     final welcome = welcomeFromJson(jsonString);
-
 import 'dart:convert';
 
-VetExpert welcomeFromJson(String str) => VetExpert.fromJson(json.decode(str));
+GetVetExpert getVetExpertFromJson(String str) => GetVetExpert.fromJson(json.decode(str));
 
-String welcomeToJson(VetExpert data) => json.encode(data.toJson());
+String getVetExpertToJson(GetVetExpert data) => json.encode(data.toJson());
 
-class VetExpert {
+class GetVetExpert {
     int id;
     String vetExpertName;
     String vetExpertPassword;
@@ -22,7 +18,7 @@ class VetExpert {
     String vetExpertPl;
     int totalSemenStock;
 
-    VetExpert({
+    GetVetExpert({
         required this.id,
         required this.vetExpertName,
         required this.vetExpertPassword,
@@ -34,10 +30,10 @@ class VetExpert {
         required this.locality,
         required this.vetExpertAddress,
         required this.vetExpertPl,
-        this.totalSemenStock = 0,
+        required this.totalSemenStock,
     });
 
-    factory VetExpert.fromJson(Map<String, dynamic> json) => VetExpert(
+    factory GetVetExpert.fromJson(Map<String, dynamic> json) => GetVetExpert(
         id: json["id"],
         vetExpertName: json["VetExpert_name"],
         vetExpertPassword: json["VetExpert_password"],
@@ -49,6 +45,7 @@ class VetExpert {
         locality: json["locality"],
         vetExpertAddress: json["VetExpert_address"],
         vetExpertPl: json["VetExpert_PL"],
+        totalSemenStock: json["total_semen_stock"],
     );
 
     Map<String, dynamic> toJson() => {
@@ -63,5 +60,6 @@ class VetExpert {
         "locality": locality,
         "VetExpert_address": vetExpertAddress,
         "VetExpert_PL": vetExpertPl,
+        "total_semen_stock": totalSemenStock,
     };
 }

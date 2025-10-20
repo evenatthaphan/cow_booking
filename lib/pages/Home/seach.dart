@@ -1,8 +1,12 @@
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/model/response/Farms_response.dart';
+import 'package:cow_booking/pages/Home/cowdetail.dart';
+import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 class Seachpage extends StatefulWidget {
   const Seachpage({super.key});
@@ -129,6 +133,7 @@ class _SeachpageState extends State<Seachpage> {
               itemCount: _searchResults.length,
               itemBuilder: (context, index) {
                 final bull = _searchResults[index];
+                final image1 = bull['image1'] ?? '';
                 return Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -146,10 +151,24 @@ class _SeachpageState extends State<Seachpage> {
                           height: 120, // ให้รูปสูงประมาณนี้
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              bull['image1'] ??
-                                  'https://via.placeholder.com/130',
-                              fit: BoxFit.cover,
+                            child: InkWell(
+                              onTap: () {
+                                final dataBull = Provider.of<DataBull>(context,
+                                    listen: false);
+                                dataBull.setSelectedBull(
+                                    FarmbullRequestResponse.fromJson(bull));
+
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const Cowdetailpage(),
+                                  ),
+                                );
+                              },
+                              child: image1.isNotEmpty
+                                  ? Image.network(image1, fit: BoxFit.cover)
+                                  : Image.asset('assets/images/supperman.jpg',
+                                      fit: BoxFit.cover),
                             ),
                           ),
                         ),

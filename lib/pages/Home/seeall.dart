@@ -1,3 +1,5 @@
+import 'package:cow_booking/model/response/Farms_response.dart';
+import 'package:cow_booking/pages/Home/cowdetail.dart';
 import 'package:cow_booking/pages/farmers/farmerprofile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -100,10 +102,25 @@ class _SeeallPageState extends State<SeeallPage> {
                           height: 120,
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
-                        child: firstImage.isNotEmpty
-                            ? Image.network(firstImage, fit: BoxFit.cover)
-                            : Image.asset('assets/images/supperman.jpg',
-                                fit: BoxFit.cover),
+                        child: InkWell(
+                            onTap: () {
+                              final dataBull =
+                                  Provider.of<DataBull>(context, listen: false);
+                              dataBull.setSelectedBull(
+                                  FarmbullRequestResponse.fromJson(bull));
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const Cowdetailpage(),
+                                ),
+                              );
+                            },
+                            child: firstImage.isNotEmpty
+                                ? Image.network(firstImage, fit: BoxFit.cover)
+                                : Image.asset('assets/images/supperman.jpg',
+                                    fit: BoxFit.cover),
+                          ),
                       ),
                     ),
                   ),
