@@ -1,14 +1,15 @@
+import 'dart:convert';
+import 'package:intl/intl.dart';
+import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/model/response/booking_response.dart';
 import 'package:cow_booking/pages/Animal_husbandry/detailQueue.dart';
 import 'package:cow_booking/pages/Animal_husbandry/docprofile.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 class Homepagedoc extends StatefulWidget {
-  //const Homepagedoc({super.key});
-  // final String userId;
-  // const Homepagedoc ({super.key, required this.userId});
-
   @override
   State<Homepagedoc> createState() => _HomepagedocState();
 }
@@ -107,49 +108,90 @@ class _HomepagedocState extends State<Homepagedoc> {
     );
   }
 
+  Future<List<BookingResponse>> fetchPendingBookings(int vetId) async {
+    final response = await http.get(
+      Uri.parse('$apiEndpoint/queuebook/bookings/vet/$vetId'),
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      // กรองเฉพาะ status = 'pending'
+      final pendingBookings = data
+          .map((e) => BookingResponse.fromJson(e))
+          .where((b) => b.status == 'pending')
+          .toList();
+      return pendingBookings;
+    } else {
+      throw Exception('Failed to load bookings');
+    }
+  }
+
   Widget _buildBookingList() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(12),
-      itemCount: 2, // ตัวอย่าง 2 รายการ
-      itemBuilder: (context, index) {
-        return Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: const BorderSide(color: Colors.grey),
-          ),
-          margin: const EdgeInsets.only(bottom: 12),
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("ชื่อ : นายสิริ พรศรี", style: TextStyle(fontSize: 16)),
-                Text("วันที่ : 12 กันยายน 2025   เวลา : 10.30",
-                    style: TextStyle(fontSize: 16)),
-                Text("เพิ่มเติม : แม้วัวอายุ 5 ปี",
-                    style: TextStyle(fontSize: 16)),
-                Text("พ่อพันธุ์ : ซุปเปอร์แมน บราห์มัน   จำนวน : 1 โดส",
-                    style: TextStyle(fontSize: 16)),
-                const SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: ElevatedButton(
-                    onPressed: detailqueue,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 8),
+    final vetId =
+        Provider.of<DataVetExpert>(context, listen: false).datauser.id;
+
+    return FutureBuilder<List<BookingResponse>>(
+      future: fetchPendingBookings(vetId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('เกิดข้อผิดพลาด: ${snapshot.error}'));
+        }
+
+        final bookings = snapshot.data ?? [];
+        if (bookings.isEmpty) {
+          return const Center(child: Text('ยังไม่มีคำขอการจอง'));
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(12),
+          itemCount: bookings.length,
+          itemBuilder: (context, index) {
+            final booking = bookings[index];
+            return Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+                side: const BorderSide(color: Colors.grey),
+              ),
+              margin: const EdgeInsets.only(bottom: 12),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("ชื่อ : ${booking.farmerName}",
+                        style: TextStyle(fontSize: 16)),
+                    Text(
+                      "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
+                      style: TextStyle(fontSize: 16),
                     ),
-                    child: const Text("รายละเอียด",
-                        style: TextStyle(color: Colors.white)),
-                  ),
+                    Text("เพิ่มเติม : ${booking.detailBull}",
+                        style: TextStyle(fontSize: 16)),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ElevatedButton(
+                        onPressed: detailqueue,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 8),
+                        ),
+                        child: const Text("รายละเอียด",
+                            style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

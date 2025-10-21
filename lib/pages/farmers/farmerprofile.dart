@@ -1,6 +1,8 @@
 import 'package:cow_booking/pages/farmers/viewprofile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cow_booking/share/ShareData.dart';
+import 'package:provider/provider.dart';
 
 class Farmerprofilepage extends StatefulWidget {
   const Farmerprofilepage({super.key});
@@ -36,21 +38,37 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
             ),
             child: Row(
               children: [
-                const CircleAvatar(
-                  radius: 32,
-                  backgroundImage: AssetImage('assets/images/profile.jpg'),
+                Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Consumer<DataFarmers>(
+                  builder: (context, dataVet, _) {
+                    final imageUrl = dataVet.datauser.profileImage;
+                    return CircleAvatar(
+                      radius: 20,
+                      backgroundImage: (imageUrl.isNotEmpty)
+                          ? NetworkImage(imageUrl)
+                          : const NetworkImage(
+                              'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
+                            ),
+                    );
+                  },
+                ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('kunnoomnimm',
-                          style: GoogleFonts.notoSansThai(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text('0611254785',
-                          style: GoogleFonts.notoSansThai(
-                              fontSize: 14, color: Colors.grey[600])),
+                      Consumer<DataFarmers>(
+                  builder: (context, dataVet, _) {
+                    final Vetname = dataVet.datauser.farmName;
+                    return Text(Vetname, style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.bold),);
+                  },),
+                      Consumer<DataFarmers>(
+                  builder: (context, dataVet, _) {
+                    final Vetname = dataVet.datauser.phonenumber;
+                    return Text(Vetname, style: const TextStyle(fontSize: 14, color: Colors.grey),);
+                  },),
                     ],
                   ),
                 ),

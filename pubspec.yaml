@@ -48,6 +48,7 @@ dependencies:
   get: ^4.6.6
   dropdown_textfield: ^1.2.0
   recaptcha_v3: ^0.2.0
+  intl: ^0.18.1
   
 
 dev_dependencies:
