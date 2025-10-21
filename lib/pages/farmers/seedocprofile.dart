@@ -205,6 +205,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     }
   }
 
+
   Widget _stockTab() {
     return FutureBuilder<List<BullStock>>(
       future: fetchVetBulls(widget.vetId),
@@ -236,14 +237,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                       style: const TextStyle(
                           fontSize: 16, color: Color.fromARGB(255, 14, 88, 41)),
                     ),
-                    // onTap: () {
-                    //   Navigator.push(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //       builder: (context) => const Bookingpage(),
-                    //     ),
-                    //   );
-                    // },
                   );
                 },
               ),
@@ -380,8 +373,10 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => Bookingpage(
-                                    selectedTime: event["time"],
+                                    vetId: widget.vetId,
+                                    scheduleId: event["id"],
                                     selectedDay: _selectedDay!,
+                                    selectedTime: event["time"],
                                   ),
                                 ),
                               );
@@ -393,8 +388,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
             ],
           );
   }
-
-  
 
   Widget _mapAddress() {
     return const Center(child: Text('map'));

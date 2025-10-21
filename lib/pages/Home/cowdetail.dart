@@ -22,7 +22,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
   @override
   void initState() {
     super.initState();
-    fetchVets(); //
+    fetchVets(); // Reload Vetexpert
   }
 
   Future<void> fetchVets() async {
@@ -31,7 +31,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
 
     setState(() {
       isLoading = true;
-      vets = [];
+      vets = []; 
     });
 
     try {
@@ -188,7 +188,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                       ),
 
                       const SizedBox(height: 10),
-                      //
+                      // ลักษณะเด่น
                       Wrap(
                         spacing: 8,
                         children: (bull.characteristics ?? ["ไม่มีข้อมูล"])

@@ -1,18 +1,24 @@
+import 'dart:convert';
+import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/model/response/bullstocks_response.dart';
 import 'package:cow_booking/pages/farmers/acceptbooking.dart';
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_booking/share/ShareData.dart';
+import 'package:http/http.dart' as http;
 
 class Bookingpage extends StatefulWidget {
-  final String selectedTime;
-  final DateTime selectedDay;
-
+  final int vetId; // vet_expert_id
+  final int scheduleId; // schedule_id
+  final DateTime selectedDay; // วันที่เลือก
+  final String selectedTime; // เวลาที่เลือก
 
   const Bookingpage({
     super.key,
-    required this.selectedTime,
+    required this.vetId,
+    required this.scheduleId,
     required this.selectedDay,
+    required this.selectedTime,
   });
 
   @override
@@ -20,145 +26,253 @@ class Bookingpage extends StatefulWidget {
 }
 
 class _BookingpageState extends State<Bookingpage> {
+  String? vetName;
+  List<BullStock> bullList = [];
+  BullStock? selectedBull;
+  bool isLoading = true;
+
+  final TextEditingController _detailController = TextEditingController();
+  final TextEditingController _doseController = TextEditingController();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final dataVet = Provider.of<DataVetExpert>(context, listen: false);
+
+    if (dataVet.datauser.id == widget.vetId) {
+      vetName = dataVet.datauser.vetExpertName;
+    } else {
+      vetName = 'สัตวบาลหมายเลข ${widget.vetId}';
+    }
+
+    _loadVetBulls();
+  }
+
+  Future<void> _loadVetBulls() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$apiEndpoint/bull/getby_vetid/${widget.vetId}'),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        List<BullStock> bulls = [];
+
+        data.forEach((breed, bullList) {
+          for (var b in bullList) {
+            bulls.add(BullStock.fromJson(b));
+          }
+        });
+
+        setState(() {
+          bullList = bulls;
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+        print('Failed to fetch bulls: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching bulls: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _showConfirmDialog() async {
+    if (selectedBull == null || _doseController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("กรุณาเลือกวัวและระบุจำนวนโดส")),
+      );
+      return;
+    }
+
+    final dataFarmer = Provider.of<DataFarmers>(context, listen: false);
+    final int farmerId = dataFarmer.datauser.id ?? 0;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("ยืนยันการจอง"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("ชื่อผู้จอง: ${dataFarmer.datauser.farmName}"),
+            Text("ชื่อสัตวบาล: $vetName"),
+            Text(
+                "วันที่/เวลา: ${widget.selectedDay.toLocal().toString().split(' ')[0]} ${widget.selectedTime}"),
+            Text("ชื่อวัว: ${selectedBull!.bullname}"),
+            Text("พันธุ์วัว: ${selectedBull!.bullbreed}"),
+            Text("จำนวนโดส: ${_doseController.text}"),
+            if (_detailController.text.isNotEmpty)
+              Text("รายละเอียดแม่พันธุ์: ${_detailController.text}"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("ยกเลิก", style: TextStyle(color: Colors.red),),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[900]),
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("ยืนยัน", style: TextStyle(color: Colors.white),),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      _submitBooking(farmerId);
+    }
+  }
+
+  Future<void> _submitBooking(int farmerId) async {
+    final body = {
+      "farmer_id": farmerId,
+      "vet_expert_id": widget.vetId,
+      "bull_id": selectedBull!.vetBullId,
+      "dose": int.parse(_doseController.text),
+      "schedule_id": widget.scheduleId,
+      "detailBull": _detailController.text,
+    };
+
+    print("Booking payload: ${jsonEncode(body)}");
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiEndpoint/queuebook/queue/book'),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("จองคิวสำเร็จ")),
+        );
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const Acceptbookingpage(),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("เกิดข้อผิดพลาด: ${response.statusCode}")),
+        );
+      }
+    } catch (e) {
+      print("Booking error: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F1E8),
       appBar: AppBar(
-        title: const Text('จองคิว',
-            style: TextStyle(
-              fontSize: 22,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            )),
-        centerTitle: true,
+        title: const Text(
+          'จองคิวผสมเทียม',
+          style: TextStyle(
+            fontSize: 22,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: Colors.lightGreen[700],
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: SingleChildScrollView(
-          child: Padding(
-        padding: const EdgeInsets.only(top: 20),
-        child: Column(
-          children: [
-            Text(
-              'เลือกวันจองคิว',
-              style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.green[900],
-                  fontWeight: FontWeight.bold),
-            ),
-            const Text(
-              'เลือกวันและเวลาที่ต้องการใช้บริการ',
-              style: TextStyle(
-                fontSize: 14,
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(top: 30, left: 16),
-              child: Row(
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                 children: [
-                  Text('ปฏิทินงานหมอนัท : ',
-                      style: TextStyle(
-                        fontSize: 14,
-                      ))
+                  Text(
+                    'คุณต้องการจองคิวกับ $vetName',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.green[900],
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 30),
+
+                  // 
+                  DropdownButtonFormField<BullStock>(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: "เลือกวัวสำหรับผสมเทียม",
+                    ),
+                    value: selectedBull,
+                    items: bullList.map((bull) {
+                      return DropdownMenuItem<BullStock>(
+                        value: bull,
+                        child: Text(
+                          '${bull.bullbreed} (${bull.bullname})',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (BullStock? newValue) {
+                      setState(() {
+                        selectedBull = newValue;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 
+                  TextField(
+                    controller: _doseController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'จำนวนโดส',
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 
+                  TextField(
+                    controller: _detailController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'รายละเอียดแม่พันธุ์ (เช่น อายุ, สุขภาพ)',
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  // 
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.lightGreen[700],
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 14, horizontal: 40),
+                    ),
+                    onPressed: _showConfirmDialog,
+                    icon: const Icon(Icons.check, color: Colors.white),
+                    label: const Text(
+                      'ยืนยันการจอง',
+                      style: TextStyle(fontSize: 18, color: Colors.white),
+                    ),
+                  ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TableCalendar(
-                locale: 'th_TH', // ภาษาไทย
-                firstDay: DateTime.utc(2020, 1, 1),
-                lastDay: DateTime.utc(2030, 12, 31),
-                focusedDay: DateTime.now(),
-                calendarStyle: const CalendarStyle(
-                  todayDecoration: BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle,
-                  ),
-                  selectedDecoration: BoxDecoration(
-                    color: Colors.lightGreen,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              width: 300,
-              child: Card.outlined(
-                child: Column(
-                  children: [
-                    Text(
-                      'รายละเอียดวันในการใช้บริการ', style: TextStyle(color: Colors.lightGreen[900]),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(left: 10),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              Icon(Icons.circle, color: Colors.red, size: 12),
-                              SizedBox(width: 10,),
-                              Text(
-                                'มีคิวแล้ว ไม่สามารถให้บริการได้',style: TextStyle(color: Colors.grey),
-                              ),
-                            ],
-                          ),Row(
-                            children: [
-                              Icon(Icons.circle, color: Colors.green, size: 12),
-                              SizedBox(width: 10,),
-                              Text(
-                                'คิวว่าง สามารถให้บริการได้',style: TextStyle(color: Colors.grey),
-                              ),
-                            ],
-                          ),Row(
-                            children: [
-                              Icon(Icons.circle, color: Colors.grey, size: 12),
-                              SizedBox(width: 10,),
-                              Text(
-                                'ไม่ใด้ให้บริการ',style: TextStyle(color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Padding(
-                padding: const EdgeInsets.only(top: 30),
-                child: SizedBox(
-                  width: 250,
-                  height: 50,
-                  child: FilledButton(
-                      onPressed: choose,
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(
-                            Colors.green[900]!),
-                      ),
-                      child: const Text(
-                        'เลือก',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      )),
-                ),
-              ),
-          ],
-        ),
-      )),
     );
-  }
-
-  void choose() {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const Acceptbookingpage(),
-        ));
   }
 }
