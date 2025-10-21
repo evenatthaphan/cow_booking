@@ -168,6 +168,10 @@ class _HomepagedocState extends State<Homepagedoc> {
                       "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
                       style: TextStyle(fontSize: 16),
                     ),
+                    // Text(
+                    //   "พ่อพันธุ์ : ${booking.}",
+                    //   style: TextStyle(fontSize: 16),
+                    // ),
                     Text("เพิ่มเติม : ${booking.detailBull}",
                         style: TextStyle(fontSize: 16)),
                     const SizedBox(height: 10),
