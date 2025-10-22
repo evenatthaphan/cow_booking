@@ -122,6 +122,7 @@ class _HomepageState extends State<Homepage> {
                   width: 150,
                   margin: const EdgeInsets.only(right: 10),
                   child: Card.outlined(
+                    color: Colors.white,
                     child: Column(
                       children: [
                         ClipRRect(

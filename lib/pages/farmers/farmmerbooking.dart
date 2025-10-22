@@ -1,3 +1,4 @@
+import 'package:cow_booking/pages/farmers/farmerNavbar.dart';
 import 'package:flutter/material.dart';
 
 class Farmmerbookingpage extends StatefulWidget {
@@ -10,6 +11,7 @@ class Farmmerbookingpage extends StatefulWidget {
 class _FarmmerbookingpageState extends State<Farmmerbookingpage> {
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -29,6 +31,11 @@ class _FarmmerbookingpageState extends State<Farmmerbookingpage> {
         child: Column(
           children: [Text("123")],
         ),
+      ),
+      bottomNavigationBar: FarmerNavigationBar(
+        selectedIndex: 0,
+        onDestinationSelected: (value) {},
+        screenSize: screenSize,
       ),
     );
   }
