@@ -3,6 +3,7 @@ import 'package:cow_booking/model/response/Farms_response.dart';
 import 'package:cow_booking/pages/Home/cowdetail.dart';
 import 'package:cow_booking/pages/Home/seach.dart';
 import 'package:cow_booking/pages/Home/seeall.dart';
+import 'package:cow_booking/pages/farmers/farmerNavbar.dart';
 import 'package:cow_booking/pages/farmers/farmerprofile.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
@@ -182,6 +183,8 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -308,10 +311,13 @@ class _HomepageState extends State<Homepage> {
           ],
         ),
       ),
+      bottomNavigationBar: FarmerNavigationBar(
+        selectedIndex: 1,
+        onDestinationSelected: (value) {},
+        screenSize: screenSize,
+      ),
     );
   }
-
-  
 
   // Future<void> loadDataAsync() async {
   //   var config = await Configuration.getConfig();

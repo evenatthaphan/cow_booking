@@ -98,7 +98,7 @@ class _HomepagedocState extends State<Homepagedoc> {
                 children: [
                   _buildBookingList(),
                   const Center(child: Text("ยังไม่มีรายการตอบรับแล้ว")),
-                  const Center(child: Text("ยังไม่มีรายการที่ถูกปฏิเสธ")),
+                  const Center(child: Text("ยังไม่มีรายการที่ปฏิเสธ")),
                 ],
               ),
             ),
@@ -168,10 +168,10 @@ class _HomepagedocState extends State<Homepagedoc> {
                       "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
                       style: TextStyle(fontSize: 16),
                     ),
-                    // Text(
-                    //   "พ่อพันธุ์ : ${booking.}",
-                    //   style: TextStyle(fontSize: 16),
-                    // ),
+                    Text(
+                      "พ่อพันธุ์ : ${booking.bullname} ${booking.bullbreed} จำนวน ${booking.dose} โดส",
+                      style: TextStyle(fontSize: 16),
+                    ),
                     Text("เพิ่มเติม : ${booking.detailBull}",
                         style: TextStyle(fontSize: 16)),
                     const SizedBox(height: 10),

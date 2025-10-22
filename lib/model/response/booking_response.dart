@@ -14,8 +14,10 @@ class BookingResponse {
     String farmerName;
     int vetExpertId;
     String vetName;
-    int bullId;
-    int scheduleId;
+    int vetBullId;
+    String bullname;
+    String bullbreed;
+    int dose;
     DateTime scheduleDate;
     String scheduleTime;
     String detailBull;
@@ -29,8 +31,10 @@ class BookingResponse {
         required this.farmerName,
         required this.vetExpertId,
         required this.vetName,
-        required this.bullId,
-        required this.scheduleId,
+        required this.vetBullId,
+        required this.bullname,
+        required this.bullbreed,
+        required this.dose,
         required this.scheduleDate,
         required this.scheduleTime,
         required this.detailBull,
@@ -45,8 +49,10 @@ class BookingResponse {
         farmerName: json["farmer_name"],
         vetExpertId: json["vet_expert_id"],
         vetName: json["vet_name"],
-        bullId: json["bull_id"],
-        scheduleId: json["schedule_id"],
+        vetBullId: json["vet_bull_id"],
+        bullname: json["bullname"],
+        bullbreed: json["bullbreed"],
+        dose: json["dose"],
         scheduleDate: DateTime.parse(json["schedule_date"]),
         scheduleTime: json["schedule_time"],
         detailBull: json["detailBull"],
@@ -61,8 +67,10 @@ class BookingResponse {
         "farmer_name": farmerName,
         "vet_expert_id": vetExpertId,
         "vet_name": vetName,
-        "bull_id": bullId,
-        "schedule_id": scheduleId,
+        "vet_bull_id": vetBullId,
+        "bullname": bullname,
+        "bullbreed": bullbreed,
+        "dose": dose,
         "schedule_date": scheduleDate.toIso8601String(),
         "schedule_time": scheduleTime,
         "detailBull": detailBull,

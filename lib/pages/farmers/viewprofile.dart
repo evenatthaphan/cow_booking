@@ -1,5 +1,6 @@
 import 'package:cow_booking/pages/farmers/editpassword.dart';
 import 'package:cow_booking/pages/farmers/editprofile.dart';
+import 'package:cow_booking/pages/farmers/farmerNavbar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -13,8 +14,9 @@ class Viewprofile extends StatefulWidget {
 class _ViewprofileState extends State<Viewprofile> {
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
     return Scaffold(
-        backgroundColor: const Color(0xFFF8F1E8),
+      backgroundColor: const Color(0xFFF8F1E8),
       appBar: AppBar(
         title: Text('แก้ไขโปรไฟล์',
             style: GoogleFonts.notoSansThai(
@@ -28,7 +30,9 @@ class _ViewprofileState extends State<Viewprofile> {
       ),
       body: ListView(
         children: [
-          const SizedBox(height: 20,),
+          const SizedBox(
+            height: 20,
+          ),
           Container(
             padding: const EdgeInsets.all(16),
             margin: const EdgeInsets.all(12),
@@ -61,7 +65,6 @@ class _ViewprofileState extends State<Viewprofile> {
               ],
             ),
           ),
-
           Container(
             padding: const EdgeInsets.all(16),
             margin: const EdgeInsets.all(12),
@@ -95,6 +98,11 @@ class _ViewprofileState extends State<Viewprofile> {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: FarmerNavigationBar(
+        selectedIndex: 1,
+        onDestinationSelected: (value) {},
+        screenSize: screenSize,
       ),
     );
   }

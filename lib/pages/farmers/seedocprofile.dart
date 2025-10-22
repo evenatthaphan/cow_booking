@@ -4,6 +4,7 @@ import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/GetVet_response.dart';
 import 'package:cow_booking/model/response/bullstocks_response.dart';
 import 'package:cow_booking/pages/farmers/bookingpage.dart';
+import 'package:cow_booking/pages/farmers/farmerNavbar.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -96,6 +97,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -174,6 +176,11 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
             ),
           ],
         ),
+      //   bottomNavigationBar: FarmerNavigationBar(
+      //   selectedIndex: 1,
+      //   onDestinationSelected: (value) {},
+      //   screenSize: screenSize,
+      // ),
       ),
     );
   }
@@ -204,7 +211,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
       return [];
     }
   }
-
 
   Widget _stockTab() {
     return FutureBuilder<List<BullStock>>(
