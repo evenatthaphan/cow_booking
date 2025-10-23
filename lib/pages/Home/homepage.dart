@@ -77,7 +77,7 @@ class _HomepageState extends State<Homepage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // หัวข้อพันธุ์ + ปุ่มดูทั้งหมด
+          // Header + seeall
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -199,15 +199,15 @@ class _HomepageState extends State<Homepage> {
         ),
         backgroundColor: Colors.lightGreen[700],
         iconTheme: const IconThemeData(
-          color: Colors.white, // กำหนดสีของไอคอนใน AppBar ให้เป็นสีขาว
+          color: Colors.white, 
         ),
         actions: [
-          // ปุ่มค้นหา
+          // seach
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: taptoseach,
           ),
-          // รูปโปรไฟล์
+          // profile
           GestureDetector(
             onTap: () {
               Navigator.push(
