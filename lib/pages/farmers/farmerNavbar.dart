@@ -78,12 +78,16 @@ class FarmerNavigationBar extends StatelessWidget {
   }
 
   void navigateHomePage(BuildContext context) {
-    _setperiod(context);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Homepage()),
-    );
-  }
+  _setperiod(context);
+
+  // reset data stack 
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => Homepage()),
+    (route) => false, // delete all route out of stack
+  );
+}
+
 
   void navigateCheckQueues(BuildContext context) {
     _setperiod(context);

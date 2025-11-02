@@ -2,6 +2,7 @@ import 'package:cow_booking/pages/Home/homepage.dart';
 import 'package:cow_booking/pages/Animal_husbandry/homepagedoc.dart';
 import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
+import 'package:cow_booking/pages/farmers/farmerprofile.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -272,9 +273,15 @@ class _ChooseLoginState extends State<ChooseLogin> {
           await prefs.setString('userType', 'farmer');
           await prefs.setInt('userId', farmer.id);
 
-          Navigator.pushReplacement(
+          // Navigator.pushReplacement(
+          //   context,
+          //   MaterialPageRoute(builder: (_) => Homepage()),
+          // );
+
+          Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => Homepage()),
+            MaterialPageRoute(builder: (context) => Homepage()),
+            (route) => false,
           );
           return;
         }
@@ -283,7 +290,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
           final vet = VetExpert.fromJson(user);
           context.read<DataVetExpert>().setDataUser(vet);
 
-
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('isLoggedIn', true);
           await prefs.setString('userType', 'vet');
@@ -291,12 +297,12 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => Homepagedoc()),
+            MaterialPageRoute(builder: (_) => const Farmerprofilepage()),
           );
           return;
         }
 
-        // not role/user 
+        // not role/user
         _showErrorDialog(context, "รูปแบบข้อมูลไม่ถูกต้อง");
       } else if (res.statusCode == 401) {
         // Username/Password wrong

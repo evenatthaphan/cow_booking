@@ -191,7 +191,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
     );
   }
 
-  // เมนูทั่วไป
+  // simple menu
   Widget _buildMenuItem(String title, IconData icon) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

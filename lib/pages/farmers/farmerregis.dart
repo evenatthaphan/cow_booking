@@ -188,17 +188,58 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     }
   }
 
+  // Future<void> submitForm() async {
+  //   setState(() {
+  //     isLoading = true;
+  //   });
+  //   try {
+  //     final token = await getRecaptchaToken("register_farmer");
+  //     if (token == null) {
+  //       _showErrorDialog("ไม่สามารถตรวจสอบ reCAPTCHA ได้");
+  //       return;
+  //     }
+
+  //     final url = Uri.parse("$apiEndpoint/farmer/register");
+  //     final response = await http.post(
+  //       url,
+  //       headers: {"Content-Type": "application/json; charset=utf-8"},
+  //       body: jsonEncode({
+  //         "farm_name": farmNameController.text.trim(),
+  //         "phonenumber": phoneNumberController.text.trim(),
+  //         "farmer_email": emailController.text.trim().isEmpty
+  //             ? null
+  //             : emailController.text.trim(),
+  //         "farm_password": passwordController.text.trim(),
+  //         "farm_address": farmAddressController.text.trim(),
+  //         "province": provinceCtrl.text.trim(),
+  //         "district": districtCtrl.text.trim(),
+  //         "locality": subdistrictCtrl.text.trim(),
+  //         "recaptcha_token": token,
+  //       }),
+  //     );
+
+  //     if (response.statusCode == 201) {
+  //       final data = jsonDecode(response.body);
+  //       _showSuccessDialog(data['message'] ?? "ลงทะเบียนสำเร็จ");
+  //     } else {
+  //       final errorData = jsonDecode(response.body);
+  //       _showErrorDialog(errorData['error'] ?? "เกิดข้อผิดพลาดในการลงทะเบียน");
+  //     }
+  //   } catch (e) {
+  //     _showErrorDialog("เกิดข้อผิดพลาด: $e");
+  //   } finally {
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   }
+  // }
+
   Future<void> submitForm() async {
     setState(() {
       isLoading = true;
     });
-    try {
-      final token = await getRecaptchaToken("register_farmer");
-      if (token == null) {
-        _showErrorDialog("ไม่สามารถตรวจสอบ reCAPTCHA ได้");
-        return;
-      }
 
+    try {
       final url = Uri.parse("$apiEndpoint/farmer/register");
       final response = await http.post(
         url,
@@ -214,7 +255,6 @@ class _FarmerRegisterState extends State<FarmerRegister> {
           "province": provinceCtrl.text.trim(),
           "district": districtCtrl.text.trim(),
           "locality": subdistrictCtrl.text.trim(),
-          "recaptcha_token": token,
         }),
       );
 

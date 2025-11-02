@@ -90,6 +90,7 @@ class MyApp extends StatelessWidget {
         return Homepagedoc();
       }
     }
+
     return const ChooseLogin();
   }
 
@@ -98,7 +99,7 @@ class MyApp extends StatelessWidget {
     return FutureBuilder<Widget>(
       future: _getStartPage(),
       builder: (context, snapshot) {
-        // ขณะรอ SharedPreferences โหลด
+        // waittng SharedPreferences load
         if (snapshot.connectionState == ConnectionState.waiting) {
           return MaterialApp(
             home: Scaffold(
@@ -112,7 +113,7 @@ class MyApp extends StatelessWidget {
           );
         }
 
-        // ถ้าโหลดเสร็จแล้ว
+        // if download sucess
         if (snapshot.hasData) {
           return MaterialApp(
             title: 'App Demo',
@@ -129,7 +130,7 @@ class MyApp extends StatelessWidget {
               textTheme: GoogleFonts.notoSansThaiTextTheme(),
               primarySwatch: Colors.green,
             ),
-            home: snapshot.data, // 
+            home: snapshot.data, //
           );
         }
         return const MaterialApp(
