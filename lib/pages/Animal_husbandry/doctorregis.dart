@@ -1,6 +1,10 @@
+import 'package:cow_booking/config/internal_config.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-//import 'package:image_picker/image_picker.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'dart:io';
 
 class DoctorRegis extends StatefulWidget {
   const DoctorRegis({super.key});
@@ -10,22 +14,41 @@ class DoctorRegis extends StatefulWidget {
 }
 
 class _DoctorRegisState extends State<DoctorRegis> {
-    // ตัวแปรเก็บค่า dropdown
+  final TextEditingController _fileNameController = TextEditingController();
+
+  // ตัวแปรเก็บค่า dropdown
   String? selectedProvince;
   String? selectedDistrict;
   String? selectedSubDistrict;
 
-  //example
-  final Map<String, Map<String, List<String>>> locationData = {
-    'ขอนแก่น': {
-      'เมืองขอนแก่น': ['ในเมือง', 'ศิลา', 'บ้านเป็ด'],
-      'ชุมแพ': ['ชุมแพเหนือ', 'ชุมแพใต้']
-    },
-    'อุดรธานี': {
-      'เมืองอุดรธานี': ['หมากแข้ง', 'หนองบัว'],
-      'กุดจับ': ['กุดจับเหนือ', 'กุดจับใต้']
-    },
-  };
+  List provinces = [];
+  List districts = [];
+  List subDistricts = [];
+
+  File? _imageFile;
+  String? _imageFileName;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProvinces();
+  }
+
+  Future<void> fetchProvinces() async {
+    final url = Uri.parse(
+      "https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/province_with_district_and_sub_district.json",
+    );
+    final res = await http.get(url);
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      setState(() {
+        provinces = data;
+      });
+    } else {
+      print("โหลดข้อมูลจังหวัดล้มเหลว");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -178,17 +201,25 @@ class _DoctorRegisState extends State<DoctorRegis> {
                       ),
                     ),
                     value: selectedProvince,
-                    items: locationData.keys
-                        .map((prov) => DropdownMenuItem(
-                              value: prov,
-                              child: Text(prov),
-                            ))
-                        .toList(),
+                    items: provinces.map<DropdownMenuItem<String>>((p) {
+                      return DropdownMenuItem(
+                        value: p["name_th"],
+                        child: Text(p["name_th"]),
+                      );
+                    }).toList(),
                     onChanged: (val) {
                       setState(() {
                         selectedProvince = val;
                         selectedDistrict = null;
                         selectedSubDistrict = null;
+
+                        // หาอำเภอในจังหวัดที่เลือก
+                        final provinceData = provinces.firstWhere(
+                          (p) => p["name_th"] == val,
+                          orElse: () => {},
+                        );
+                        districts = provinceData["districts"] ?? [];
+                        subDistricts = [];
                       });
                     },
                   ),
@@ -204,19 +235,23 @@ class _DoctorRegisState extends State<DoctorRegis> {
                       ),
                     ),
                     value: selectedDistrict,
-                    items: selectedProvince == null
-                        ? []
-                        : locationData[selectedProvince]!
-                            .keys
-                            .map((district) => DropdownMenuItem(
-                                  value: district,
-                                  child: Text(district),
-                                ))
-                            .toList(),
+                    items: districts.map<DropdownMenuItem<String>>((d) {
+                      return DropdownMenuItem(
+                        value: d["name_th"],
+                        child: Text(d["name_th"]),
+                      );
+                    }).toList(),
                     onChanged: (val) {
                       setState(() {
                         selectedDistrict = val;
                         selectedSubDistrict = null;
+
+                        // หา “ตำบล” ในอำเภอที่เลือก
+                        final districtData = districts.firstWhere(
+                          (d) => d["name_th"] == val,
+                          orElse: () => {},
+                        );
+                        subDistricts = districtData["sub_districts"] ?? [];
                       });
                     },
                   ),
@@ -232,15 +267,12 @@ class _DoctorRegisState extends State<DoctorRegis> {
                       ),
                     ),
                     value: selectedSubDistrict,
-                    items:
-                        (selectedProvince == null || selectedDistrict == null)
-                            ? []
-                            : locationData[selectedProvince]![selectedDistrict]!
-                                .map((sub) => DropdownMenuItem(
-                                      value: sub,
-                                      child: Text(sub),
-                                    ))
-                                .toList(),
+                    items: subDistricts.map<DropdownMenuItem<String>>((s) {
+                      return DropdownMenuItem(
+                        value: s["name_th"],
+                        child: Text(s["name_th"]),
+                      );
+                    }).toList(),
                     onChanged: (val) {
                       setState(() {
                         selectedSubDistrict = val;
@@ -334,42 +366,70 @@ class _DoctorRegisState extends State<DoctorRegis> {
                           ),
                         ],
                       ),
-                      SizedBox(
-                  width: 200,
-                  height: 100,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      _pickImage();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)),
-                      ),
-                    ),
-                    child: const Text(
-                      'คลิกเลือกภาพจากแกลลอรี่',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ),
-                ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 200,
+                            height: 100,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                _showImageSourceOptions(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 15),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10)),
+                                ),
+                              ),
+                              child: _imageFile == null
+                                  ? const Text(
+                                      'คลิกเลือกภาพจากแกลลอรี่',
+                                      style: TextStyle(
+                                          fontSize: 12, color: Colors.grey),
+                                    )
+                                  : GestureDetector(
+                                      onTap: () {
+                                        _showFullImage(context);
+                                      },
+                                      child: Image.file(
+                                        _imageFile!,
+                                        fit: BoxFit.cover,
+                                        width: 180,
+                                        height: 80,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                        ],
+                      )
                     ],
                   ),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
                   child: TextField(
+                    controller: _fileNameController,
+                    readOnly: true,
                     decoration: InputDecoration(
+                      labelText: "ชื่อไฟล์ภาพ",
                       border: const OutlineInputBorder(
-                        borderSide: BorderSide(
-                            width: 1, color: Colors.grey), // สีกรอบปกติ
+                        borderSide: BorderSide(width: 1, color: Colors.grey),
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            width: 2,
-                            color: Colors.green[900]!), // สีกรอบเมื่อโฟกัส
+                      focusedBorder: const OutlineInputBorder(
+                        borderSide: BorderSide(width: 2, color: Colors.green),
                       ),
+                      suffixIcon: _imageFile != null
+                          ? IconButton(
+                              icon: const Icon(Icons.image_search,
+                                  color: Colors.green),
+                              onPressed: () => _showFullImage(context),
+                            )
+                          : null,
                     ),
                   ),
                 ),
@@ -444,7 +504,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
             Padding(
               padding: const EdgeInsets.all(10),
               child: OutlinedButton(
-                  onPressed: backtologin,
+                  onPressed: registerVetExpert,
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(
                       color: Colors.green, // สีของเส้นขอบ
@@ -467,9 +527,154 @@ class _DoctorRegisState extends State<DoctorRegis> {
     );
   }
 
-  void backtologin() {
-    Navigator.popUntil(context, (route) => route.isFirst);
+  Future<void> registerVetExpert() async {
+    try {
+      if (_imageFile == null ||
+          selectedProvince == null ||
+          selectedDistrict == null ||
+          selectedSubDistrict == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบถ้วน')),
+        );
+        return;
+      }
+
+      //final url = Uri.parse("$apiEndpoint/vet/register");
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$apiEndpoint/vet/register'),
+      );
+
+      request.fields['VetExpert_name'] = 'ชื่อจาก textfield';
+      request.fields['VetExpert_password'] = 'รหัสผ่าน';
+      request.fields['phonenumber'] = 'เบอร์โทร';
+      request.fields['VetExpert_email'] = 'อีเมล';
+      request.fields['VetExpert_address'] = 'ที่อยู่';
+      request.fields['province'] = selectedProvince!;
+      request.fields['district'] = selectedDistrict!;
+      request.fields['locality'] = selectedSubDistrict!;
+
+      request.files.add(
+        await http.MultipartFile.fromPath('VetExpert_PL', _imageFile!.path),
+      );
+
+      var response = await request.send();
+
+      if (response.statusCode == 201) {
+        if (!mounted) return;
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text(
+                'ลงทะเบียนสำเร็จ',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: const Text(
+                'ระบบได้รับข้อมูลของคุณแล้ว\nกรุณารอการตรวจสอบจากผู้ดูแลก่อนเข้าใช้งาน',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // ปิด dialog
+                    Navigator.popUntil(
+                        context, (route) => route.isFirst); // กลับหน้าแรก
+                  },
+                  child: const Text('ตกลง'),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('ลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')),
+        );
+      }
+    } catch (e) {
+      print('Error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('เกิดข้อผิดพลาด กรุณาลองใหม่ภายหลัง')),
+      );
+    }
   }
-  
-  void _pickImage() {}
+
+  // void backtologin() {
+  //   Navigator.popUntil(context, (route) => route.isFirst);
+  // }
+
+  void _showFullImage(BuildContext context) {
+    if (_imageFile == null) return;
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        child: Stack(
+          children: [
+            Image.file(_imageFile!, fit: BoxFit.contain),
+            Positioned(
+              right: 8,
+              top: 8,
+              child: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showImageSourceOptions(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+      ),
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.green),
+                title: const Text('เลือกรูปจากแกลลอรี่'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _pickImage(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.green),
+                title: const Text('ถ่ายภาพใหม่'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _pickImage(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(
+      source: source,
+      imageQuality: 80,
+      maxWidth: 1024,
+    );
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+        _imageFileName = pickedFile.name;
+        _fileNameController.text = _imageFileName ?? '';
+      });
+    }
+  }
 }

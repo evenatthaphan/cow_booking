@@ -91,7 +91,7 @@ class MyApp extends StatelessWidget {
       }
     }
 
-    return const ChooseLogin();
+    return const Loginpage();
   }
 
   @override

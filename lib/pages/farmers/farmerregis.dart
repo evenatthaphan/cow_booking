@@ -32,6 +32,38 @@ class _FarmerRegisterState extends State<FarmerRegister> {
 
   bool isLoading = false;
 
+
+    // ตัวแปรเก็บค่า dropdown
+  String? selectedProvince;
+  String? selectedDistrict;
+  String? selectedSubDistrict;
+
+  //example
+  List provinces = [];
+  List districts = [];
+  List subDistricts = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchProvinces();
+  }
+
+  Future<void> fetchProvinces() async {
+    final url = Uri.parse(
+      "https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/province_with_district_and_sub_district.json",
+    );
+    final res = await http.get(url);
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      setState(() {
+        provinces = data;
+      });
+    } else {
+      print("โหลดข้อมูลจังหวัดล้มเหลว");
+    }
+  }
+
   @override
   void dispose() {
     farmNameController.dispose();
@@ -188,51 +220,6 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     }
   }
 
-  // Future<void> submitForm() async {
-  //   setState(() {
-  //     isLoading = true;
-  //   });
-  //   try {
-  //     final token = await getRecaptchaToken("register_farmer");
-  //     if (token == null) {
-  //       _showErrorDialog("ไม่สามารถตรวจสอบ reCAPTCHA ได้");
-  //       return;
-  //     }
-
-  //     final url = Uri.parse("$apiEndpoint/farmer/register");
-  //     final response = await http.post(
-  //       url,
-  //       headers: {"Content-Type": "application/json; charset=utf-8"},
-  //       body: jsonEncode({
-  //         "farm_name": farmNameController.text.trim(),
-  //         "phonenumber": phoneNumberController.text.trim(),
-  //         "farmer_email": emailController.text.trim().isEmpty
-  //             ? null
-  //             : emailController.text.trim(),
-  //         "farm_password": passwordController.text.trim(),
-  //         "farm_address": farmAddressController.text.trim(),
-  //         "province": provinceCtrl.text.trim(),
-  //         "district": districtCtrl.text.trim(),
-  //         "locality": subdistrictCtrl.text.trim(),
-  //         "recaptcha_token": token,
-  //       }),
-  //     );
-
-  //     if (response.statusCode == 201) {
-  //       final data = jsonDecode(response.body);
-  //       _showSuccessDialog(data['message'] ?? "ลงทะเบียนสำเร็จ");
-  //     } else {
-  //       final errorData = jsonDecode(response.body);
-  //       _showErrorDialog(errorData['error'] ?? "เกิดข้อผิดพลาดในการลงทะเบียน");
-  //     }
-  //   } catch (e) {
-  //     _showErrorDialog("เกิดข้อผิดพลาด: $e");
-  //   } finally {
-  //     setState(() {
-  //       isLoading = false;
-  //     });
-  //   }
-  // }
 
   Future<void> submitForm() async {
     setState(() {
@@ -375,12 +362,96 @@ class _FarmerRegisterState extends State<FarmerRegister> {
               _buildLabel("อีเมลล์", false),
               _buildTextForm(emailController, "",
                   keyboardType: TextInputType.emailAddress),
-              _buildLabel("จังหวัด", true),
-              _buildTextForm(provinceCtrl, "กรุณากรอกจังหวัด"),
-              _buildLabel("อำเภอ", true),
-              _buildTextForm(districtCtrl, "กรุณากรอกอำเภอ"),
-              _buildLabel("ตำบล", true),
-              _buildTextForm(subdistrictCtrl, "กรุณากรอกตำบล"),
+               Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'จังหวัด *',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1, color: Colors.grey),
+                      ),
+                    ),
+                    value: selectedProvince,
+                    items: provinces.map<DropdownMenuItem<String>>((p) {
+                      return DropdownMenuItem(
+                        value: p["name_th"],
+                        child: Text(p["name_th"]),
+                      );
+                    }).toList(),
+                    onChanged: (farmer) {
+                      setState(() {
+                        selectedProvince = farmer;
+                        provinceCtrl.text = farmer ?? '';
+                        selectedDistrict = null;
+                        selectedSubDistrict = null;
+
+                        // หาอำเภอในจังหวัดที่เลือก
+                        final provinceData = provinces.firstWhere(
+                          (p) => p["name_th"] == farmer,
+                          orElse: () => {},
+                        );
+                        districts = provinceData["districts"] ?? [];
+                        subDistricts = [];
+                      });
+                    },
+                  ),
+                ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'อำเภอ *',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1, color: Colors.grey),
+                      ),
+                    ),
+                    value: selectedDistrict,
+                    items: districts.map<DropdownMenuItem<String>>((d) {
+                      return DropdownMenuItem(
+                        value: d["name_th"],
+                        child: Text(d["name_th"]),
+                      );
+                    }).toList(),
+                    onChanged: (farmer) {
+                      setState(() {
+                        selectedDistrict = farmer;
+                        districtCtrl.text = farmer ?? ''; 
+                        selectedSubDistrict = null;
+
+                        // หา “ตำบล” ในอำเภอที่เลือก
+                        final districtData = districts.firstWhere(
+                          (d) => d["name_th"] == farmer,
+                          orElse: () => {},
+                        );
+                        subDistricts = districtData["sub_districts"] ?? [];
+                      });
+                    },
+                  ),
+                ),
+              Padding(
+                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                  child: DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(
+                      labelText: 'ตำบล *',
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(width: 1, color: Colors.grey),
+                      ),
+                    ),
+                    value: selectedSubDistrict,
+                    items: subDistricts.map<DropdownMenuItem<String>>((s) {
+                      return DropdownMenuItem(
+                        value: s["name_th"],
+                        child: Text(s["name_th"]),
+                      );
+                    }).toList(),
+                    onChanged: (farmer) {
+                      setState(() {
+                        selectedSubDistrict = farmer;
+                        subdistrictCtrl.text = farmer ?? '';
+                      });
+                    },
+                  ),
+                ),
               Padding(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
