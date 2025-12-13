@@ -297,7 +297,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const Farmerprofilepage()),
+            MaterialPageRoute(builder: (_) => Homepagedoc()),
           );
           return;
         }

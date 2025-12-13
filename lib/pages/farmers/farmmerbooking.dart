@@ -22,7 +22,7 @@ class _FarmmerbookingpageState extends State<Farmmerbookingpage> {
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     return DefaultTabController(
-      length: 3, // คำขอการจอง / ตอบรับแล้ว / ปฏิเสธ
+      length: 3, 
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.lightGreen,
@@ -80,7 +80,7 @@ class _FarmmerbookingpageState extends State<Farmmerbookingpage> {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
-      // กรองเฉพาะ status = 'pending'
+      // only status = 'pending'
       final pendingBookings = data
           .map((e) => BookingResponse.fromJson(e))
           .where((b) => b.status == 'pending')
@@ -128,21 +128,21 @@ class _FarmmerbookingpageState extends State<Farmmerbookingpage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("ชื่อ : ${booking.farmerName}",
-                        style: TextStyle(fontSize: 16)),
+                        style: const TextStyle(fontSize: 16)),
                     Text(
                       "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     Text(
                       "จองกับ : ${booking.vetName}",
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     Text(
                       "พ่อพันธุ์ : ${booking.bullname} ${booking.bullbreed} จำนวน ${booking.dose} โดส",
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                     Text("เพิ่มเติม : ${booking.detailBull}",
-                        style: TextStyle(fontSize: 16)),
+                        style: const TextStyle(fontSize: 16)),
                   ],
                 ),
               ),

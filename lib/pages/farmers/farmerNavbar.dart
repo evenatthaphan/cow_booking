@@ -37,7 +37,7 @@ class FarmerNavigationBar extends StatelessWidget {
           ),
         ),
         child: NavigationBar(
-          backgroundColor: const Color.fromARGB(255, 2, 91, 29),
+          backgroundColor: Colors.lightGreen[700],
           selectedIndex: selectedIndex,
           onDestinationSelected: (int index) {
             onDestinationSelected(index); // Call the passed function
