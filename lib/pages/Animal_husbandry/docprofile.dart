@@ -1,6 +1,9 @@
+import 'package:cow_booking/model/response/Vet_response.dart';
 import 'package:cow_booking/pages/Animal_husbandry/manageSchedule.dart';
+import 'package:cow_booking/pages/chooselogin.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -192,28 +195,80 @@ class _VetProfilePageState extends State<VetProfilePage> {
           const SizedBox(
             height: 10,
           ),
-          Container(
+          // Container(
+          //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          //   margin: const EdgeInsets.symmetric(horizontal: 16),
+          //   decoration: BoxDecoration(
+          //     color: Colors.white,
+          //     borderRadius: BorderRadius.circular(12),
+          //   ),
+          //   child: const Row(
+          //     children: [
+          //       Spacer(),
+          //       Expanded(
+          //           child: Text("ออกจากระบบ",
+          //               style: TextStyle(
+          //                 fontSize: 18,
+          //                 color: Colors.red,
+          //               ))),
+          //       Spacer(),
+          //     ],
+          //   ),
+          // ),
+          GestureDetector(
+          onTap: () => _logout(context),
+          child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
             margin: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Row(
-              children: [
-                Spacer(),
-                Expanded(
-                    child: Text("ออกจากระบบ",
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.red,
-                        ))),
-                Spacer(),
-              ],
+            child: Center(
+              child: Text(
+                "ออกจากระบบ",
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 18,
+                  color: Colors.red,
+                ),
+              ),
             ),
           ),
+        ),
         ],
       ),
     );
   }
+
+ Future<void> _logout(BuildContext context) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('isLoggedIn');
+  await prefs.remove('userType');
+
+  // clear data user in provider
+  context.read<DataVetExpert>().setDataUser(
+    VetExpert(
+      id: 0,
+      vetExpertName: "",
+      vetExpertPassword: "",
+      phonenumber: "",
+      vetExpertEmail: "",
+      profileImage: "",
+      vetExpertAddress: "",
+      province: "",
+      district: "",
+      locality: "",
+      vetExpertPl: "",
+      totalSemenStock: 0,
+    ),
+  );
+
+  // ไปหน้า choose login และล้าง stack
+  Navigator.pushAndRemoveUntil(
+    context,
+    MaterialPageRoute(builder: (context) => const ChooseLogin()),
+    (route) => false,
+  );
+}
+
 }
