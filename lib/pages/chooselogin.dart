@@ -14,6 +14,9 @@ import 'package:cow_booking/share/ShareWitget.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/recaptcha_stub.dart'
+    if (dart.library.html) 'recaptcha_web.dart';
+import 'dart:developer';
 
 class ChooseLogin extends StatefulWidget {
   const ChooseLogin({super.key});
@@ -41,6 +44,158 @@ class _ChooseLoginState extends State<ChooseLogin> {
     ).catchError((err) {
       myWidget.showCustomSnackbar("Message", 'Error in initState: $err');
     });
+  }
+
+   // CAPTCHA Dialog
+  Future<void> showCaptchaDialog() async {
+    String? dialogCaptchaId;
+    String? dialogCaptchaCode;
+    TextEditingController dialogCaptchaController = TextEditingController();
+    bool loading = true;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return StatefulBuilder(builder: (context, setState) {
+          Future<void> fetchCaptcha() async {
+            setState(() {
+              loading = true;
+            });
+            try {
+              final url = Uri.parse("$apiEndpoint/api/captcha");
+              final response = await http.get(url);
+              if (response.statusCode == 201) {
+                final data = jsonDecode(response.body);
+                setState(() {
+                  dialogCaptchaId = data['captchaId'];
+                  dialogCaptchaCode = data['captcha'];
+                });
+              } else {
+                _showErrorDialog(context, "ไม่สามารถโหลด CAPTCHA ได้");
+              }
+            } catch (e) {
+              _showErrorDialog(context, "เกิดข้อผิดพลาด: $e");
+            } finally {
+              setState(() {
+                loading = false;
+              });
+            }
+          }
+
+          if (dialogCaptchaId == null) fetchCaptcha();
+
+          return AlertDialog(
+            title: const Text("กรอกตัวอักษรให้ถูกต้องเพื่อยืนยันตัวตน"),
+            content: loading
+                ? const SizedBox(
+                    height: 60,
+                    child: Center(child: CircularProgressIndicator()))
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            dialogCaptchaCode ?? "",
+                            style:
+                                const TextStyle(fontSize: 18, letterSpacing: 2),
+                          ),
+                          IconButton(
+                            onPressed: fetchCaptcha,
+                            icon:
+                                const Icon(Icons.refresh, color: Colors.green),
+                          ),
+                        ],
+                      ),
+                      TextField(
+                        controller: dialogCaptchaController,
+                        decoration: const InputDecoration(
+                          labelText: "กรอก CAPTCHA",
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text("ยกเลิก"),
+              ),
+              // ElevatedButton(
+              //   onPressed: loading
+              //       ? null
+              //       : () async {
+              //           if (dialogCaptchaController.text.isEmpty) return;
+              //           final isValid = await verifyCaptcha(
+              //               dialogCaptchaId!, dialogCaptchaController.text);
+              //           if (isValid) {
+              //             Navigator.of(context).pop();
+              //             await loginUser();
+              //           } else {
+              //             await fetchCaptcha();
+              //             dialogCaptchaController.clear();
+              //           }
+              //         },
+              //   child: const Text("ยืนยัน"),
+              // ),
+
+              ElevatedButton(
+              onPressed: loading
+                  ? null
+                  : () async {
+                      if (dialogCaptchaController.text.isEmpty) return;
+
+                      final isValid = await verifyCaptcha(
+                        dialogCaptchaId!,
+                        dialogCaptchaController.text,
+                      );
+
+                      if (isValid) {
+                        Navigator.of(context).pop();
+                        await loginUser(); // 
+                      } else {
+                        await fetchCaptcha();
+                        dialogCaptchaController.clear();
+                      }
+                    },
+              child: const Text("ยืนยัน"),
+            ),
+
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  Future<bool> verifyCaptcha(String captchaId, String answer) async {
+    try {
+      final url = Uri.parse("$apiEndpoint/api/captcha/verify");
+      print("POST to: $url");
+      print("Body: ${jsonEncode({"captchaId": captchaId, "answer": answer})}");
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"captchaId": captchaId, "answer": answer}),
+      );
+
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        return true;
+      } else {
+        _showErrorDialog(data['message'] ?? context, "CAPTCHA ไม่ถูกต้อง");
+        return false;
+      }
+    } catch (e) {
+      print("verifyCaptcha error: $e");
+      _showErrorDialog(context, "เกิดข้อผิดพลาด: $e");
+      return false;
+    }
   }
 
   @override
@@ -204,7 +359,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
                   width: 250,
                   height: 50,
                   child: FilledButton(
-                      onPressed: loginUser,
+                      onPressed: showCaptchaDialog,
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
                             Colors.green[900]!),

@@ -1,15 +1,33 @@
+import 'package:cow_booking/model/response/booking_response.dart';
+import 'package:cow_booking/pages/Animal_husbandry/docprofile.dart';
+import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class DetailqueuePage extends StatefulWidget {
-  const DetailqueuePage({super.key});
+  final BookingResponse booking;
+
+  const DetailqueuePage({
+  super.key,
+  required this.booking,
+});
+
+
+  //const DetailqueuePage({super.key});
 
   @override
   State<DetailqueuePage> createState() => __DetailqueuePageState();
 }
 
 class __DetailqueuePageState extends State<DetailqueuePage> {
+
   @override
   Widget build(BuildContext context) {
+
+    
+  final booking = widget.booking;
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.lightGreen,
@@ -28,12 +46,39 @@ class __DetailqueuePageState extends State<DetailqueuePage> {
           ),
         ),
         //centerTitle: true,
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {},
+        //     icon: const Icon(Icons.account_circle, color: Colors.white),
+        //   ),
+        // ],
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.account_circle, color: Colors.white),
-          ),
-        ],
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const VetProfilePage()),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: Consumer<DataVetExpert>(
+                  builder: (context, dataVet, _) {
+                    final imageUrl = dataVet.datauser.profileImage;
+                    return CircleAvatar(
+                      radius: 20,
+                      backgroundImage: (imageUrl.isNotEmpty)
+                          ? NetworkImage(imageUrl)
+                          : const NetworkImage(
+                              'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
+                            ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
       ),
       body: Center(
         child: Column(
@@ -68,22 +113,29 @@ class __DetailqueuePageState extends State<DetailqueuePage> {
                   ),
                   clipBehavior:
                       Clip.antiAlias, // บังคับให้ child (Image) โค้งตาม
-                  child: const Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text("ชื่อ : นายสิริ พรศรี",
-                              style: TextStyle(fontSize: 16)),
-                          Text("วันที่ : 12 กันยายน 2025   เวลา : 10.30",
-                              style: TextStyle(fontSize: 16)),
-                          Text("เพิ่มเติม : แม้วัวอายุ 5 ปี",
-                              style: TextStyle(fontSize: 16)),
-                          Text("พ่อพันธุ์ : ซุปเปอร์แมน บราห์มัน   จำนวน : 1 โดส",
-                              style: TextStyle(fontSize: 16)),
-                          SizedBox(height: 10),
-                        ]),
-                  )),
+                  child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("ชื่อ : ${booking.farmerName}",
+                          style: const TextStyle(fontSize: 16)),
+                      Text(
+                        "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      Text("เพิ่มเติม : ${booking.detailBull}",
+                          style: const TextStyle(fontSize: 16)),
+                      Text(
+                        "พ่อพันธุ์ : ${booking.bullname} ${booking.bullbreed}   จำนวน : ${booking.dose} โดส",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                ),
+
+            ),
             ),
           ],
         ),

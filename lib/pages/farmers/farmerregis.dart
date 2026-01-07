@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:cow_booking/pages/chooselogin.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -219,6 +220,29 @@ class _FarmerRegisterState extends State<FarmerRegister> {
       return false;
     }
   }
+
+    Future<void> showRegisterSuccessDialog() async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text("สมัครสมาชิกสำเร็จ 🎉"),
+        content: const Text("บัญชีของคุณถูกสร้างเรียบร้อยแล้ว กรุณาเข้าสู่ระบบ"),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => const ChooseLogin()),
+              );
+            },
+            child: const Text("เข้าสู่ระบบ"),
+          ),
+        ],
+      ),
+    );
+  }
+
 
 
   Future<void> submitForm() async {

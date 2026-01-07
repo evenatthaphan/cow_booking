@@ -1,5 +1,6 @@
 import 'package:cow_booking/model/response/Vet_response.dart';
 import 'package:cow_booking/pages/Animal_husbandry/manageSchedule.dart';
+import 'package:cow_booking/pages/Home/homepage.dart';
 import 'package:cow_booking/pages/chooselogin.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
@@ -266,7 +267,7 @@ class _VetProfilePageState extends State<VetProfilePage> {
   // ไปหน้า choose login และล้าง stack
   Navigator.pushAndRemoveUntil(
     context,
-    MaterialPageRoute(builder: (context) => const ChooseLogin()),
+    MaterialPageRoute(builder: (context) => Homepage()),
     (route) => false,
   );
 }
