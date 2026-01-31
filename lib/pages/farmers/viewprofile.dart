@@ -1,3 +1,4 @@
+import 'package:cow_booking/pages/farmers/editAddress.dart';
 import 'package:cow_booking/pages/farmers/editpassword.dart';
 import 'package:cow_booking/pages/farmers/editprofile.dart';
 import 'package:cow_booking/pages/farmers/farmerNavbar.dart';
@@ -59,6 +60,38 @@ class _ViewprofileState extends State<Viewprofile> {
                       context,
                       MaterialPageRoute(
                           builder: (context) => const Editprofilepage()),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(16),
+            margin: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white70,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('แก้ไขที่อยู่',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const EditaddressPage()),
                     );
                   },
                 ),

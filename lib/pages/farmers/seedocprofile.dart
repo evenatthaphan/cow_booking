@@ -68,17 +68,18 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
         final getVet = GetVetExpert.fromJson(data);
 
         final vet = VetExpert(
-          id: getVet.id,
-          vetExpertName: getVet.vetExpertName,
-          vetExpertPassword: getVet.vetExpertPassword,
-          phonenumber: getVet.phonenumber,
-          vetExpertEmail: getVet.vetExpertEmail,
-          profileImage: getVet.profileImage,
-          vetExpertAddress: getVet.vetExpertAddress,
-          province: getVet.province,
-          district: getVet.district,
-          locality: getVet.locality,
-          vetExpertPl: getVet.vetExpertPl,
+          id: getVet.vetexpertsId,
+          vetExpertName: getVet.vetexpertsName,
+          vetExpertPassword: getVet.vetexpertsHashpassword,
+          password: getVet.vetexpertsPassword,
+          phonenumber: getVet.vetexpertsPhonenumber,
+          vetExpertEmail: getVet.vetexpertsEmail,
+          profileImage: getVet.vetexpertsProfileImage,
+          vetExpertAddress: getVet.vetexpertsAddress,
+          province: getVet.vetexpertsProvince,
+          district: getVet.vetexpertsDistrict,
+          locality: getVet.vetexpertsLocality,
+          vetExpertPl: getVet.vetexpertsLicense,
           totalSemenStock: getVet.totalSemenStock,
         );
 

@@ -252,6 +252,7 @@ class _VetProfilePageState extends State<VetProfilePage> {
       id: 0,
       vetExpertName: "",
       vetExpertPassword: "",
+      password: "",
       phonenumber: "",
       vetExpertEmail: "",
       profileImage: "",

@@ -20,7 +20,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
   Widget build(BuildContext context) {
     final dataUser = context.watch<DataFarmers>().datauser;
 
-    final bool isLoggedIn = dataUser.id != 0; // ตรวจว่ามีการเข้าสู่ระบบหรือไม่
+    final bool isLoggedIn = dataUser.farmersId != 0; // ตรวจว่ามีการเข้าสู่ระบบหรือไม่
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F1E8),
@@ -56,7 +56,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                 padding: const EdgeInsets.only(right: 10),
                 child: Consumer<DataFarmers>(
                   builder: (context, dataVet, _) {
-                    final imageUrl = dataVet.datauser.profileImage;
+                    final imageUrl = dataVet.datauser.farmersProfileImage;
                     return CircleAvatar(
                       radius: 20,
                       backgroundImage: (imageUrl.isNotEmpty)
@@ -76,7 +76,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                     Consumer<DataFarmers>(
                       builder: (context, dataVet, _) {
                         return Text(
-                          dataVet.datauser.farmName,
+                          dataVet.datauser.farmersName,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black,
@@ -88,7 +88,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                     Consumer<DataFarmers>(
                       builder: (context, dataVet, _) {
                         return Text(
-                          dataVet.datauser.phonenumber,
+                          dataVet.datauser.farmersPhonenumber,
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.grey,
@@ -224,16 +224,19 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
 
     // clear data user in provider
     context.read<DataFarmers>().setDataUser(Farmers(
-          id: 0,
-          farmName: '',
-          farmPassword: '',
-          phonenumber: '',
-          farmerEmail: '',
-          profileImage: '',
-          farmAddress: '',
-          province: '',
-          district: '',
-          locality: '',
+        farmersId: 0,
+        farmersName: "" ,
+        farmesHashpassword: "",
+        farmersPassword : "",
+        farmersPhonenumber: "",
+        farmersEmail: "",
+        farmersProfileImage: "",
+        farmersAddress: "",
+        farmersProvince: "",
+        farmersDistrict: "",
+        farnersLocality: "",
+        farmersLocLat: null,
+        farmersLocLong: null,
         ));
 
     setState(() {});

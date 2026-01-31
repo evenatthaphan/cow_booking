@@ -220,7 +220,7 @@ class _HomepageState extends State<Homepage> {
               padding: const EdgeInsets.only(right: 10),
               child: Consumer<DataFarmers>(
                 builder: (context, dataVet, _) {
-                  final imageUrl = dataVet.datauser.profileImage;
+                  final imageUrl = dataVet.datauser.farmersProfileImage;
                   return CircleAvatar(
                     radius: 20,
                     backgroundImage: (imageUrl.isNotEmpty)

@@ -1,5 +1,15 @@
+import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:cow_booking/share/ShareData.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
 
 class Editprofilepage extends StatefulWidget {
   const Editprofilepage({super.key});
@@ -9,6 +19,86 @@ class Editprofilepage extends StatefulWidget {
 }
 
 class _EditprofilepageState extends State<Editprofilepage> {
+  TextEditingController farmNameController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+
+    final farmer = Provider.of<DataFarmers>(context, listen: false).datauser;
+    farmNameController.text = farmer.farmersName;
+    phoneController.text = farmer.farmersPhonenumber;
+    emailController.text = farmer.farmersEmail;
+    addressController.text = farmer.farmersAddress;
+  }
+
+  Future<void> pickImageFromGallery() async {
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> pickImageFromCamera() async {
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.camera);
+
+    if (pickedFile != null) {
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  void showImageSourceDialog() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('เลือกจากแกลลอรี่'),
+                onTap: () {
+                  Navigator.pop(context);
+                  pickImageFromGallery();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('ถ่ายภาพใหม่'),
+                onTap: () {
+                  Navigator.pop(context);
+                  pickImageFromCamera();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.close),
+                title: const Text('ยกเลิก'),
+                onTap: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,38 +121,61 @@ class _EditprofilepageState extends State<Editprofilepage> {
               const SizedBox(
                 height: 20,
               ),
-              const CircleAvatar(
+              // CircleAvatar(
+              //   radius: 32,
+              //   backgroundImage:
+              //       Provider.of<DataFarmers>(context).datauser.profileImage.isNotEmpty
+              //           ? NetworkImage(
+              //               Provider.of<DataFarmers>(context).datauser.profileImage,
+              //             )
+              //           : const AssetImage('assets/images/profile.jpg')
+              //               as ImageProvider,
+              // ),
+              CircleAvatar(
                 radius: 32,
-                backgroundImage: AssetImage('assets/images/profile.jpg'),
+                backgroundImage: _selectedImage != null
+                    ? FileImage(_selectedImage!)
+                    : Provider.of<DataFarmers>(context)
+                            .datauser
+                            .farmersProfileImage
+                            .isNotEmpty
+                        ? NetworkImage(
+                            Provider.of<DataFarmers>(context)
+                                .datauser
+                                .farmersProfileImage,
+                          )
+                        : const AssetImage('assets/images/profile.jpg')
+                            as ImageProvider,
               ),
               const SizedBox(width: 16),
               TextButton(
-                  onPressed: () {},
-                  child: Text('เปลี่ยนรูปภาพโปรไฟล์',
-                      style: GoogleFonts.notoSansThai(
-                          textStyle: Theme.of(context).textTheme.displayLarge,
-                          fontSize: 16,
-                          color: Colors.green[900]))),
+                onPressed: showImageSourceDialog,
+                child: Text(
+                  'เปลี่ยนรูปภาพโปรไฟล์',
+                  style: GoogleFonts.notoSansThai(
+                    textStyle: Theme.of(context).textTheme.displayLarge,
+                    fontSize: 16,
+                    color: Colors.green[900],
+                  ),
+                ),
+              ),
             ],
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 10, left: 30),
-            child: Text('ชื่อผู้ใช้ * ',
-                style: GoogleFonts.notoSansThai(
-                    textStyle: Theme.of(context).textTheme.displayLarge,
-                    fontSize: 14,
-                    color:  Colors.grey)),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(left: 30, right: 30),
+              padding: EdgeInsets.only(top: 10, left: 30, right: 30),
+              child: Text(
+                'ชื่อ *',
+                style: TextStyle(color: Colors.green[900]),
+              )),
+          Padding(
+            padding: const EdgeInsets.only(left: 30, right: 30),
             child: TextField(
-              decoration: InputDecoration(
+              controller: farmNameController,
+              decoration: const InputDecoration(
                 isDense: true,
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
+                border: UnderlineInputBorder(),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.green, width: 2),
                 ),
@@ -70,23 +183,20 @@ class _EditprofilepageState extends State<Editprofilepage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 20, left: 30),
-            child: Text('เบอร์โทรศัพท์ * ',
-                style: GoogleFonts.notoSansThai(
-                    textStyle: Theme.of(context).textTheme.displayLarge,
-                    fontSize: 14,
-                    color:  Colors.grey)),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(left: 30, right: 30),
+              padding: EdgeInsets.only(top: 30, left: 30, right: 30),
+              child: Text(
+                'เบอร์โทรศัพท์ *',
+                style: TextStyle(color: Colors.green[900]),
+              )),
+          Padding(
+            padding: const EdgeInsets.only(left: 30, right: 30),
             child: TextField(
-              decoration: InputDecoration(
+              controller: phoneController,
+              decoration: const InputDecoration(
                 isDense: true,
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
+                border: UnderlineInputBorder(),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.green, width: 2),
                 ),
@@ -94,70 +204,22 @@ class _EditprofilepageState extends State<Editprofilepage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 20, left: 30),
-            child: Text('อีเมลล์',
-                style: GoogleFonts.notoSansThai(
-                    textStyle: Theme.of(context).textTheme.displayLarge,
-                    fontSize: 14,
-                    color:  Colors.grey)),
-          ),
-          const Padding(
-            padding: EdgeInsets.only(left: 30, right: 30),
+              padding: EdgeInsets.only(top: 30, left: 30, right: 30),
+              child: Text(
+                'อีเมลล์ *',
+                style: TextStyle(color: Colors.green[900]),
+              )),
+          Padding(
+            padding: const EdgeInsets.only(left: 30, right: 30),
             child: TextField(
-              decoration: InputDecoration(
+              controller: emailController,
+              decoration: const InputDecoration(
                 isDense: true,
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                border: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.grey),
-                ),
+                border: UnderlineInputBorder(),
                 focusedBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.green, width: 2),
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 20, left: 30, right: 30),
-            child: Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.green[900]!),
-                    shape: MaterialStateProperty.all<CircleBorder>(
-                      const CircleBorder(), // ทำให้ปุ่มเป็นวงกลม
-                    ),
-                    padding: MaterialStateProperty.all<EdgeInsets>(
-                      const EdgeInsets.all(20), // กำหนดขนาดของปุ่ม
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.location_on, // ชื่อไอคอน
-                    color: Colors.white, // สีของไอคอน
-                    size: 20, // ขนาดของไอคอน
-                  ),
-                ),
-                Text('   คลิกเพื่อแก้ไขตำแหน่งที่อยู่ * ',
-                    style: GoogleFonts.notoSansThai(
-                        textStyle: Theme.of(context).textTheme.displayLarge,
-                        fontSize: 14,
-                        color: Colors.grey)),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
-            child: TextField(
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(
-                  borderSide:
-                      BorderSide(width: 1, color: Colors.grey), // สีกรอบปกติ
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(
-                      width: 2, color: Colors.green[900]!), // สีกรอบเมื่อโฟกัส
                 ),
               ),
             ),
@@ -198,5 +260,55 @@ class _EditprofilepageState extends State<Editprofilepage> {
     );
   }
 
-  void saveeidt() {}
+  Future<void> saveeidt() async {
+    final farmerId =
+        Provider.of<DataFarmers>(context, listen: false).datauser.farmersId;
+
+    final uri = Uri.parse("$apiEndpoint/farmer/edit/$farmerId");
+    print("CALL API: $uri");
+
+    var request = http.MultipartRequest("PUT", uri);
+
+    request.fields["farm_name"] = farmNameController.text;
+    request.fields["phonenumber"] = phoneController.text;
+    request.fields["farmer_email"] = emailController.text;
+    request.fields["farm_address"] = addressController.text;
+
+    if (_selectedImage != null) {
+      request.files.add(
+        await http.MultipartFile.fromPath(
+          "profile_image",
+          _selectedImage!.path,
+        ),
+      );
+    }
+
+    try {
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      print(response.statusCode);
+      print(responseBody);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("แก้ไขข้อมูลสำเร็จ")),
+        );
+
+        // รีโหลดข้อมูลใหม่ (ถ้ามี API get profile)
+        // await Provider.of<DataFarmers>(context, listen:false).fetchProfile();
+
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("แก้ไขข้อมูลไม่สำเร็จ")),
+        );
+      }
+    } catch (e) {
+      print("ERROR: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้")),
+      );
+    }
+  }
 }

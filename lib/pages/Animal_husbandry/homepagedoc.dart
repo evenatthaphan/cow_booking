@@ -121,7 +121,7 @@ class _HomepagedocState extends State<Homepagedoc> {
       // กรองเฉพาะ status = 'pending'
       final pendingBookings = data
           .map((e) => BookingResponse.fromJson(e))
-          .where((b) => b.status == 'pending')
+          .where((b) => b.bookingsStatus == 'pending')
           .toList();
       return pendingBookings;
     } else {
@@ -138,7 +138,7 @@ class _HomepagedocState extends State<Homepagedoc> {
       final List<dynamic> data = jsonDecode(response.body);
       return data
           .map((e) => BookingResponse.fromJson(e))
-          .where((b) => b.status == 'accepted')
+          .where((b) => b.bookingsStatus == 'accepted')
           .toList();
     } else {
       throw Exception('Failed to load bookings');
@@ -156,7 +156,7 @@ class _HomepagedocState extends State<Homepagedoc> {
       // กรองเฉพาะ status = 'pending'
       final pendingBookings = data
           .map((e) => BookingResponse.fromJson(e))
-          .where((b) => b.status == 'rejected')
+          .where((b) => b.bookingsStatus == 'rejected')
           .toList();
       return pendingBookings;
     } else {
@@ -210,17 +210,17 @@ class _HomepagedocState extends State<Homepagedoc> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("ชื่อ : ${booking.farmerName}",
+                    Text("ชื่อ : ${booking.farmersName}",
                         style: TextStyle(fontSize: 16)),
                     Text(
                       "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
                       style: TextStyle(fontSize: 16),
                     ),
                     Text(
-                      "พ่อพันธุ์ : ${booking.bullname} ${booking.bullbreed} จำนวน ${booking.dose} โดส",
+                      "พ่อพันธุ์ : ${booking.bullsName} ${booking.bullsBreed} จำนวน ${booking.bookingsDose} โดส",
                       style: TextStyle(fontSize: 16),
                     ),
-                    Text("เพิ่มเติม : ${booking.detailBull}",
+                    Text("เพิ่มเติม : ${booking.bookingsDetailBull}",
                         style: TextStyle(fontSize: 16)),
                     const SizedBox(height: 10),
                     Align(
@@ -286,17 +286,17 @@ class _HomepagedocState extends State<Homepagedoc> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("ชื่อ : ${booking.farmerName}",
+                    Text("ชื่อ : ${booking.farmersName}",
                         style: TextStyle(fontSize: 16)),
                     Text(
                       "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
                       style: TextStyle(fontSize: 16),
                     ),
                     Text(
-                      "พ่อพันธุ์ : ${booking.bullname} ${booking.bullbreed} จำนวน ${booking.dose} โดส",
+                      "พ่อพันธุ์ : ${booking.bullsName} ${booking.bullsBreed} จำนวน ${booking.bookingsDose} โดส",
                       style: TextStyle(fontSize: 16),
                     ),
-                    Text("เพิ่มเติม : ${booking.detailBull}",
+                    Text("เพิ่มเติม : ${booking.bookingsDetailBull}",
                         style: TextStyle(fontSize: 16)),
                     const SizedBox(height: 10),
                     Align(
@@ -364,17 +364,17 @@ class _HomepagedocState extends State<Homepagedoc> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("ชื่อ : ${booking.farmerName}",
+                    Text("ชื่อ : ${booking.farmersName}",
                         style: TextStyle(fontSize: 16)),
                     Text(
                       "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
                       style: TextStyle(fontSize: 16),
                     ),
                     Text(
-                      "พ่อพันธุ์ : ${booking.bullname} ${booking.bullbreed} จำนวน ${booking.dose} โดส",
+                      "พ่อพันธุ์ : ${booking.bullsName} ${booking.bullsBreed} จำนวน ${booking.bookingsDose} โดส",
                       style: TextStyle(fontSize: 16),
                     ),
-                    Text("เพิ่มเติม : ${booking.detailBull}",
+                    Text("เพิ่มเติม : ${booking.bookingsDetailBull}",
                         style: TextStyle(fontSize: 16)),
                     const SizedBox(height: 10),
                     Align(

@@ -1,61 +1,73 @@
 // To parse this JSON data, do
 //
-//     final welcome = welcomeFromJson(jsonString);
+//     final farmers = farmersFromJson(jsonString);
 
 import 'dart:convert';
 
-Farmers welcomeFromJson(String str) => Farmers.fromJson(json.decode(str));
+List<Farmers> farmersFromJson(String str) => List<Farmers>.from(json.decode(str).map((x) => Farmers.fromJson(x)));
 
-String welcomeToJson(Farmers data) => json.encode(data.toJson());
+String farmersToJson(List<Farmers> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class Farmers {
-    int id;
-    String farmName;
-    String farmPassword;
-    String phonenumber;
-    String farmerEmail;
-    String profileImage;
-    String farmAddress;
-    String province;
-    String district;
-    String locality;
+    int farmersId;
+    String farmersName;
+    String farmesHashpassword;
+    String farmersPassword;
+    String farmersPhonenumber;
+    String farmersEmail;
+    String farmersProfileImage;
+    String farmersAddress;
+    String farmersProvince;
+    String farmersDistrict;
+    String farnersLocality;
+    dynamic farmersLocLat;
+    dynamic farmersLocLong;
 
     Farmers({
-        required this.id,
-        required this.farmName,
-        required this.farmPassword,
-        required this.phonenumber,
-        required this.farmerEmail,
-        required this.profileImage,
-        required this.farmAddress,
-        required this.province,
-        required this.district,
-        required this.locality,
+        required this.farmersId,
+        required this.farmersName,
+        required this.farmesHashpassword,
+        required this.farmersPassword,
+        required this.farmersPhonenumber,
+        required this.farmersEmail,
+        required this.farmersProfileImage,
+        required this.farmersAddress,
+        required this.farmersProvince,
+        required this.farmersDistrict,
+        required this.farnersLocality,
+        required this.farmersLocLat,
+        required this.farmersLocLong,
     });
 
     factory Farmers.fromJson(Map<String, dynamic> json) => Farmers(
-        id: json["id"],
-        farmName: json["farm_name"],
-        farmPassword: json["farm_password"],
-        phonenumber: json["phonenumber"],
-        farmerEmail: json["farmer_email"],
-        profileImage: json["profile_image"],
-        farmAddress: json["farm_address"],
-        province: json["province"],
-        district: json["district"],
-        locality: json["locality"],
+        farmersId: json["farmers_id"],
+        farmersName: json["farmers_name"],
+        farmesHashpassword: json["farmes_hashpassword"],
+        farmersPassword: json["farmers_password"],
+        farmersPhonenumber: json["farmers_phonenumber"],
+        farmersEmail: json["farmers_email"],
+        farmersProfileImage: json["farmers_profile_image"],
+        farmersAddress: json["farmers_address"],
+        farmersProvince: json["farmers_province"],
+        farmersDistrict: json["farmers_district"],
+        farnersLocality: json["farners_locality"],
+        farmersLocLat: json["farmers_loc_lat"],
+        farmersLocLong: json["farmers_loc_long"],
     );
 
     Map<String, dynamic> toJson() => {
-        "id": id,
-        "farm_name": farmName,
-        "farm_password": farmPassword,
-        "phonenumber": phonenumber,
-        "farmer_email": farmerEmail,
-        "profile_image": profileImage,
-        "farm_address": farmAddress,
-        "province": province,
-        "district": district,
-        "locality": locality,
+        "farmers_id": farmersId,
+        "farmers_name": farmersName,
+        "farmes_hashpassword": farmesHashpassword,
+        "farmers_password": farmersPassword,
+        "farmers_phonenumber": farmersPhonenumber,
+        "farmers_email": farmersEmail,
+        "farmers_profile_image": farmersProfileImage,
+        "farmers_address": farmersAddress,
+        "farmers_province": farmersProvince,
+        "farmers_district": farmersDistrict,
+        "farners_locality": farnersLocality,
+        "farmers_loc_lat": farmersLocLat,
+        "farmers_loc_long": farmersLocLong,
     };
 }

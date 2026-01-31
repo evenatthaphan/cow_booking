@@ -426,7 +426,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('isLoggedIn', true);
           await prefs.setString('userType', 'farmer');
-          await prefs.setInt('userId', farmer.id);
+          await prefs.setInt('userId', farmer.farmersId);
 
           // Navigator.pushReplacement(
           //   context,

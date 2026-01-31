@@ -118,16 +118,16 @@ class __DetailqueuePageState extends State<DetailqueuePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("ชื่อ : ${booking.farmerName}",
+                      Text("ชื่อ : ${booking.farmersName}",
                           style: const TextStyle(fontSize: 16)),
                       Text(
                         "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
                         style: const TextStyle(fontSize: 16),
                       ),
-                      Text("เพิ่มเติม : ${booking.detailBull}",
+                      Text("เพิ่มเติม : ${booking.bookingsDetailBull}",
                           style: const TextStyle(fontSize: 16)),
                       Text(
-                        "พ่อพันธุ์ : ${booking.bullname} ${booking.bullbreed}   จำนวน : ${booking.dose} โดส",
+                        "พ่อพันธุ์ : ${booking.bullsName} ${booking.bullsBreed}   จำนวน : ${booking.bookingsDose} โดส",
                         style: const TextStyle(fontSize: 16),
                       ),
                       const SizedBox(height: 10),

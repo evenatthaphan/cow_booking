@@ -9,16 +9,19 @@ class DataFarmers with ChangeNotifier {
   int _lastperiod = 0;
 
   Farmers _datauser = Farmers(
-      id: 0,
-      farmName: "" ,
-      farmPassword: "",
-      phonenumber: "",
-      farmerEmail: "",
-      profileImage: "",
-      farmAddress: "",
-      province: "",
-      district: "",
-      locality: "");
+      farmersId: 0,
+      farmersName: "" ,
+      farmesHashpassword: "",
+      farmersPassword : "",
+      farmersPhonenumber: "",
+      farmersEmail: "",
+      farmersProfileImage: "",
+      farmersAddress: "",
+      farmersProvince: "",
+      farmersDistrict: "",
+      farnersLocality: "",
+      farmersLocLat: null,
+      farmersLocLong: null,);
 
   Farmers get datauser => _datauser;  
   int get period => _period;
@@ -40,7 +43,7 @@ class DataFarmers with ChangeNotifier {
   }
 
   void updateProfileImage(String newProfileImage) {
-    _datauser.profileImage = newProfileImage;
+    _datauser.farmersProfileImage = newProfileImage;
     notifyListeners();
   }
 }
@@ -55,6 +58,7 @@ class DataVetExpert with ChangeNotifier {
       id: 0,
       vetExpertName: "" ,
       vetExpertPassword: "",
+      password:"",
       phonenumber: "",
       vetExpertEmail: "",
       profileImage: "",
@@ -93,25 +97,22 @@ class DataVetExpert with ChangeNotifier {
 
 class DataBull with ChangeNotifier {
   FarmbullRequestResponse _selectedBull = FarmbullRequestResponse(
-    id: 0,
-    bullname: '',
-    bullbreed: '',
-    bullage: 0,
-    characteristics: [],
-    farmId: 0,
+    bullId: 0,
+    bullsName: '',
+    bullsBreed: '',
+    bullsAge: 0,
+    bullsCharacteristics: '',
+    contestRecords: '',
     pricePerDose: 0,
     semenStock: 0,
-    contestRecords: '',
-    farmName: '',
-    province: '',
-    district: '',
-    locality: '',
-    address: '',
-    image1: '',
-    image2: '',
-    image3: '',
-    image4: '',
-    image5: '',
+    farm: Farm(
+      farmId: 0,
+      farmName: '',
+      province: '',
+      district: '',
+      locality: '',
+      address: '',
+    ),
     images: [],
   );
 
@@ -127,5 +128,6 @@ class DataBull with ChangeNotifier {
     notifyListeners();
   }
 }
+
 
 

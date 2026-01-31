@@ -91,7 +91,7 @@ class _BookingpageState extends State<Bookingpage> {
     }
 
     final dataFarmer = Provider.of<DataFarmers>(context, listen: false);
-    final int farmerId = dataFarmer.datauser.id ?? 0;
+    final int farmerId = dataFarmer.datauser.farmersId ?? 0;
 
     final confirm = await showDialog<bool>(
       context: context,
@@ -101,7 +101,7 @@ class _BookingpageState extends State<Bookingpage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("ชื่อผู้จอง: ${dataFarmer.datauser.farmName}"),
+            Text("ชื่อผู้จอง: ${dataFarmer.datauser.farmersName}"),
             Text("ชื่อสัตวบาล: $vetName"),
             Text(
                 "วันที่/เวลา: ${widget.selectedDay.toLocal().toString().split(' ')[0]} ${widget.selectedTime}"),

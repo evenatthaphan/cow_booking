@@ -12,6 +12,7 @@ class VetExpert {
     int id;
     String vetExpertName;
     String vetExpertPassword;
+    String password;
     String phonenumber;
     String vetExpertEmail;
     String profileImage;
@@ -26,6 +27,7 @@ class VetExpert {
         required this.id,
         required this.vetExpertName,
         required this.vetExpertPassword,
+        required this.password,
         required this.phonenumber,
         required this.vetExpertEmail,
         required this.profileImage,
@@ -41,6 +43,7 @@ class VetExpert {
         id: json["id"],
         vetExpertName: json["VetExpert_name"],
         vetExpertPassword: json["VetExpert_password"],
+        password: json["password"],
         phonenumber: json["phonenumber"],
         vetExpertEmail: json["VetExpert_email"],
         profileImage: json["profile_image"],
@@ -55,6 +58,7 @@ class VetExpert {
         "id": id,
         "VetExpert_name": vetExpertName,
         "VetExpert_password": vetExpertPassword,
+        "password": password,
         "phonenumber": phonenumber,
         "VetExpert_email": vetExpertEmail,
         "profile_image": profileImage,

@@ -83,7 +83,7 @@ class _FarmmerbookingpageState extends State<Farmmerbookingpage> {
       // only status = 'pending'
       final pendingBookings = data
           .map((e) => BookingResponse.fromJson(e))
-          .where((b) => b.status == 'pending')
+          .where((b) => b.bookingsStatus == 'pending')
           .toList();
       return pendingBookings;
     } else {
@@ -93,7 +93,7 @@ class _FarmmerbookingpageState extends State<Farmmerbookingpage> {
 
   Widget _buildBookingList() {
     final farmerId =
-        Provider.of<DataFarmers>(context, listen: false).datauser.id;
+        Provider.of<DataFarmers>(context, listen: false).datauser.farmersId;
 
     return FutureBuilder<List<BookingResponse>>(
       future: fetchPendingBookings(farmerId),
@@ -127,21 +127,21 @@ class _FarmmerbookingpageState extends State<Farmmerbookingpage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("ชื่อ : ${booking.farmerName}",
+                    Text("ชื่อ : ${booking.farmersName}",
                         style: const TextStyle(fontSize: 16)),
                     Text(
                       "วันที่ : ${DateFormat('dd/MM/yyyy').format(booking.scheduleDate)}   เวลา : ${booking.scheduleTime}",
                       style: const TextStyle(fontSize: 16),
                     ),
                     Text(
-                      "จองกับ : ${booking.vetName}",
+                      "จองกับ : ${booking.vetexpertsName}",
                       style: const TextStyle(fontSize: 16),
                     ),
                     Text(
-                      "พ่อพันธุ์ : ${booking.bullname} ${booking.bullbreed} จำนวน ${booking.dose} โดส",
+                      "พ่อพันธุ์ : ${booking.bullsName} ${booking.bullsBreed} จำนวน ${booking.bookingsDose} โดส",
                       style: const TextStyle(fontSize: 16),
                     ),
-                    Text("เพิ่มเติม : ${booking.detailBull}",
+                    Text("เพิ่มเติม : ${booking.bookingsDetailBull}",
                         style: const TextStyle(fontSize: 16)),
                   ],
                 ),

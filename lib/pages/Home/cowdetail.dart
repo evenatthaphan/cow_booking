@@ -27,7 +27,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
 
   Future<void> fetchVets() async {
     final bull = Provider.of<DataBull>(context, listen: false).selectedBull;
-    final bullId = bull.id;
+    final bullId = bull.bullId;
 
     setState(() {
       isLoading = true;
@@ -114,7 +114,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                   bottom: 10,
                   left: 14,
                   child: Text(
-                    bull.bullname.isNotEmpty ? bull.bullname : "ไม่ทราบชื่อ",
+                    bull.bullsName.isNotEmpty ? bull.bullsName : "ไม่ทราบชื่อ",
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 26,
@@ -135,8 +135,8 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      bull.bullbreed.isNotEmpty
-                          ? bull.bullbreed
+                      bull.bullsBreed.isNotEmpty
+                          ? bull.bullsBreed
                           : "ไม่ระบุสายพันธุ์",
                       style: const TextStyle(
                         color: Colors.black,
@@ -161,7 +161,10 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            bull.farmName ?? "ไม่ระบุฟาร์ม",
+                            // bull.farmName ?? "ไม่ระบุฟาร์ม",
+                            bull.farm.farmName.isNotEmpty
+                              ? bull.farm.farmName
+                              : "ไม่ระบุฟาร์ม",
                             style: const TextStyle(
                                 color: Colors.green,
                                 fontSize: 22,
@@ -183,20 +186,23 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        bull.contestRecords ?? "ไม่มีข้อมูลเพิ่มเติม",
+                        bull.contestRecords.isNotEmpty
+                            ? bull.contestRecords
+                            : "ไม่มีข้อมูลเพิ่มเติม",
                         style: const TextStyle(color: Colors.black),
                       ),
-
                       const SizedBox(height: 10),
                       // ลักษณะเด่น
-                      Wrap(
+                     Wrap(
                         spacing: 8,
-                        children: (bull.characteristics ?? ["ไม่มีข้อมูล"])
+                        children: (bull.bullsCharacteristics.isNotEmpty
+                                ? bull.bullsCharacteristics.split(',')
+                                : ['ไม่มีข้อมูล'])
                             .map((trait) {
                           return OutlinedButton(
                             onPressed: () {},
                             child: Text(
-                              trait,
+                              trait.trim(),
                               style: GoogleFonts.notoSansThai(
                                 fontSize: 14,
                                 color: Colors.black,
@@ -205,7 +211,6 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                           );
                         }).toList(),
                       ),
-
                       Padding(
                         padding: const EdgeInsets.only(top: 5, bottom: 5),
                         child: Container(
