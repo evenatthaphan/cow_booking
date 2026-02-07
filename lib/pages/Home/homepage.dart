@@ -132,10 +132,13 @@ class _HomepageState extends State<Homepage> {
                           ),
                           child: InkWell(
                             onTap: () {
+                              debugPrint("TAPPED");
+
                               final dataBull =
                                   Provider.of<DataBull>(context, listen: false);
                               dataBull.setSelectedBull(
-                                  FarmbullRequestResponse.fromJson(bull));
+                                FarmbullRequestResponse.fromJson(bull),
+                              );
 
                               Navigator.push(
                                 context,
@@ -144,23 +147,30 @@ class _HomepageState extends State<Homepage> {
                                 ),
                               );
                             },
-                            child: firstImage.isNotEmpty
-                                ? Image.network(firstImage, fit: BoxFit.cover)
-                                : Image.asset('assets/images/supperman.jpg',
-                                    fit: BoxFit.cover),
+                            child: SizedBox(
+                              height: 100, // 
+                              width: double.infinity,
+                              child: firstImage.isNotEmpty
+                                  ? Image.network(firstImage, fit: BoxFit.cover)
+                                  : Image.asset(
+                                      'assets/images/supperman.jpg',
+                                      fit: BoxFit.cover,
+                                    ),
+                            ),
                           ),
                         ),
+
                         Padding(
                           padding: const EdgeInsets.all(6.0),
                           child: Column(
                             children: [
                               Text(
-                                bull["Bullname"] ?? "",
+                                bull["bulls_name"] ?? "",
                                 style: GoogleFonts.notoSansThai(fontSize: 16),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                bull["farm_name"] ?? "",
+                                bull["farm"]?["farm_name"] ?? "",
                                 style: GoogleFonts.notoSansThai(
                                   fontSize: 14,
                                   color: const Color.fromARGB(255, 52, 122, 55),

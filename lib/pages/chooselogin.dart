@@ -172,31 +172,33 @@ class _ChooseLoginState extends State<ChooseLogin> {
   Future<bool> verifyCaptcha(String captchaId, String answer) async {
     try {
       final url = Uri.parse("$apiEndpoint/api/captcha/verify");
-      print("POST to: $url");
-      print("Body: ${jsonEncode({"captchaId": captchaId, "answer": answer})}");
 
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"captchaId": captchaId, "answer": answer}),
+        body: jsonEncode({
+          "captchaId": captchaId,
+          "answer": answer,
+        }),
       );
 
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}");
-
       final data = jsonDecode(response.body);
+
       if (response.statusCode == 200 && data['success'] == true) {
         return true;
       } else {
-        _showErrorDialog(data['message'] ?? context, "CAPTCHA ไม่ถูกต้อง");
+        _showErrorDialog(
+          context,
+          data['message'] ?? "CAPTCHA ไม่ถูกต้อง",
+        );
         return false;
       }
     } catch (e) {
-      print("verifyCaptcha error: $e");
       _showErrorDialog(context, "เกิดข้อผิดพลาด: $e");
       return false;
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -11,15 +11,15 @@ class DataFarmers with ChangeNotifier {
   Farmers _datauser = Farmers(
       farmersId: 0,
       farmersName: "" ,
-      farmesHashpassword: "",
-      farmersPassword : "",
+      // farmesHashpassword: "",
+      // farmersPassword : "",
       farmersPhonenumber: "",
       farmersEmail: "",
       farmersProfileImage: "",
       farmersAddress: "",
       farmersProvince: "",
       farmersDistrict: "",
-      farnersLocality: "",
+      farmersLocality: "",
       farmersLocLat: null,
       farmersLocLong: null,);
 
@@ -44,6 +44,25 @@ class DataFarmers with ChangeNotifier {
 
   void updateProfileImage(String newProfileImage) {
     _datauser.farmersProfileImage = newProfileImage;
+    notifyListeners();
+  }
+
+  void clear() {
+    _datauser = Farmers(
+      farmersId: 0,
+      farmersName: "",
+      farmersPhonenumber: "",
+      farmersEmail: "",
+      farmersProfileImage: "",
+      farmersAddress: "",
+      farmersProvince: "",
+      farmersDistrict: "",
+      farmersLocality: "",
+      farmersLocLat: null,
+      farmersLocLong: null,
+    );
+    _period = 0;
+    _lastperiod = 0;
     notifyListeners();
   }
 }

@@ -216,29 +216,43 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
     );
   }
 
+  
+
   // fucntion logout
   Future<void> _logout(BuildContext context) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('isLoggedIn');
-    await prefs.remove('userType');
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('isLoggedIn');
+  await prefs.remove('userType');
 
-    // clear data user in provider
-    context.read<DataFarmers>().setDataUser(Farmers(
-        farmersId: 0,
-        farmersName: "" ,
-        farmesHashpassword: "",
-        farmersPassword : "",
-        farmersPhonenumber: "",
-        farmersEmail: "",
-        farmersProfileImage: "",
-        farmersAddress: "",
-        farmersProvince: "",
-        farmersDistrict: "",
-        farnersLocality: "",
-        farmersLocLat: null,
-        farmersLocLong: null,
-        ));
+  // clear data user in provider
+  context.read<DataFarmers>().clear();
 
-    setState(() {});
-  }
+  if (!mounted) return;
+  setState(() {});
+}
+
+  // Future<void> _logout(BuildContext context) async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   await prefs.remove('isLoggedIn');
+  //   await prefs.remove('userType');
+
+  //   // clear data user in provider
+  //   context.read<DataFarmers>().setDataUser(Farmers(
+  //       farmersId: 0,
+  //       farmersName: "" ,
+  //       farmesHashpassword: "",
+  //       farmersPassword : "",
+  //       farmersPhonenumber: "",
+  //       farmersEmail: "",
+  //       farmersProfileImage: "",
+  //       farmersAddress: "",
+  //       farmersProvince: "",
+  //       farmersDistrict: "",
+  //       farnersLocality: "",
+  //       farmersLocLat: null,
+  //       farmersLocLong: null,
+  //       ));
+
+  //   setState(() {});
+  // }
 }

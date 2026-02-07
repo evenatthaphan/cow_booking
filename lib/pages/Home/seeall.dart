@@ -7,6 +7,14 @@ import 'package:cow_booking/pages/Home/seach.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_booking/share/ShareData.dart';
 
+// class SeeallPage extends StatefulWidget {
+//   final String breed;
+//   final List<dynamic> bulls;
+
+//   @override
+//   State<SeeallPage> createState() => _SeeallPageState();
+// }
+
 class SeeallPage extends StatefulWidget {
   final String breed;
   final List<dynamic> bulls;
@@ -21,7 +29,10 @@ class SeeallPage extends StatefulWidget {
   State<SeeallPage> createState() => _SeeallPageState();
 }
 
+
 class _SeeallPageState extends State<SeeallPage> {
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -82,6 +93,7 @@ class _SeeallPageState extends State<SeeallPage> {
           final bull = widget.bulls[index];
           final bullImages = bull['images'] as List<dynamic>? ?? [];
           final firstImage = bullImages.isNotEmpty ? bullImages[0] : '';
+          final characteristics = (bull['bulls_characteristics'] as String?) ?? '';
 
           return Padding(
             padding: const EdgeInsets.all(8.0),
@@ -131,49 +143,67 @@ class _SeeallPageState extends State<SeeallPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            bull['Bullname'] ?? '',
+                            bull['bulls_name'] ?? '',
                             style: GoogleFonts.notoSansThai(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+
                           const SizedBox(height: 5),
+
                           Text(
-                            bull['farm_name'] ?? '',
+                            bull['farm']?['farm_name'] ?? '',
                             style: GoogleFonts.notoSansThai(
-                                fontSize: 14, color: Colors.black),
+                              fontSize: 14,
+                              color: Colors.black,
+                            ),
                           ),
+
                           const SizedBox(height: 5),
+
                           Text(
                             bull['contest_records'] ?? '',
                             style: GoogleFonts.notoSansThai(
-                                fontSize: 12, color: Colors.black),
+                              fontSize: 12,
+                              color: Colors.black,
+                            ),
                           ),
+
                           const SizedBox(height: 5),
                           SizedBox(
-                            height: 40,
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: (bull['characteristics'] as String)
+                        height: 40,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: characteristics.isNotEmpty
+                                ? characteristics
                                     .split(' ')
-                                    .map((c) => Padding(
-                                          padding:
-                                              const EdgeInsets.only(right: 5),
-                                          child: OutlinedButton(
-                                            onPressed: () {},
-                                            child: Text(
-                                              c,
-                                              style: GoogleFonts.notoSansThai(
-                                                  fontSize: 10,
-                                                  color: Colors.green[900]),
+                                    .map(
+                                      (c) => Padding(
+                                        padding: const EdgeInsets.only(right: 5),
+                                        child: OutlinedButton(
+                                          onPressed: () {},
+                                          child: Text(
+                                            c,
+                                            style: GoogleFonts.notoSansThai(
+                                              fontSize: 10,
+                                              color: Colors.green[900],
                                             ),
                                           ),
-                                        ))
-                                    .toList(),
-                              ),
-                            ),
-                          )
+                                        ),
+                                      ),
+                                    )
+                                    .toList()
+                                : [
+                                    const Text(
+                                      'ไม่มีข้อมูล',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ],
+                          ),
+                        ),
+                      ),
                         ],
                       ),
                     ),
