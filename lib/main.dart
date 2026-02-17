@@ -78,26 +78,59 @@ Future<void> testAsync() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  Future<Widget> _getStartPage() async {
+  // Future<Widget> _getStartPage() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  //   final userType = prefs.getString('userType');
+
+  //   if (isLoggedIn && userType != null) {
+  //     if (userType == 'farmer') {
+  //       return Homepage();
+  //     } else if (userType == 'vet') {
+  //       return Homepagedoc();
+  //     }
+  //   }
+
+  //   return const Loginpage();
+  // }
+
+  Future<Widget> _getStartPage(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
     final userType = prefs.getString('userType');
+    final userId = prefs.getInt('userId');
 
-    if (isLoggedIn && userType != null) {
-      if (userType == 'farmer') {
-        return Homepage();
-      } else if (userType == 'vet') {
-        return Homepagedoc();
+    if (isLoggedIn && userType != null && userId != null) {
+      try {
+        if (userType == 'farmer') {
+          await context
+              .read<DataFarmers>()
+              .fetchFarmerById(userId);
+
+          return Homepage();
+        }
+
+        if (userType == 'vet') {
+          await context
+              .read<DataVetExpert>()
+              .fetchVetById(userId);
+
+          return Homepagedoc();
+        }
+      } catch (e) {
+        // session / token หมดอายุ
+        await prefs.clear();
       }
     }
 
     return const Loginpage();
   }
 
+  
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Widget>(
-      future: _getStartPage(),
+      future: _getStartPage(context),
       builder: (context, snapshot) {
         // waittng SharedPreferences load
         if (snapshot.connectionState == ConnectionState.waiting) {

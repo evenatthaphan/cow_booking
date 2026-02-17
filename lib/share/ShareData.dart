@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:cow_booking/model/response/Farms_response.dart';
 import 'package:flutter/material.dart';
 import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
+import 'package:http/http.dart' as http;
+import 'package:cow_booking/config/internal_config.dart';
 
 // Farmers ***
 class DataFarmers with ChangeNotifier {
@@ -65,6 +69,31 @@ class DataFarmers with ChangeNotifier {
     _lastperiod = 0;
     notifyListeners();
   }
+
+  Future<void> fetchFarmerById(int farmerId) async {
+    try {
+      final res = await http.get(
+        Uri.parse("$apiEndpoint/farmer/$farmerId"),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+
+        Farmers farmer = Farmers.fromJson(data);
+
+        _datauser = farmer;
+        notifyListeners();
+      } else {
+        throw Exception("Failed to load farmer");
+      }
+    } catch (e) {
+      debugPrint("fetchFarmerById error: $e");
+    }
+  }
+
 }
 
 
@@ -74,21 +103,22 @@ class DataVetExpert with ChangeNotifier {
   int _lastperiod = 0;
 
   VetExpert _datauser = VetExpert(
-      id: 0,
-      vetExpertName: "" ,
-      vetExpertPassword: "",
-      password:"",
-      phonenumber: "",
-      vetExpertEmail: "",
-      profileImage: "",
-      vetExpertAddress: "",
-      province: "",
-      district: "",
-      locality: "",
-      vetExpertPl: "",
-      totalSemenStock: 0,);
+    id: 0,
+    vetExpertName: "",
+    vetExpertPassword: "",
+    password: "",
+    phonenumber: "",
+    vetExpertEmail: "",
+    profileImage: "",
+    province: "",
+    district: "",
+    locality: "",
+    vetExpertAddress: "",
+    vetExpertPl: "",
+    totalSemenStock: 0,
+  );
 
-  VetExpert get datauser => _datauser;  
+  VetExpert get datauser => _datauser;
   int get period => _period;
   int get lastperiod => _lastperiod;
 
@@ -97,21 +127,128 @@ class DataVetExpert with ChangeNotifier {
     notifyListeners();
   }
 
-  void setLastperiod(int period) {
-    _lastperiod = period;
+  void setPeriod(int value) {
+  _period = value;
+  notifyListeners();
+}
+
+  void clear() {
+    _datauser = VetExpert(
+      id: 0,
+      vetExpertName: "",
+      vetExpertPassword: "",
+      password: "",
+      phonenumber: "",
+      vetExpertEmail: "",
+      profileImage: "",
+      province: "",
+      district: "",
+      locality: "",
+      vetExpertAddress: "",
+      vetExpertPl: "",
+      totalSemenStock: 0,
+    );
+    _period = 0;
+    _lastperiod = 0;
     notifyListeners();
   }
 
-  void setPeriod(int period) {
-    _period = period;
+  void updateProfileImage(String newImage) {
+    _datauser.profileImage = newImage;
     notifyListeners();
   }
 
-  void updateProfileImage(String newProfileImage) {
-    _datauser.profileImage = newProfileImage;
-    notifyListeners();
+  /// ✅ fetch vet expert by id
+  Future<void> fetchVetById(int vetId) async {
+    try {
+      final res = await http.get(
+        Uri.parse("$apiEndpoint/vetexpert/$vetId"),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+
+        _datauser = VetExpert.fromJson(data);
+        notifyListeners();
+      } else {
+        throw Exception("Failed to load vet expert");
+      }
+    } catch (e) {
+      debugPrint("fetchVetById error: $e");
+      rethrow;
+    }
   }
 }
+
+// class DataVetExpert with ChangeNotifier {
+//   int _period = 0;
+//   int _lastperiod = 0;
+
+//   VetExpert _datauser = VetExpert(
+//       id: 0,
+//       vetExpertName: "" ,
+//       vetExpertPassword: "",
+//       password:"",
+//       phonenumber: "",
+//       vetExpertEmail: "",
+//       profileImage: "",
+//       vetExpertAddress: "",
+//       province: "",
+//       district: "",
+//       locality: "",
+//       vetExpertPl: "",
+//       totalSemenStock: 0,);
+
+//   VetExpert get datauser => _datauser;  
+//   int get period => _period;
+//   int get lastperiod => _lastperiod;
+
+//   void setDataUser(VetExpert user) {
+//     _datauser = user;
+//     notifyListeners();
+//   }
+
+//   void setLastperiod(int period) {
+//     _lastperiod = period;
+//     notifyListeners();
+//   }
+
+//   void setPeriod(int period) {
+//     _period = period;
+//     notifyListeners();
+//   }
+
+//   void updateProfileImage(String newProfileImage) {
+//     _datauser.profileImage = newProfileImage;
+//     notifyListeners();
+//   }
+
+//   Future<void> fetchVetById(int vetId) async {
+//     try {
+//       final res = await http.get(
+//         Uri.parse("$apiEndpoint/vetexpert/$vetId"),
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//       );
+
+//       if (res.statusCode == 200) {
+//         final data = jsonDecode(res.body);
+//         _datauser = VetExpert.fromJson(data);
+//         notifyListeners();
+//       } else {
+//         throw Exception("Failed to load vet expert");
+//       }
+//     } catch (e) {
+//       debugPrint("fetchVetById error: $e");
+//       rethrow;
+//     }
+//   }
+
+// }
 
 
 class DataBull with ChangeNotifier {

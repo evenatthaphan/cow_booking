@@ -39,20 +39,36 @@ class VetExpert {
         this.totalSemenStock = 0,
     });
 
+    // factory VetExpert.fromJson(Map<String, dynamic> json) => VetExpert(
+    //     id: json["id"],
+    //     vetExpertName: json["VetExpert_name"],
+    //     vetExpertPassword: json["VetExpert_password"],
+    //     password: json["password"],
+    //     phonenumber: json["phonenumber"],
+    //     vetExpertEmail: json["VetExpert_email"],
+    //     profileImage: json["profile_image"],
+    //     province: json["province"],
+    //     district: json["district"],
+    //     locality: json["locality"],
+    //     vetExpertAddress: json["VetExpert_address"],
+    //     vetExpertPl: json["VetExpert_PL"],
+    // );
     factory VetExpert.fromJson(Map<String, dynamic> json) => VetExpert(
-        id: json["id"],
-        vetExpertName: json["VetExpert_name"],
-        vetExpertPassword: json["VetExpert_password"],
-        password: json["password"],
-        phonenumber: json["phonenumber"],
-        vetExpertEmail: json["VetExpert_email"],
-        profileImage: json["profile_image"],
-        province: json["province"],
-        district: json["district"],
-        locality: json["locality"],
-        vetExpertAddress: json["VetExpert_address"],
-        vetExpertPl: json["VetExpert_PL"],
+      id: json["vetexperts_id"],
+      vetExpertName: json["vetexperts_name"],
+      vetExpertPassword: json["vetexperts_hashpassword"],
+      password: json["vetexperts_password"] ?? "",
+      phonenumber: json["vetexperts_phonenumber"],
+      vetExpertEmail: json["vetexperts_email"],
+      profileImage: json["vetexperts_profile_image"] ?? "",
+      province: json["vetexperts_province"],
+      district: json["vetexperts_district"],
+      locality: json["vetexperts_locality"],
+      vetExpertAddress: json["vetexperts__address"],
+      vetExpertPl: json["vetexperts_license"],
+      totalSemenStock: json["totalSemenStock"] ?? 0,
     );
+
 
     Map<String, dynamic> toJson() => {
         "id": id,

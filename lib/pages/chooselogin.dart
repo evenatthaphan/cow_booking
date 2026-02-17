@@ -435,12 +435,17 @@ class _ChooseLoginState extends State<ChooseLogin> {
           //   MaterialPageRoute(builder: (_) => Homepage()),
           // );
 
-          Navigator.pushAndRemoveUntil(
+          // Navigator.pushAndRemoveUntil(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => Homepage()),
+          //   (route) => false,
+          // );
+          await _showSuccessDialogAndNavigate(
             context,
-            MaterialPageRoute(builder: (context) => Homepage()),
-            (route) => false,
+            Homepage(),
           );
           return;
+
         }
 
         if (role == 'vet' && user != null) {
@@ -452,11 +457,16 @@ class _ChooseLoginState extends State<ChooseLogin> {
           await prefs.setString('userType', 'vet');
           await prefs.setInt('userId', vet.id);
 
-          Navigator.pushReplacement(
+          // Navigator.pushReplacement(
+          //   context,
+          //   MaterialPageRoute(builder: (_) => Homepagedoc()),
+          // );
+          await _showSuccessDialogAndNavigate(
             context,
-            MaterialPageRoute(builder: (_) => Homepagedoc()),
+            Homepagedoc(),
           );
           return;
+
         }
 
         // not role/user
@@ -465,13 +475,50 @@ class _ChooseLoginState extends State<ChooseLogin> {
         // Username/Password wrong
         _showErrorDialog(context, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
       } else {
-        handleError.handleError(res);
+        // handleError.handleError(res);
+        String errorMessage = "เกิดข้อผิดพลาด";
+
+        try {
+          final data = jsonDecode(res.body);
+          errorMessage =
+              data['error'] ?? data['message'] ?? errorMessage;
+        } catch (_) {}
+
+        _showErrorDialog(context, errorMessage);
+        
       }
     } catch (e) {
       debugPrint('Login error: ' + e.toString());
       myWidget.showCustomSnackbar('Message', 'เกิดข้อผิดพลาดระหว่างล็อกอิน $e');
     }
   }
+
+
+  Future<void> _showSuccessDialogAndNavigate(
+    BuildContext context,
+    Widget nextPage,
+  ) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text("เข้าสู่ระบบสำเร็จ"),
+        content: const Text("กำลังเข้าสู่ระบบ กรุณารอสักครู่..."),
+      ),
+    );
+
+    await Future.delayed(const Duration(seconds: 5));
+
+    if (context.mounted) {
+      Navigator.of(context).pop(); // ปิด dialog
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => nextPage),
+        (route) => false,
+      );
+    }
+  }
+
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(

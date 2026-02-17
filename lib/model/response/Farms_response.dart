@@ -118,49 +118,60 @@
 
 import 'dart:convert';
 
-List<FarmbullRequestResponse> farmbullRequestResponseFromJson(String str) => List<FarmbullRequestResponse>.from(json.decode(str).map((x) => FarmbullRequestResponse.fromJson(x)));
+List<FarmbullRequestResponse> farmbullRequestResponseFromJson(String str) =>
+    List<FarmbullRequestResponse>.from(
+        json.decode(str).map((x) => FarmbullRequestResponse.fromJson(x)));
 
-String farmbullRequestResponseToJson(List<FarmbullRequestResponse> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+String farmbullRequestResponseToJson(
+        List<FarmbullRequestResponse> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
 class FarmbullRequestResponse {
-    int bullId;
-    String bullsName;
-    String bullsBreed;
-    int bullsAge;
-    String bullsCharacteristics;
-    String contestRecords;
-    int pricePerDose;
-    int semenStock;
-    Farm farm;
-    List<String> images;
+  int bullId;
+  String bullsName;
+  String bullsBreed;
+  int bullsAge;
+  String bullsCharacteristics;
+  String contestRecords;
+  int pricePerDose;
+  int semenStock;
+  Farm farm;
+  List<String> images;
 
-    FarmbullRequestResponse({
-        required this.bullId,
-        required this.bullsName,
-        required this.bullsBreed,
-        required this.bullsAge,
-        required this.bullsCharacteristics,
-        required this.contestRecords,
-        required this.pricePerDose,
-        required this.semenStock,
-        required this.farm,
-        required this.images,
-    });
+  FarmbullRequestResponse({
+    required this.bullId,
+    required this.bullsName,
+    required this.bullsBreed,
+    required this.bullsAge,
+    required this.bullsCharacteristics,
+    required this.contestRecords,
+    required this.pricePerDose,
+    required this.semenStock,
+    required this.farm,
+    required this.images,
+  });
 
-    factory FarmbullRequestResponse.fromJson(Map<String, dynamic> json) => FarmbullRequestResponse(
-        bullId: json["bull_id"],
-        bullsName: json["bulls_name"],
-        bullsBreed: json["bulls_breed"],
-        bullsAge: json["bulls_age"],
-        bullsCharacteristics: json["bulls_characteristics"],
-        contestRecords: json["contest_records"],
-        pricePerDose: json["price_per_dose"],
-        semenStock: json["semen_stock"],
-        farm: Farm.fromJson(json["farm"]),
-        images: List<String>.from(json["images"].map((x) => x)),
+  factory FarmbullRequestResponse.fromJson(Map<String, dynamic> json) {
+    return FarmbullRequestResponse(
+      bullId: (json["bull_id"] ?? 0) as int,
+      bullsName: json["bulls_name"] ?? "",
+      bullsBreed: json["bulls_breed"] ?? "",
+      bullsAge: (json["bulls_age"] ?? 0) as int,
+      bullsCharacteristics: json["bulls_characteristics"] ?? "",
+      contestRecords: json["contest_records"] ?? "",
+      pricePerDose: (json["price_per_dose"] ?? 0) as int,
+      semenStock: (json["semen_stock"] ?? 0) as int,
+      farm: json["farm"] != null
+          ? Farm.fromJson(json["farm"])
+          : Farm.empty(),
+      images: json["images"] != null
+          ? List<String>.from(
+              (json["images"] as List).map((x) => x.toString()))
+          : [],
     );
+  }
 
-    Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() => {
         "bull_id": bullId,
         "bulls_name": bullsName,
         "bulls_breed": bullsBreed,
@@ -171,42 +182,55 @@ class FarmbullRequestResponse {
         "semen_stock": semenStock,
         "farm": farm.toJson(),
         "images": List<dynamic>.from(images.map((x) => x)),
-    };
+      };
 }
 
 class Farm {
-    int farmId;
-    String farmName;
-    String province;
-    String district;
-    String locality;
-    String address;
+  int farmId;
+  String farmName;
+  String province;
+  String district;
+  String locality;
+  String address;
 
-    Farm({
-        required this.farmId,
-        required this.farmName,
-        required this.province,
-        required this.district,
-        required this.locality,
-        required this.address,
-    });
+  Farm({
+    required this.farmId,
+    required this.farmName,
+    required this.province,
+    required this.district,
+    required this.locality,
+    required this.address,
+  });
 
-    factory Farm.fromJson(Map<String, dynamic> json) => Farm(
-        farmId: json["farm_id"],
-        farmName: json["farm_name"],
-        province: json["province"],
-        district: json["district"],
-        locality: json["locality"],
-        address: json["address"],
+  /// กันกรณี farm เป็น null
+  factory Farm.empty() {
+    return Farm(
+      farmId: 0,
+      farmName: "",
+      province: "",
+      district: "",
+      locality: "",
+      address: "",
     );
+  }
 
-    Map<String, dynamic> toJson() => {
+  factory Farm.fromJson(Map<String, dynamic> json) {
+    return Farm(
+      farmId: (json["farm_id"] ?? 0) as int,
+      farmName: json["farm_name"] ?? "",
+      province: json["province"] ?? "",
+      district: json["district"] ?? "",
+      locality: json["locality"] ?? "",
+      address: json["address"] ?? "",
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
         "farm_id": farmId,
         "farm_name": farmName,
         "province": province,
         "district": district,
         "locality": locality,
         "address": address,
-    };
+      };
 }
-
