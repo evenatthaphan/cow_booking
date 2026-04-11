@@ -40,17 +40,28 @@ class _CowdetailpageState extends State<Cowdetailpage> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        debugPrint('Vets API Response: $data'); // เพิ่ม Log ดูข้อมูล
+
+        List<dynamic> listVets = [];
         if (data is List) {
-          setState(() {
-            vets = data;
-            isLoading = false;
-          });
-        } else {
-          print('Unexpected vets format');
-          setState(() => isLoading = false);
+          listVets = data;
+        } else if (data is Map && data['vets'] is List) {
+          // เผื่อกรณี API ส่งมาในรูปแบบ { "vets": [...] }
+          listVets = data['vets'];
+        }
+
+        setState(() {
+          vets = listVets;
+          isLoading = false;
+        });
+        
+        // Debug: แสดงชื่อ key ทั้งหมดในข้อมูลแรก
+        if (vets.isNotEmpty) {
+          debugPrint('First vet data keys: ${vets[0].keys.toList()}');
+          debugPrint('First vet full data: ${vets[0]}');
         }
       } else {
-        print('Error fetching vets: ${response.statusCode}');
+        debugPrint('Error fetching vets: ${response.statusCode}');
         setState(() => isLoading = false);
       }
     } catch (e) {
@@ -225,18 +236,15 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('สัตวบาลที่มีน้ำเชื้อ',
+                            Text('สัตวบาลที่มีน้ำเชื้อ (ID: ${bull.bullId ?? 'ไม่ระบุ'})',
                                 style: GoogleFonts.notoSansThai(
                                     fontSize: 18,
                                     color: Colors.grey,
                                     fontWeight: FontWeight.bold)),
-                            TextButton(
-                                onPressed: seedocall,
-                                child: Text('ดูทั้งหมด',
-                                    style: GoogleFonts.notoSansThai(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green[400]))),
+                            Text('พบ ${vets.length} ท่าน',
+                                style: GoogleFonts.notoSansThai(
+                                    fontSize: 14,
+                                    color: Colors.grey)),
                           ],
                         ),
                       ),
@@ -247,32 +255,39 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                               ? const Text('ไม่มีข้อมูลสัตวบาล')
                               : Column(
                                   children: vets.map((vet) {
+                                    // ลองหาชื่อจากหลายๆ Key ที่เป็นไปได้
+                                    String vetName = vet['vetexperts_name']?.toString() ?? 
+                                                     vet['vet_expert_name']?.toString() ?? 
+                                                     vet['vetExpertName']?.toString() ?? 
+                                                     'ไม่ระบุชื่อ';
+                                    
                                     return Card(
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       child: ListTile(
                                         leading: CircleAvatar(
-                                          backgroundImage: vet[
-                                                      'profile_image'] !=
-                                                  null
-                                              ? NetworkImage(
-                                                  vet['profile_image'])
+                                          backgroundImage: (vet['profile_image'] != null && vet['profile_image'].toString().isNotEmpty)
+                                              ? NetworkImage(vet['profile_image'].toString())
                                               : const AssetImage(
-                                                      'assets/images/pin.jpg')
+                                                      'assets/images/profile.jpg')
                                                   as ImageProvider,
                                         ),
                                         title: Text(
-                                          vet['VetExpert_name'],
+                                          vetName,
                                           style: TextStyle(
                                               color: Colors.green[900],
                                               fontWeight: FontWeight.bold),
                                         ),
                                         subtitle: Text(
-                                          'จังหวัด:${vet['province'] ?? ''} อำเภอ:${vet['district'] ?? ''} ตำบล:${vet['locality'] ?? ''}',
+                                          'จังหวัด:${vet['province'] ?? '-'} อำเภอ:${vet['district'] ?? '-'} ตำบล:${vet['locality'] ?? '-'}',
                                         ),
                                         trailing: ElevatedButton(
-                                          onPressed: () => seedocprofile(vet['id']),
+                                          onPressed: () {
+                                            if (vet['id'] != null) {
+                                              seedocprofile(int.parse(vet['id'].toString()));
+                                            }
+                                          },
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: Colors.green,
                                             minimumSize: const Size(40, 40),

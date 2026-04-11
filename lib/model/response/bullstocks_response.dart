@@ -44,7 +44,7 @@ class BullStock {
         farmName: json["farm_name"],
         pricePerDose: json["price_per_dose"],
         semenStock: json["semen_stock"],
-        vetBullId: json["vet_bull_id"], // <-- ตรงนี้
+        vetBullId: json["vet_bull_id"], //
       );
 
   Map<String, dynamic> toJson() => {
