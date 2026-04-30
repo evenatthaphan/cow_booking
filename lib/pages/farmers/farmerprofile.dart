@@ -1,5 +1,7 @@
 import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:cow_booking/pages/chooseregis.dart';
+import 'package:cow_booking/pages/farmers/historypage.dart';
+import 'package:cow_booking/pages/farmers/dashboardpage.dart';
 import 'package:cow_booking/pages/farmers/viewprofile.dart';
 import 'package:cow_booking/pages/chooselogin.dart';
 import 'package:flutter/material.dart';
@@ -112,9 +114,35 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
             ],
           ),
         ),
+        // _buildMenuItem("ที่ถูกใจ", Icons.favorite),
+        // _buildMenuItem("ประวัติการผสม", Icons.library_books_sharp),
+        // _buildMenuItem("สถิติทั้งหมด", Icons.stacked_bar_chart),
         _buildMenuItem("ที่ถูกใจ", Icons.favorite),
-        _buildMenuItem("ประวัติการผสม", Icons.library_books_sharp),
-        _buildMenuItem("สถิติทั้งหมด", Icons.stacked_bar_chart),
+        _buildMenuItem(
+          "ประวัติการผสม",
+          Icons.library_books_sharp,
+          onTap: () {
+            final farmerId = context.read<DataFarmers>().datauser.farmersId;
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => InseminationHistoryPage(farmerId: farmerId),
+              ),
+            );
+          },
+        ),
+        _buildMenuItem(
+          "สถิติทั้งหมด",
+          Icons.stacked_bar_chart,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const InseminationDashboardPage(),
+              ),
+            );
+          },
+        ),
         const SizedBox(height: 10),
         GestureDetector(
           onTap: () => _logout(context),
@@ -192,26 +220,27 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
   }
 
   // simple menu
-  Widget _buildMenuItem(String title, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.green[700]),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(title,
-                style: GoogleFonts.notoSansThai(
-                  fontSize: 16,
-                )),
-          ),
-          const Icon(Icons.arrow_forward_ios, size: 16),
-        ],
+  Widget _buildMenuItem(String title, IconData icon, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Colors.green[700]),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(title,
+                  style: GoogleFonts.notoSansThai(fontSize: 16)),
+            ),
+            const Icon(Icons.arrow_forward_ios, size: 16),
+          ],
+        ),
       ),
     );
   }

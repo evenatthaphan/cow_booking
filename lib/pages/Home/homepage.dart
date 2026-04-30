@@ -54,6 +54,16 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
+  String _normalizeProfileImageUrl(String? url) {
+    if (url == null || url.isEmpty) return '';
+
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+
+    return '$apiEndpoint/$url'; // หรือเปลี่ยนเป็น base URL ที่ถูกต้อง
+  }
+
   @override
   void initState() {
     super.initState();
@@ -230,13 +240,29 @@ class _HomepageState extends State<Homepage> {
               padding: const EdgeInsets.only(right: 10),
               child: Consumer<DataFarmers>(
                 builder: (context, dataVet, _) {
-                  final imageUrl = dataVet.datauser.farmersProfileImage;
+                  final rawImageUrl = dataVet.datauser.farmersProfileImage;
+                  final imageUrl = _normalizeProfileImageUrl(rawImageUrl);
                   return CircleAvatar(
                     radius: 20,
-                    backgroundImage: (imageUrl.isNotEmpty)
-                        ? NetworkImage(imageUrl)
-                        : const NetworkImage(
-                            'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
+                    backgroundColor: Colors.grey.shade200,
+                    child: imageUrl.isNotEmpty
+                        ? ClipOval(
+                            child: Image.network(
+                              imageUrl,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.person,
+                                  color: Colors.grey,
+                                );
+                              },
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            color: Colors.grey,
                           ),
                   );
                 },

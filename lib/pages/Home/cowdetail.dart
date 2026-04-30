@@ -18,11 +18,60 @@ class Cowdetailpage extends StatefulWidget {
 class _CowdetailpageState extends State<Cowdetailpage> {
   List<dynamic> vets = [];
   bool isLoading = true;
+  bool isLiked = false;      // เพิ่ม
+  bool isLiking = false;     // เพิ่ม กันกดซ้ำ
 
   @override
   void initState() {
     super.initState();
     fetchVets(); // Reload Vetexpert
+  }
+
+  // function กดถูกใจ
+  Future<void> _toggleLike() async {
+    final farmerId = context.read<DataFarmers>().datauser.farmersId;
+    final bullId = Provider.of<DataBull>(context, listen: false).selectedBull.bullId;
+
+    if (farmerId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('กรุณาเข้าสู่ระบบก่อนกดถูกใจ')),
+      );
+      return;
+    }
+
+    setState(() => isLiking = true);
+
+    try {
+      final response = await http.post(
+        Uri.parse('$apiEndpoint/farmer/like_bull'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'farmers_id': farmerId,
+          'bulls_id': bullId,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        setState(() => isLiked = true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('กดถูกใจสำเร็จ'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (response.statusCode == 400) {
+        final body = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(body['error'] ?? 'เกิดข้อผิดพลาด')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ไม่สามารถเชื่อมต่อได้')),
+      );
+    }
+
+    setState(() => isLiking = false);
   }
 
   Future<void> fetchVets() async {
@@ -54,11 +103,17 @@ class _CowdetailpageState extends State<Cowdetailpage> {
           vets = listVets;
           isLoading = false;
         });
-        
+
         // Debug: แสดงชื่อ key ทั้งหมดในข้อมูลแรก
         if (vets.isNotEmpty) {
+          debugPrint('========== VET DATA DEBUG ==========');
           debugPrint('First vet data keys: ${vets[0].keys.toList()}');
           debugPrint('First vet full data: ${vets[0]}');
+          // แสดงค่า id ด้วยหลายรูปแบบ
+          debugPrint('id: ${vets[0]['id']}');
+          debugPrint('vetexperts_id: ${vets[0]['vetexperts_id']}');
+          debugPrint('vet_id: ${vets[0]['vet_id']}');
+          debugPrint('====================================');
         }
       } else {
         debugPrint('Error fetching vets: ${response.statusCode}');
@@ -181,17 +236,41 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: () {},
-                            icon: const Icon(Icons.favorite_border,
-                                color: Colors.white),
-                            label: const Text(
-                              "ชอบ",
-                              style: TextStyle(color: Colors.white),
-                            ),
+                          // ElevatedButton.icon(
+                          //   onPressed: () {},
+                          //   icon: const Icon(Icons.favorite_border,
+                          //       color: Colors.white),
+                          //   label: const Text(
+                          //     "ชอบ",
+                          //     style: TextStyle(color: Colors.white),
+                          //   ),
+                          //   style: ElevatedButton.styleFrom(
+                          //     backgroundColor: Colors.pink,
+                          //   ),
+                          // ),
+                          ElevatedButton(
+                            onPressed: isLiking ? null : _toggleLike,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.pink,
+                              backgroundColor: isLiked ? Colors.pink[100] : Colors.pink,
+                              minimumSize: const Size(48, 48),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            child: isLiking
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : Icon(
+                                    isLiked ? Icons.favorite : Icons.favorite_border,
+                                    color: isLiked ? Colors.red : Colors.white,
+                                    size: 24,
+                                  ),
                           ),
                         ],
                       ),
@@ -236,7 +315,7 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('สัตวบาลที่มีน้ำเชื้อ (ID: ${bull.bullId ?? 'ไม่ระบุ'})',
+                            Text('สัตวบาลที่มีน้ำเชื้อ',
                                 style: GoogleFonts.notoSansThai(
                                     fontSize: 18,
                                     color: Colors.grey,
@@ -257,8 +336,6 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                                   children: vets.map((vet) {
                                     // ลองหาชื่อจากหลายๆ Key ที่เป็นไปได้
                                     String vetName = vet['vetexperts_name']?.toString() ?? 
-                                                     vet['vet_expert_name']?.toString() ?? 
-                                                     vet['vetExpertName']?.toString() ?? 
                                                      'ไม่ระบุชื่อ';
                                     
                                     return Card(
@@ -267,8 +344,8 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                                       ),
                                       child: ListTile(
                                         leading: CircleAvatar(
-                                          backgroundImage: (vet['profile_image'] != null && vet['profile_image'].toString().isNotEmpty)
-                                              ? NetworkImage(vet['profile_image'].toString())
+                                          backgroundImage: (vet['vetexperts_profile_image'] != null && vet['vetexperts_profile_image'].toString().isNotEmpty)
+                                              ? NetworkImage(vet['vetexperts_profile_image'].toString())
                                               : const AssetImage(
                                                       'assets/images/profile.jpg')
                                                   as ImageProvider,
@@ -280,12 +357,18 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                                               fontWeight: FontWeight.bold),
                                         ),
                                         subtitle: Text(
-                                          'จังหวัด:${vet['province'] ?? '-'} อำเภอ:${vet['district'] ?? '-'} ตำบล:${vet['locality'] ?? '-'}',
+                                          'จังหวัด:${vet['vetexperts_province'] ?? '-'} อำเภอ:${vet['vetexperts_district'] ?? '-'} ตำบล:${vet['vetexperts_locality'] ?? '-'}',
                                         ),
                                         trailing: ElevatedButton(
                                           onPressed: () {
-                                            if (vet['id'] != null) {
-                                              seedocprofile(int.parse(vet['id'].toString()));
+                                            //หา ID จากหลายๆ Key ที
+                                            var vetId = vet['id'] ?? vet['vetexperts_id'] ?? vet['vet_id'];
+                                            if (vetId != null) {
+                                              seedocprofile(int.parse(vetId.toString()));
+                                            } else {
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                const SnackBar(content: Text('ไม่พบรหัสสัตวบาล')),
+                                              );
                                             }
                                           },
                                           style: ElevatedButton.styleFrom(
