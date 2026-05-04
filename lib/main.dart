@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
 
 // void main() {
 //   runApp(const MyApp());
@@ -33,66 +33,9 @@ Future<void> testAsync() {
   return Future.delayed(const Duration(seconds: 2), () => print("BBB"));
 }
 
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-
-//   Future<Widget> _getStartPage() async {
-//     final prefs = await SharedPreferences.getInstance();
-//     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-//     final userType = prefs.getString('userType');
-
-//     if (isLoggedIn && userType != null) {
-//       if (userType == 'farmer') {
-//         return Homepage();
-//       } else if (userType == 'vet') {
-//         return Homepagedoc();
-//       }
-//     }
-//     return const ChooseLogin();
-//   }
-
-//   // This widget is the root of your application.
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'App Demo',
-//       localizationsDelegates: const [
-//         GlobalMaterialLocalizations.delegate,
-//         GlobalWidgetsLocalizations.delegate,
-//       ],
-//       supportedLocales: const [
-//         Locale('th', 'TH'),
-//         Locale('en', 'US'),
-//       ],
-//       theme: ThemeData(
-//         scaffoldBackgroundColor:
-//             Colors.white, // กำหนดพื้นหลังสีขาวเป็นค่าเริ่มต้น
-//             textTheme: GoogleFonts.notoSansThaiTextTheme(),
-//             primarySwatch: Colors.green,
-//       ),
-//       home: snapshot.data,
-//     );
-//   }
-// }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  // Future<Widget> _getStartPage() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  //   final userType = prefs.getString('userType');
-
-  //   if (isLoggedIn && userType != null) {
-  //     if (userType == 'farmer') {
-  //       return Homepage();
-  //     } else if (userType == 'vet') {
-  //       return Homepagedoc();
-  //     }
-  //   }
-
-  //   return const Loginpage();
-  // }
 
   Future<Widget> _getStartPage(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();

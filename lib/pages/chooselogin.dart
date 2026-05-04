@@ -448,8 +448,53 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
         }
 
+        // if (role == 'vet' && user != null) {
+        //   print("VET USER DATA: $user");
+        //   final vet = VetExpert.fromJson(user);
+        //   print("VET ID: ${vet.id}");           // ดูว่าแปลงสำเร็จมั้ย
+        //   print("VET NAME: ${vet.vetExpertName}");
+        //   context.read<DataVetExpert>().setDataUser(vet);
+
+        //   final prefs = await SharedPreferences.getInstance();
+
+        //   await prefs.setBool('isLoggedIn', true);
+        //   await prefs.setString('userType', 'vet');
+        //   await prefs.setInt('userId', vet.id);
+
+        //   // Navigator.pushReplacement(
+        //   //   context,
+        //   //   MaterialPageRoute(builder: (_) => Homepagedoc()),
+        //   // );
+        //   await _showSuccessDialogAndNavigate(
+        //     context,
+        //     Homepagedoc(),
+        //   );
+        //   return;
+
+        // }
         if (role == 'vet' && user != null) {
-          final vet = VetExpert.fromJson(user);
+          print("VET USER DATA: $user");
+
+          final vet = VetExpert(
+            id:               user['vetexperts_id']            ?? 0,
+            vetExpertName:    user['vetexperts_name']          ?? '',
+            vetExpertPassword: user['vetexperts_hashpassword'] ?? '',
+            password:         user['vetexperts_password']      ?? '',
+            phonenumber:      user['vetexperts_phonenumber']   ?? '',
+            vetExpertEmail:   user['vetexperts_email']         ?? '',
+            profileImage:     user['vetexperts_profile_image'] ?? '',
+            province:         user['vetexperts_province']      ?? '',
+            district:         user['vetexperts_district']      ?? '',
+            locality:         user['vetexperts_locality']      ?? '',
+            vetExpertAddress: user['vetexperts_address']       ?? '',
+            vetExpertPl:      user['vetexperts_license']       ?? '',
+            totalSemenStock:  user['total_semen_stock']        ?? 0,
+          );
+
+          print("VET ID: ${vet.id}");
+          print("VET NAME: ${vet.vetExpertName}");
+          print("VET IMAGE: ${vet.profileImage}");
+
           context.read<DataVetExpert>().setDataUser(vet);
 
           final prefs = await SharedPreferences.getInstance();
@@ -457,18 +502,10 @@ class _ChooseLoginState extends State<ChooseLogin> {
           await prefs.setString('userType', 'vet');
           await prefs.setInt('userId', vet.id);
 
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(builder: (_) => Homepagedoc()),
-          // );
-          await _showSuccessDialogAndNavigate(
-            context,
-            Homepagedoc(),
-          );
+          await _showSuccessDialogAndNavigate(context, Homepagedoc());
           return;
-
         }
-
+       
         // not role/user
         _showErrorDialog(context, "รูปแบบข้อมูลไม่ถูกต้อง");
       } else if (res.statusCode == 401) {

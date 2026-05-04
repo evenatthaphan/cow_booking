@@ -15,7 +15,7 @@ class DataFarmers with ChangeNotifier {
   Farmers _datauser = Farmers(
       farmersId: 0,
       farmersName: "" ,
-      // farmesHashpassword: "",
+      // farmersHashpassword: "",
       // farmersPassword : "",
       farmersPhonenumber: "",
       farmersEmail: "",

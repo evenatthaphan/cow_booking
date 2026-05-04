@@ -62,32 +62,35 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
         Uri.parse('$apiEndpoint/vet/getVetExperts/${widget.vetId}'),
       );
 
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
-        final getVet = GetVetExpert.fromJson(data);
-
+        // ✅ แปลงตรงๆ จาก API response เป็น VetExpert
         final vet = VetExpert(
-          id: getVet.vetexpertsId,
-          vetExpertName: getVet.vetexpertsName,
-          vetExpertPassword: getVet.vetexpertsHashpassword,
-          password: getVet.vetexpertsPassword,
-          phonenumber: getVet.vetexpertsPhonenumber,
-          vetExpertEmail: getVet.vetexpertsEmail,
-          profileImage: getVet.vetexpertsProfileImage,
-          vetExpertAddress: getVet.vetexpertsAddress,
-          province: getVet.vetexpertsProvince,
-          district: getVet.vetexpertsDistrict,
-          locality: getVet.vetexpertsLocality,
-          vetExpertPl: getVet.vetexpertsLicense,
-          totalSemenStock: getVet.totalSemenStock,
+          id:               data['vetexperts_id']            ?? 0,
+          vetExpertName:    data['vetexperts_name']          ?? '',
+          vetExpertPassword: data['vetexperts_hashpassword'] ?? '',
+          password:         data['vetexperts_password']      ?? '',
+          phonenumber:      data['vetexperts_phonenumber']   ?? '',
+          vetExpertEmail:   data['vetexperts_email']         ?? '',
+          profileImage:     data['vetexperts_profile_image'] ?? '',
+          province:         data['vetexperts_province']      ?? '',
+          district:         data['vetexperts_district']      ?? '',
+          locality:         data['vetexperts_locality']      ?? '',
+          vetExpertAddress: data['vetexperts_address']       ?? '',
+          vetExpertPl:      data['vetexperts_license']       ?? '',
+          totalSemenStock:  data['total_semen_stock']        ?? 0,
         );
 
-        // VetExpert
-        dataVet.setDataUser(vet);
+        print("VET NAME: ${vet.vetExpertName}");     // debug
+        print("VET IMAGE: ${vet.profileImage}");      // debug
 
-        // total stock
-        dataVet.setPeriod(getVet.totalSemenStock);
+        dataVet.setDataUser(vet);
+        dataVet.setPeriod(vet.totalSemenStock);
+
       } else {
         print('Failed to fetch vet: ${response.statusCode}');
       }
@@ -125,28 +128,22 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                           radius: 50,
                           backgroundImage: vet.profileImage.isNotEmpty
                               ? NetworkImage(vet.profileImage)
-                              : const AssetImage('assets/images/pin.jpg')
+                              : const AssetImage('assets/images/profile.jpg')
                                   as ImageProvider,
                         ),
                         const SizedBox(height: 10),
-                        Text(
-                          vet.vetExpertName,
-                          style: GoogleFonts.notoSansThai(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          vet.vetExpertAddress,
-                          style: GoogleFonts.notoSansThai(fontSize: 16),
-                        ),
+                        Text(vet.vetExpertName,
+                            style: GoogleFonts.notoSansThai(
+                                fontSize: 22, fontWeight: FontWeight.bold)),
+                        Text(vet.vetExpertAddress,
+                            style: GoogleFonts.notoSansThai(fontSize: 16)),
                         Text(
                           'ตำบล${vet.locality} อำเภอ${vet.district} จังหวัด${vet.province}',
                           style: GoogleFonts.notoSansThai(fontSize: 16),
                         ),
                         const SizedBox(height: 10),
                         Text(
-                          'มีน้ำเชื้อในสต๊อก ${vet.totalSemenStock > 0 ? vet.totalSemenStock : 0} โดส',
+                          'มีน้ำเชื้อในสต๊อก ${vet.totalSemenStock} โดส',
                           style: GoogleFonts.notoSansThai(fontSize: 12),
                         ),
                       ],
@@ -186,11 +183,41 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     );
   }
 
+  // Future<List<BullStock>> fetchVetBulls(int vetId) async {
+  //   try {
+  //     final response = await http.get(
+  //       Uri.parse('$apiEndpoint/bull/getby_vetid/$vetId'),
+  //     );
+
+  //     if (response.statusCode == 200) {
+  //       final Map<String, dynamic> data = jsonDecode(response.body);
+  //       List<BullStock> bulls = [];
+
+  //       data.forEach((breed, bullList) {
+  //         for (var b in bullList) {
+  //           bulls.add(BullStock.fromJson(b));
+  //         }
+  //       });
+
+  //       return bulls;
+  //     } else {
+  //       print('Failed to fetch bulls: ${response.statusCode}');
+  //       return [];
+  //     }
+  //   } catch (e) {
+  //     print('Error fetching bulls: $e');
+  //     return [];
+  //   }
+  // }
+
   Future<List<BullStock>> fetchVetBulls(int vetId) async {
     try {
       final response = await http.get(
         Uri.parse('$apiEndpoint/bull/getby_vetid/$vetId'),
       );
+
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}"); // ดู field จริงๆ ที่ API ส่งมา
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -198,17 +225,20 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
 
         data.forEach((breed, bullList) {
           for (var b in bullList) {
-            bulls.add(BullStock.fromJson(b));
+            print("BULL ITEM: $b"); // ดู key ทั้งหมด
+            try {
+              bulls.add(BullStock.fromJson(b));
+            } catch (e) {
+              print("BULL PARSE ERROR: $e"); // ดูว่า field ไหนพัง
+            }
           }
         });
 
         return bulls;
-      } else {
-        print('Failed to fetch bulls: ${response.statusCode}');
-        return [];
       }
+      return [];
     } catch (e) {
-      print('Error fetching bulls: $e');
+      print('Error: $e');
       return [];
     }
   }
@@ -270,15 +300,15 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
 
         final Map<DateTime, List<Map<String, dynamic>>> grouped = {};
         for (var item in data) {
-          final date = DateTime.parse(item['available_date']);
+          final date = DateTime.parse(item['schedules_available_date']);
           final dayKey = DateTime(date.year, date.month, date.day);
 
           grouped.putIfAbsent(dayKey, () => []);
           grouped[dayKey]!.add({
-            "id": item['id'],
-            "time": item['available_time'],
-            "is_booked": item['is_booked'], // 1=Booked, 0=Free
-            "created_at": item['created_at'],
+            "id": item['schedules_id'],
+            "time": item['schedules_available_time'],
+            "is_booked": item['schedules_is_booked'], // 1=Booked, 0=Free
+            "created_at": item['schedules_created_at'],
           });
         }
 

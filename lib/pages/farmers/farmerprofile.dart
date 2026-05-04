@@ -114,9 +114,6 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
             ],
           ),
         ),
-        // _buildMenuItem("ที่ถูกใจ", Icons.favorite),
-        // _buildMenuItem("ประวัติการผสม", Icons.library_books_sharp),
-        // _buildMenuItem("สถิติทั้งหมด", Icons.stacked_bar_chart),
         _buildMenuItem("ที่ถูกใจ", Icons.favorite),
         _buildMenuItem(
           "ประวัติการผสม",
@@ -249,39 +246,15 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
 
   // fucntion logout
   Future<void> _logout(BuildContext context) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.remove('isLoggedIn');
-  await prefs.remove('userType');
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('isLoggedIn');
+    await prefs.remove('userType');
 
-  // clear data user in provider
-  context.read<DataFarmers>().clear();
+    // clear data user in provider
+    context.read<DataFarmers>().clear();
 
-  if (!mounted) return;
-  setState(() {});
-}
+    if (!mounted) return;
+    setState(() {});
+  }
 
-  // Future<void> _logout(BuildContext context) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.remove('isLoggedIn');
-  //   await prefs.remove('userType');
-
-  //   // clear data user in provider
-  //   context.read<DataFarmers>().setDataUser(Farmers(
-  //       farmersId: 0,
-  //       farmersName: "" ,
-  //       farmesHashpassword: "",
-  //       farmersPassword : "",
-  //       farmersPhonenumber: "",
-  //       farmersEmail: "",
-  //       farmersProfileImage: "",
-  //       farmersAddress: "",
-  //       farmersProvince: "",
-  //       farmersDistrict: "",
-  //       farnersLocality: "",
-  //       farmersLocLat: null,
-  //       farmersLocLong: null,
-  //       ));
-
-  //   setState(() {});
-  // }
 }

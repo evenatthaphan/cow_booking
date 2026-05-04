@@ -259,55 +259,74 @@ class _EditprofilepageState extends State<Editprofilepage> {
       ),
     );
   }
-
+  
   Future<void> saveeidt() async {
     final farmerId =
         Provider.of<DataFarmers>(context, listen: false).datauser.farmersId;
 
+    if (farmerId == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่")),
+      );
+      return;
+    }
+
+    if (farmNameController.text.isEmpty || phoneController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("กรุณากรอกข้อมูลให้ครบ")),
+      );
+      return;
+    }
+
     final uri = Uri.parse("$apiEndpoint/farmer/edit/$farmerId");
-    print("CALL API: $uri");
-
     var request = http.MultipartRequest("PUT", uri);
+    request.headers.addAll({'Accept': 'application/json'});
 
-    request.fields["farm_name"] = farmNameController.text;
-    request.fields["phonenumber"] = phoneController.text;
+    request.fields["farm_name"]    = farmNameController.text;
+    request.fields["phonenumber"]  = phoneController.text;
     request.fields["farmer_email"] = emailController.text;
     request.fields["farm_address"] = addressController.text;
 
     if (_selectedImage != null) {
       request.files.add(
-        await http.MultipartFile.fromPath(
-          "profile_image",
-          _selectedImage!.path,
-        ),
+        await http.MultipartFile.fromPath("profile_image", _selectedImage!.path),
       );
     }
 
     try {
-      final response = await request.send();
-      final responseBody = await response.stream.bytesToString();
+      final streamedResponse = await request.send();
+      final responseBody = await streamedResponse.stream.bytesToString();
 
-      print(response.statusCode);
-      print(responseBody);
+      print("STATUS: ${streamedResponse.statusCode}");
+      print("BODY: $responseBody");
 
-      if (response.statusCode == 200) {
+      if (!mounted) return;
+
+      if (streamedResponse.statusCode == 200) {
+        // ดึงข้อมูลใหม่จาก API แล้ว notifyListeners อัตโนมัติ
+        await Provider.of<DataFarmers>(context, listen: false)
+            .fetchFarmerById(farmerId);
+
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("แก้ไขข้อมูลสำเร็จ")),
+          const SnackBar(
+            content: Text("แก้ไขข้อมูลสำเร็จ"),
+            backgroundColor: Colors.green,
+          ),
         );
-
-        // รีโหลดข้อมูลใหม่ (ถ้ามี API get profile)
-        // await Provider.of<DataFarmers>(context, listen:false).fetchProfile();
-
         Navigator.pop(context);
       } else {
+        final body = jsonDecode(responseBody);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("แก้ไขข้อมูลไม่สำเร็จ")),
+          SnackBar(content: Text(body['error'] ?? "แก้ไขข้อมูลไม่สำเร็จ")),
         );
       }
     } catch (e) {
       print("ERROR: $e");
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้")),
+        SnackBar(content: Text("เกิดข้อผิดพลาด: $e")),
       );
     }
   }

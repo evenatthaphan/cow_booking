@@ -236,18 +236,6 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold),
                           ),
-                          // ElevatedButton.icon(
-                          //   onPressed: () {},
-                          //   icon: const Icon(Icons.favorite_border,
-                          //       color: Colors.white),
-                          //   label: const Text(
-                          //     "ชอบ",
-                          //     style: TextStyle(color: Colors.white),
-                          //   ),
-                          //   style: ElevatedButton.styleFrom(
-                          //     backgroundColor: Colors.pink,
-                          //   ),
-                          // ),
                           ElevatedButton(
                             onPressed: isLiking ? null : _toggleLike,
                             style: ElevatedButton.styleFrom(

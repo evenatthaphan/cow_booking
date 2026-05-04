@@ -66,13 +66,15 @@ class _HomepageState extends State<Homepage> {
   }
 
   String _normalizeProfileImageUrl(String? url) {
+    print("RAW IMAGE URL: $url"); // debug ดูค่าที่ได้มา
+
     if (url == null || url.isEmpty) return '';
 
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
 
-    return '$apiEndpoint/$url'; 
+    return '$apiEndpoint/$url';
   }
 
   @override
@@ -216,20 +218,39 @@ class _HomepageState extends State<Homepage> {
             child: Padding(
               padding: const EdgeInsets.only(right: 10),
               child: Consumer<DataFarmers>(
-                builder: (context, dataVet, _) {
+                builder: (context, dataFarmer, _) {
                   final imageUrl = _normalizeProfileImageUrl(
-                      dataVet.datauser.farmersProfileImage);
+                      dataFarmer.datauser.farmersProfileImage);
+
+                  print("FINAL IMAGE URL: $imageUrl"); // debug
+
                   return CircleAvatar(
                     radius: 20,
                     backgroundColor: Colors.grey.shade200,
                     child: imageUrl.isNotEmpty
                         ? ClipOval(
-                            child: Image.network(imageUrl,
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) =>
-                                    const Icon(Icons.person, color: Colors.grey)),
+                            child: Image.network(
+                              imageUrl,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              // แสดง loading ระหว่างโหลด
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.green,
+                                  ),
+                                );
+                              },
+                              errorBuilder: (_, error, __) {
+                                print("IMAGE ERROR: $error"); // debug
+                                return const Icon(Icons.person, color: Colors.grey);
+                              },
+                            ),
                           )
                         : const Icon(Icons.person, color: Colors.grey),
                   );

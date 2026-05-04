@@ -43,43 +43,103 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
   Future<void> _fetchSchedules() async {
     final vet = context.read<DataVetExpert>().datauser;
 
-    if (vet == null) return;
-
     final uri = Uri.parse('$apiEndpoint/vet/get/schedule/${vet.id}');
-    print("Vet datauser: $vet");
+    print("VET ID: ${vet.id}");
 
     try {
       final res = await http.get(uri);
+      print("STATUS: ${res.statusCode}");
+      print("BODY: ${res.body}");
 
       if (res.statusCode == 200) {
         final List data = jsonDecode(res.body);
+        print("TOTAL: ${data.length}");
 
         final Map<DateTime, List<Map<String, dynamic>>> grouped = {};
-        for (var item in data) {
-          final date = DateTime.parse(item['available_date']);
-          final dayKey = DateTime(date.year, date.month, date.day);
 
-          grouped.putIfAbsent(dayKey, () => []);
-          grouped[dayKey]!.add({
-            "id": item['id'],
-            "time": item['available_time'],
-            "is_booked": item['is_booked'], // 1=Booked, 0=Free
-            "created_at": item['created_at'],
-          });
+        for (var item in data) {
+          try {
+            print("ITEM: $item");
+
+            // เช็ค available_date ก่อน parse
+            final rawDate = item['schedules_available_date'];
+            if (rawDate == null) continue;
+
+            final date = DateTime.tryParse(rawDate.toString());
+            if (date == null) continue;
+
+            final dayKey = DateTime(date.year, date.month, date.day);
+
+            grouped.putIfAbsent(dayKey, () => []);
+            grouped[dayKey]!.add({
+              "id":        item['schedules_id'],
+              "time":      item['schedules_available_time']?.toString() ?? '',
+              "is_booked": item['schedules_is_booked'] ?? 0,
+              "created_at": item['schedules_created_at']?.toString() ?? '-',
+            });
+
+            print("ADDED TO DAY: $dayKey");
+          } catch (itemErr) {
+            print("SKIP ITEM ERROR: $itemErr — item: $item");
+            continue; // ข้าม item ที่พัง ไปต่อ item ถัดไป
+          }
         }
+
+        print("GROUPED KEYS: ${grouped.keys.toList()}");
 
         setState(() {
           _scheduleData = grouped;
           _isLoading = false;
         });
       } else {
-        throw Exception("Failed to fetch schedule: ${res.statusCode}");
+        setState(() => _isLoading = false);
       }
     } catch (e) {
-      debugPrint("Error fetching schedule: $e");
+      print("FETCH ERROR: $e");
       setState(() => _isLoading = false);
     }
   }
+
+  // Future<void> _fetchSchedules() async {
+  //   final vet = context.read<DataVetExpert>().datauser;
+
+  //   if (vet == null) return;
+
+  //   final uri = Uri.parse('$apiEndpoint/vet/get/schedule/${vet.id}');
+  //   print("Vet datauser: $vet");
+
+  //   try {
+  //     final res = await http.get(uri);
+
+  //     if (res.statusCode == 200) {
+  //       final List data = jsonDecode(res.body);
+
+  //       final Map<DateTime, List<Map<String, dynamic>>> grouped = {};
+  //       for (var item in data) {
+  //         final date = DateTime.parse(item['available_date']);
+  //         final dayKey = DateTime(date.year, date.month, date.day);
+
+  //         grouped.putIfAbsent(dayKey, () => []);
+  //         grouped[dayKey]!.add({
+  //           "id": item['id'],
+  //           "time": item['available_time'],
+  //           "is_booked": item['is_booked'], // 1=Booked, 0=Free
+  //           "created_at": item['created_at'],
+  //         });
+  //       }
+
+  //       setState(() {
+  //         _scheduleData = grouped;
+  //         _isLoading = false;
+  //       });
+  //     } else {
+  //       throw Exception("Failed to fetch schedule: ${res.statusCode}");
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Error fetching schedule: $e");
+  //     setState(() => _isLoading = false);
+  //   }
+  // }
 
   List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
     return _scheduleData[DateTime(day.year, day.month, day.day)] ?? [];
