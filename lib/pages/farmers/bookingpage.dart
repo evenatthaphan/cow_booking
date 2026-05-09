@@ -28,7 +28,8 @@ class Bookingpage extends StatefulWidget {
 class _BookingpageState extends State<Bookingpage> {
   String? vetName;
   List<BullStock> bullList = [];
-  BullStock? selectedBull;
+  //BullStock? selectedBull;
+  int? selectedBullId;
   bool isLoading = true;
 
   final TextEditingController _detailController = TextEditingController();
@@ -83,7 +84,12 @@ class _BookingpageState extends State<Bookingpage> {
   }
 
   Future<void> _showConfirmDialog() async {
-    if (selectedBull == null || _doseController.text.isEmpty) {
+    
+    final bull = bullList.where((b) => b.vetBullId == selectedBullId).isNotEmpty
+        ? bullList.firstWhere((b) => b.vetBullId == selectedBullId)
+        : null;
+
+    if (bull == null || _doseController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("กรุณาเลือกวัวและระบุจำนวนโดส")),
       );
@@ -105,8 +111,8 @@ class _BookingpageState extends State<Bookingpage> {
             Text("ชื่อสัตวบาล: $vetName"),
             Text(
                 "วันที่/เวลา: ${widget.selectedDay.toLocal().toString().split(' ')[0]} ${widget.selectedTime}"),
-            Text("ชื่อวัว: ${selectedBull!.bullname}"),
-            Text("พันธุ์วัว: ${selectedBull!.bullbreed}"),
+            Text("ชื่อวัว: ${bull?.bullname}"),
+            Text("พันธุ์วัว: ${bull?.bullbreed}"),
             Text("จำนวนโดส: ${_doseController.text}"),
             if (_detailController.text.isNotEmpty)
               Text("รายละเอียดแม่พันธุ์: ${_detailController.text}"),
@@ -135,7 +141,7 @@ class _BookingpageState extends State<Bookingpage> {
     final body = {
       "farmer_id": farmerId,
       "vet_expert_id": widget.vetId,
-      "bull_id": selectedBull!.vetBullId,
+      "bull_id": selectedBullId,
       "dose": int.parse(_doseController.text),
       "schedule_id": widget.scheduleId,
       "detailBull": _detailController.text,
@@ -150,22 +156,41 @@ class _BookingpageState extends State<Bookingpage> {
         body: jsonEncode(body),
       );
 
-      if (response.statusCode == 200) {
+      // if (response.statusCode == 200) {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     const SnackBar(content: Text("จองคิวสำเร็จ")),
+      //   );
+
+      //   Navigator.push(
+      //     context,
+      //     MaterialPageRoute(
+      //       builder: (context) => const Acceptbookingpage(),
+      //     ),
+      //   );
+      // } else {
+      //   ScaffoldMessenger.of(context).showSnackBar(
+      //     SnackBar(content: Text("เกิดข้อผิดพลาด: ${response.statusCode}")),
+      //   );
+      // }
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        if (!mounted) return;
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("จองคิวสำเร็จ")),
         );
 
-        Navigator.push(
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
             builder: (context) => const Acceptbookingpage(),
           ),
         );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("เกิดข้อผิดพลาด: ${response.statusCode}")),
-        );
-      }
+      }else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("เกิดข้อผิดพลาด: ${response.statusCode}")),
+          );
+        }
+
     } catch (e) {
       print("Booking error: $e");
       ScaffoldMessenger.of(context).showSnackBar(
@@ -208,26 +233,23 @@ class _BookingpageState extends State<Bookingpage> {
                   const SizedBox(height: 30),
 
                   // 
-                  DropdownButtonFormField<BullStock>(
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "เลือกวัวสำหรับผสมเทียม",
-                    ),
-                    value: selectedBull,
+                  DropdownButtonFormField<int>(
+                    value: selectedBullId,
                     items: bullList.map((bull) {
-                      return DropdownMenuItem<BullStock>(
-                        value: bull,
-                        child: Text(
-                          '${bull.bullbreed} (${bull.bullname})',
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      return DropdownMenuItem<int>(
+                        value: bull.vetBullId,
+                        child: Text("${bull.bullname} (${bull.bullbreed})"),
                       );
                     }).toList(),
-                    onChanged: (BullStock? newValue) {
+                    onChanged: (value) {
                       setState(() {
-                        selectedBull = newValue;
+                        selectedBullId = value;
                       });
                     },
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'เลือกวัวสำหรับผสมเทียม',
+                    ),
                   ),
 
                   const SizedBox(height: 20),

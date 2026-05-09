@@ -217,7 +217,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
       );
 
       print("STATUS: ${response.statusCode}");
-      print("BODY: ${response.body}"); // ดู field จริงๆ ที่ API ส่งมา
+      print("BODY: ${response.body}"); // check field sent from API 
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -225,11 +225,11 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
 
         data.forEach((breed, bullList) {
           for (var b in bullList) {
-            print("BULL ITEM: $b"); // ดู key ทั้งหมด
+            print("BULL ITEM: $b"); // check key
             try {
               bulls.add(BullStock.fromJson(b));
             } catch (e) {
-              print("BULL PARSE ERROR: $e"); // ดูว่า field ไหนพัง
+              print("BULL PARSE ERROR: $e"); // check error field
             }
           }
         });

@@ -126,23 +126,56 @@ class BookingResponse {
         required this.createdAt,
     });
 
-    factory BookingResponse.fromJson(Map<String, dynamic> json) => BookingResponse(
-        queueBookingsId: json["queue_bookings_id"],
-        refFarmersId: json["ref_farmers_id"],
-        farmersName: json["farmers_name"],
-        refVetexpertsId: json["ref_vetexperts_id"],
-        vetexpertsName: json["vetexperts_name"],
-        refBullsId: json["ref_bulls_id"],
-        bullsName: json["bulls_name"],
-        bullsBreed: json["bulls_breed"],
-        bookingsDose: json["bookings_dose"],
-        scheduleDate: DateTime.parse(json["schedule_date"]),
-        scheduleTime: json["schedule_time"],
-        bookingsDetailBull: json["bookings_detail_bull"],
-        bookingsStatus: json["bookings_status"],
-        bookingsVetNotes: json["bookings_vet_notes"],
-        createdAt: DateTime.parse(json["created_at"]),
-    );
+    // factory BookingResponse.fromJson(Map<String, dynamic> json) => BookingResponse(
+    //     queueBookingsId: json["queue_bookings_id"],
+    //     refFarmersId: json["ref_farmers_id"],
+    //     farmersName: json["farmers_name"],
+    //     refVetexpertsId: json["ref_vetexperts_id"],
+    //     vetexpertsName: json["vetexperts_name"],
+    //     refBullsId: json["ref_bulls_id"],
+    //     bullsName: json["bulls_name"],
+    //     bullsBreed: json["bulls_breed"],
+    //     bookingsDose: json["bookings_dose"],
+    //     scheduleDate: DateTime.parse(json["schedule_date"]),
+    //     scheduleTime: json["schedule_time"],
+    //     bookingsDetailBull: json["bookings_detail_bull"],
+    //     bookingsStatus: json["bookings_status"],
+    //     bookingsVetNotes: json["bookings_vet_notes"],
+    //     createdAt: DateTime.parse(json["created_at"]),
+    // );
+    
+    factory BookingResponse.fromJson(Map<String, dynamic> json) {
+        print("PARSING BOOKING: $json");
+
+        return BookingResponse(
+          queueBookingsId: (json["queue_bookings_id"] ?? 0) as int,
+          refFarmersId: (json["ref_farmers_id"] ?? 0) as int,
+          farmersName: json["farmers_name"] ?? '',
+
+          refVetexpertsId: (json["ref_vetexperts_id"] ?? 0) as int,
+          vetexpertsName: json["vetexperts_name"] ?? '',
+
+          refBullsId: (json["ref_bulls_id"] ?? 0) as int,
+          bullsName: json["bulls_name"] ?? '',
+          bullsBreed: json["bulls_breed"] ?? '',
+
+          bookingsDose: (json["bookings_dose"] ?? 0) as int,
+
+          scheduleDate: DateTime.tryParse(
+            json["schedule_date"]?.toString() ?? ''
+          ) ?? DateTime.now(),
+
+          scheduleTime: json["schedule_time"] ?? '',
+
+          bookingsDetailBull: json["bookings_detail_bull"] ?? '',
+          bookingsStatus: json["bookings_status"] ?? '',
+          bookingsVetNotes: json["bookings_vet_notes"] ?? '',
+
+          createdAt: DateTime.tryParse(
+            json["created_at"]?.toString() ?? ''
+          ) ?? DateTime.now(),
+        );
+      }
 
     Map<String, dynamic> toJson() => {
         "queue_bookings_id": queueBookingsId,

@@ -35,17 +35,32 @@ class BullStock {
     required this.vetBullId,
   });
 
-  factory BullStock.fromJson(Map<String, dynamic> json) => BullStock(
-        bullseriesId: json["bullseries_id"],
-        bullname: json["Bullname"],
-        bullbreed: json["Bullbreed"],
-        characteristics: json["characteristics"],
-        farmId: json["farm_id"],
-        farmName: json["farm_name"],
-        pricePerDose: json["price_per_dose"],
-        semenStock: json["semen_stock"],
-        vetBullId: json["vet_bull_id"], //
-      );
+  // factory BullStock.fromJson(Map<String, dynamic> json) => BullStock(
+  //       bullseriesId: json["bullseries_id"],
+  //       bullname: json["Bullname"],
+  //       bullbreed: json["Bullbreed"],
+  //       characteristics: json["characteristics"],
+  //       farmId: json["farm_id"],
+  //       farmName: json["farm_name"],
+  //       pricePerDose: json["price_per_dose"],
+  //       semenStock: json["semen_stock"],
+  //       vetBullId: json["vet_bull_id"], //
+  //     );
+
+  factory BullStock.fromJson(Map<String, dynamic> json) {
+    print("PARSING BULL: $json"); 
+    return BullStock(
+      bullseriesId: (json["bullseries_id"] ?? 0) as int,
+      bullname:     json["Bullname"]     ?? json["bulls_name"]  ?? '',
+      bullbreed:    json["Bullbreed"]    ?? json["bulls_breed"] ?? '',
+      characteristics: json["characteristics"] ?? '',
+      farmId:       (json["farm_id"]       ?? 0) as int,
+      farmName:     json["farm_name"]      ?? '',
+      pricePerDose: (json["price_per_dose"] ?? 0) as int,
+      semenStock:   (json["semen_stock"]    ?? 0) as int,
+      vetBullId:    (json["vet_bull_id"]    ?? 0) as int,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         "bullseries_id": bullseriesId,
