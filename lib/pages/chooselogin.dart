@@ -2,7 +2,7 @@ import 'package:cow_booking/pages/Home/homepage.dart';
 import 'package:cow_booking/pages/Animal_husbandry/homepage_doc.dart';
 import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
-import 'package:cow_booking/pages/farmers/farmerprofile.dart';
+import 'package:cow_booking/pages/farmers/farmer_profile.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';

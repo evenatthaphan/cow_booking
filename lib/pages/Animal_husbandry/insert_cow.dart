@@ -15,21 +15,22 @@ class _InsertCowPageState extends State<InsertCowPage> {
   final _farmNameCtrl = TextEditingController();
   final _farmAddressCtrl = TextEditingController();
   final _farmProvinceCtrl = TextEditingController();
-  final _farmOwnerCtrl = TextEditingController();
-  final _farmPhoneCtrl = TextEditingController();
+  final _farmDistrictCtrl = TextEditingController();
+  final _farmLocalityCtrl = TextEditingController();
 
   // ── Cow Info Controllers ───────────────────────────────────────────────────
   final _cowNameCtrl = TextEditingController();
   final _cowBreedCtrl = TextEditingController();
   final _cowAgeCtrl = TextEditingController();
-  final _cowWeightCtrl = TextEditingController();
+  final _cowCharacteristicsCtrl = TextEditingController();
   final _cowTagCtrl = TextEditingController();
+  final _cowContestRecordsCtrl = TextEditingController();
   String _selectedGender = 'เมีย';
   String _selectedHealthStatus = 'ปกติ';
 
   // ── Images ─────────────────────────────────────────────────────────────────
-  final List<File?> _images = List.filled(6, null); // max 6 images
-  static const int _maxImages = 6;
+  final List<File?> _images = List.filled(5, null); // max 5 images
+  static const int _maxImages = 5; // กำหนดให้เพิ่มได้สูงสุด 5 รูป
   final _picker = ImagePicker();
 
   Future<void> _pickImage(int index) async {
@@ -65,17 +66,17 @@ class _InsertCowPageState extends State<InsertCowPage> {
     _farmNameCtrl.dispose();
     _farmAddressCtrl.dispose();
     _farmProvinceCtrl.dispose();
-    _farmOwnerCtrl.dispose();
-    _farmPhoneCtrl.dispose();
+    _farmDistrictCtrl.dispose();
+    _farmLocalityCtrl.dispose();
     _cowNameCtrl.dispose();
     _cowBreedCtrl.dispose();
     _cowAgeCtrl.dispose();
-    _cowWeightCtrl.dispose();
+    _cowCharacteristicsCtrl.dispose();
     _cowTagCtrl.dispose();
+    _cowContestRecordsCtrl.dispose();
     super.dispose();
   }
 
-  // ── UI Helpers ─────────────────────────────────────────────────────────────
 
   Widget _sectionHeader(String title, IconData icon) {
     return Padding(
@@ -202,7 +203,6 @@ class _InsertCowPageState extends State<InsertCowPage> {
     );
   }
 
-  // ── Section Widgets ────────────────────────────────────────────────────────
 
   Widget _buildFarmSection() {
     return Column(
@@ -215,20 +215,19 @@ class _InsertCowPageState extends State<InsertCowPage> {
           icon: Icons.store_outlined,
         ),
         _inputField(
-          controller: _farmOwnerCtrl,
-          label: 'ชื่อเจ้าของฟาร์ม',
+          controller: _farmProvinceCtrl,
+          label: 'เขต / จังหวัด',
+          icon: Icons.location_city_outlined,
+        ),
+        _inputField(
+          controller: _farmDistrictCtrl,
+          label: 'เขต / อำเภอ',
           icon: Icons.person_outline,
         ),
         _inputField(
-          controller: _farmPhoneCtrl,
-          label: 'เบอร์โทรศัพท์ฟาร์ม',
-          icon: Icons.phone_outlined,
-          keyboardType: TextInputType.phone,
-        ),
-        _inputField(
-          controller: _farmProvinceCtrl,
-          label: 'จังหวัด / อำเภอ',
-          icon: Icons.location_city_outlined,
+          controller: _farmLocalityCtrl,
+          label: 'เขต / ตำบล',
+          icon: Icons.person_outline,
         ),
         _inputField(
           controller: _farmAddressCtrl,
@@ -267,17 +266,14 @@ class _InsertCowPageState extends State<InsertCowPage> {
           keyboardType: TextInputType.number,
         ),
         _inputField(
-          controller: _cowWeightCtrl,
-          label: 'น้ำหนัก (กก.)',
-          icon: Icons.monitor_weight_outlined,
-          keyboardType: TextInputType.number,
+          controller: _cowCharacteristicsCtrl,
+          label: 'ลักษณะเด่น',
+          icon: Icons.description_outlined,
         ),
-        _dropdownField<String>(
-          label: 'เพศ',
-          value: _selectedGender,
-          items: const ['เมีย', 'ผู้'],
-          onChanged: (v) => setState(() => _selectedGender = v!),
-          icon: Icons.male_outlined,
+        _inputField(
+          controller: _cowContestRecordsCtrl,
+          label: 'ผลงานการแข่งขัน',
+          icon: Icons.emoji_events_outlined,
         ),
         _dropdownField<String>(
           label: 'สถานะสุขภาพ',
@@ -431,7 +427,7 @@ class _InsertCowPageState extends State<InsertCowPage> {
       backgroundColor: const Color(0xFFF8F1E8),
       appBar: AppBar(
         title: Text(
-          'จัดการข้อมูลวัว',
+          'เพิ่มข้อมูลวัว',
           style: GoogleFonts.notoSansThai(
             fontSize: 20,
             color: Colors.white,
@@ -447,22 +443,22 @@ class _InsertCowPageState extends State<InsertCowPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Section 1: Farm ──────────────────────────────────────────────
+            // Farm Info
             _buildCard(child: _buildFarmSection()),
 
             _sectionDivider(),
 
-            // ── Section 2: Cow Info ──────────────────────────────────────────
+            // Cow Info 
             _buildCard(child: _buildCowSection()),
 
             _sectionDivider(),
 
-            // ── Section 3: Images ────────────────────────────────────────────
+            // Images 
             _buildCard(child: _buildImageSection()),
 
             const SizedBox(height: 24),
 
-            // ── Save Button ──────────────────────────────────────────────────
+            // Save Button 
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/bullstocks_response.dart';
-import 'package:cow_booking/pages/farmers/acceptbooking.dart';
+import 'package:cow_booking/pages/farmers/accept_booking.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_booking/share/ShareData.dart';

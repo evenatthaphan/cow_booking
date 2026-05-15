@@ -1,4 +1,4 @@
-import 'package:cow_booking/pages/farmers/farmerNavbar.dart';
+import 'package:cow_booking/pages/farmers/farmer_navbar.dart';
 import 'package:flutter/material.dart';
 
 class FarmerNotificationPage extends StatefulWidget {

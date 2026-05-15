@@ -401,10 +401,74 @@ class _CowListPageState extends State<CowListPage> {
                       color: Colors.grey[500],
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            // TODO: ไปหน้าแก้ไขวัว
+                            // Navigator.push(...)
+                          },
+
+                          icon: const Icon(Icons.edit, size: 18),
+
+                          label: Text(
+                            'แก้ไข',
+                            style: GoogleFonts.notoSansThai(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.green[700],
+                            side: BorderSide(
+                              color: Colors.green.shade300,
+                            ),
+
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 8),
+
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            // TODO: เปิดหน้ารายละเอียด
+                          },
+
+                          icon: const Icon(Icons.visibility, size: 18),
+
+                          label: Text(
+                            'ดูข้อมูล',
+                            style: GoogleFonts.notoSansThai(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.lightGreen[700],
+                            foregroundColor: Colors.white,
+
+                            elevation: 0,
+
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
+          
         ],
       ),
     );

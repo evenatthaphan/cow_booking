@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/booking_response.dart';
-import 'package:cow_booking/pages/farmers/farmerNavbar.dart';
-import 'package:cow_booking/pages/farmers/farmerprofile.dart';
+import 'package:cow_booking/pages/farmers/farmer_navbar.dart';
+import 'package:cow_booking/pages/farmers/farmer_profile.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

@@ -1,5 +1,5 @@
 import 'package:cow_booking/pages/Animal_husbandry/doctor_regis.dart';
-import 'package:cow_booking/pages/farmers/farmerregis.dart';
+import 'package:cow_booking/pages/farmers/farmer_regis.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 

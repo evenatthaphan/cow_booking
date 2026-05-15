@@ -1,4 +1,4 @@
-import 'package:cow_booking/pages/farmers/recordpage.dart';
+import 'package:cow_booking/pages/farmers/record_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:google_fonts/google_fonts.dart';

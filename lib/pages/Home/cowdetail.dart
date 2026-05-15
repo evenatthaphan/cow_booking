@@ -5,7 +5,7 @@ import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:cow_booking/pages/farmers/seedocprofile.dart';
+import 'package:cow_booking/pages/farmers/see_doc_profile.dart';
 import 'package:http/http.dart' as http;
 
 class Cowdetailpage extends StatefulWidget {

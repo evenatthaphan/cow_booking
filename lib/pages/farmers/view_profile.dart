@@ -1,7 +1,7 @@
-import 'package:cow_booking/pages/farmers/editAddress.dart';
-import 'package:cow_booking/pages/farmers/editpassword.dart';
-import 'package:cow_booking/pages/farmers/editprofile.dart';
-import 'package:cow_booking/pages/farmers/farmerNavbar.dart';
+import 'package:cow_booking/pages/farmers/edit_address.dart';
+import 'package:cow_booking/pages/farmers/edit_password.dart';
+import 'package:cow_booking/pages/farmers/edit_profile.dart';
+import 'package:cow_booking/pages/farmers/farmer_navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
