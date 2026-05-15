@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
+import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/share/ShareData.dart';
 
 class InsertCowPage extends StatefulWidget {
   const InsertCowPage({super.key});
@@ -11,24 +17,23 @@ class InsertCowPage extends StatefulWidget {
 }
 
 class _InsertCowPageState extends State<InsertCowPage> {
-  // ── Farm Info Controllers ──────────────────────────────────────────────────
+  // Farm Info Controllers 
   final _farmNameCtrl = TextEditingController();
   final _farmAddressCtrl = TextEditingController();
   final _farmProvinceCtrl = TextEditingController();
   final _farmDistrictCtrl = TextEditingController();
   final _farmLocalityCtrl = TextEditingController();
 
-  // ── Cow Info Controllers ───────────────────────────────────────────────────
+  // Cow Info Controllers 
   final _cowNameCtrl = TextEditingController();
   final _cowBreedCtrl = TextEditingController();
   final _cowAgeCtrl = TextEditingController();
   final _cowCharacteristicsCtrl = TextEditingController();
   final _cowTagCtrl = TextEditingController();
   final _cowContestRecordsCtrl = TextEditingController();
-  String _selectedGender = 'เมีย';
   String _selectedHealthStatus = 'ปกติ';
 
-  // ── Images ─────────────────────────────────────────────────────────────────
+  // Images 
   final List<File?> _images = List.filled(5, null); // max 5 images
   static const int _maxImages = 5; // กำหนดให้เพิ่มได้สูงสุด 5 รูป
   final _picker = ImagePicker();
@@ -49,16 +54,136 @@ class _InsertCowPageState extends State<InsertCowPage> {
 
   int get _filledImageCount => _images.where((e) => e != null).length;
 
-  void _save() {
-    // TODO: ส่งข้อมูลไปยัง API
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('บันทึกข้อมูลเรียบร้อยแล้ว',
-            style: GoogleFonts.notoSansThai()),
-        backgroundColor: Colors.lightGreen[700],
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  // void _save() {
+  //   // TODO: ส่งข้อมูลไปยัง API
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text('บันทึกข้อมูลเรียบร้อยแล้ว',
+  //           style: GoogleFonts.notoSansThai()),
+  //       backgroundColor: Colors.lightGreen[700],
+  //       behavior: SnackBarBehavior.floating,
+  //     ),
+  //   );
+  // }
+  Future<void> _save() async {
+    try {
+      // loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // vet id
+      final vetId =
+          context.read<DataVetExpert>().datauser.id;
+
+      // api
+      final uri = Uri.parse(
+        '$apiEndpoint/vet/bulls/create',
+      );
+
+      final request = http.MultipartRequest(
+        'POST',
+        uri,
+      );
+
+
+      request.fields['frams_name'] = _farmNameCtrl.text;
+      request.fields['frams_province'] = _farmProvinceCtrl.text;
+      request.fields['frams_district'] = _farmDistrictCtrl.text;
+      request.fields['frams_locality'] = _farmLocalityCtrl.text;
+      request.fields['frams_address'] = _farmAddressCtrl.text;
+
+      request.fields['bulls_name'] = _cowNameCtrl.text;
+      request.fields['bulls_breed'] = _cowBreedCtrl.text;
+      request.fields['bulls_age'] = _cowAgeCtrl.text;
+      request.fields['bulls_characteristics'] = _cowCharacteristicsCtrl.text;
+      request.fields['bulls_contest_records'] = _cowContestRecordsCtrl.text;
+      request.fields['bulls_HealthStatus'] = _selectedHealthStatus;
+      request.fields['bulls_tag'] = _cowTagCtrl.text;
+
+      // vet id
+      request.fields['vet_id'] = vetId.toString();
+
+      // images
+
+      for (final image in _images) {
+        if (image != null) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'images',
+              image.path,
+            ),
+          );
+        }
+      }
+
+
+      // send
+      final response = await request.send();
+
+      Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+        final responseBody =
+            await response.stream.bytesToString();
+
+        final data = jsonDecode(responseBody);
+
+        debugPrint(data.toString());
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'บันทึกข้อมูลสำเร็จ',
+              style: GoogleFonts.notoSansThai(),
+            ),
+            backgroundColor:
+                Colors.lightGreen[700],
+          ),
+        );
+
+        Navigator.pop(context, true);
+      } else {
+        final error =
+            await response.stream.bytesToString();
+
+        debugPrint(error);
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'บันทึกข้อมูลไม่สำเร็จ',
+              style: GoogleFonts.notoSansThai(),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+
+      debugPrint(e.toString());
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'เกิดข้อผิดพลาด: $e',
+            style: GoogleFonts.notoSansThai(),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -222,12 +347,12 @@ class _InsertCowPageState extends State<InsertCowPage> {
         _inputField(
           controller: _farmDistrictCtrl,
           label: 'เขต / อำเภอ',
-          icon: Icons.person_outline,
+          icon: Icons.location_city_outlined,
         ),
         _inputField(
           controller: _farmLocalityCtrl,
           label: 'เขต / ตำบล',
-          icon: Icons.person_outline,
+          icon: Icons.location_city_outlined,
         ),
         _inputField(
           controller: _farmAddressCtrl,
@@ -419,7 +544,7 @@ class _InsertCowPageState extends State<InsertCowPage> {
     );
   }
 
-  // ── Build ──────────────────────────────────────────────────────────────────
+  // Build 
 
   @override
   Widget build(BuildContext context) {
