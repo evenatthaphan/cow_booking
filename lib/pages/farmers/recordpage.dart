@@ -1,9 +1,19 @@
 import 'package:cow_booking/pages/farmers/dashboardpage.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:cow_booking/config/internal_config.dart';
 
 class InseminationRecordPage extends StatefulWidget {
   final int bookingId;
-  const InseminationRecordPage({super.key, required this.bookingId});
+  final String vetName;   
+  final String detail;    
+  final String createdAt;
+  const InseminationRecordPage({super.key, 
+  required this.bookingId,
+  required this.vetName,   
+  required this.detail,    
+  required this.createdAt});
 
   @override
   State<InseminationRecordPage> createState() => _InseminationRecordPageState();
@@ -13,6 +23,25 @@ class _InseminationRecordPageState extends State<InseminationRecordPage> {
   bool? _isSuccess;
   final _noteController = TextEditingController();
   bool _isLoading = false;
+
+  // Future<void> _submitRecord() async {
+  //   if (_isSuccess == null) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('กรุณาเลือกผลการผสม')),
+  //     );
+  //     return;
+  //   }
+
+  //   setState(() => _isLoading = true);
+
+  //   setState(() => _isLoading = false);
+
+  //   // ไปหน้า Dashboard หลัง submit
+  //   Navigator.pushReplacement(
+  //     context,
+  //     MaterialPageRoute(builder: (_) => const InseminationDashboardPage()),
+  //   );
+  // }
 
   Future<void> _submitRecord() async {
     if (_isSuccess == null) {
@@ -24,20 +53,50 @@ class _InseminationRecordPageState extends State<InseminationRecordPage> {
 
     setState(() => _isLoading = true);
 
-    // TODO: เรียก API POST /insemination/record
-    // final response = await ApiService.postInseminationRecord(
-    //   bookingId: widget.bookingId,
-    //   isSuccess: _isSuccess!,
-    //   note: _noteController.text,
-    // );
+    try {
+      final response = await http.post(
+        Uri.parse('$apiEndpoint/stats/record'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'booking_id': widget.bookingId,
+          'is_success': _isSuccess,
+          'note': _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+        }),
+      );
 
-    setState(() => _isLoading = false);
+      if (!mounted) return;
 
-    // ไปหน้า Dashboard หลัง submit
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const InseminationDashboardPage()),
-    );
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('บันทึกผลการผสมสำเร็จ'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const InseminationDashboardPage()),
+        );
+      } else {
+        final body = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(body['error'] ?? 'เกิดข้อผิดพลาด'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ไม่สามารถเชื่อมต่อได้'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -45,8 +104,8 @@ class _InseminationRecordPageState extends State<InseminationRecordPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        title: const Text('บันทึกผลการผสมเทียม'),
-        backgroundColor: const Color(0xFF4CAF50),
+        title: const Text('บันทึกผลการผสมเทียม'  , style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor:  Colors.lightGreen[700],
         foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
@@ -54,7 +113,7 @@ class _InseminationRecordPageState extends State<InseminationRecordPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── ข้อมูล Booking ──────────────────────────
+            // Booking data
             Card(
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
@@ -66,9 +125,12 @@ class _InseminationRecordPageState extends State<InseminationRecordPage> {
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const Divider(),
                     _infoRow(Icons.confirmation_number, 'หมายเลขการจอง', '#${widget.bookingId}'),
-                    _infoRow(Icons.pets, 'น้ำเชื้อวัว', 'บราห์มัน #3'),
-                    _infoRow(Icons.person, 'สัตวแพทย์', 'นายสมชาย ใจดี'),
-                    _infoRow(Icons.calendar_today, 'วันที่ผสม', '18 ต.ค. 2568'),
+                    // _infoRow(Icons.pets, 'น้ำเชื้อวัว', 'บราห์มัน #3'),
+                    // _infoRow(Icons.person, 'สัตวแพทย์', 'นายสมชาย ใจดี'),
+                    // _infoRow(Icons.calendar_today, 'วันที่ผสม', '18 ต.ค. 2568'),
+                    _infoRow(Icons.description,   'รายละเอียด',  widget.detail),
+                    _infoRow(Icons.person,        'สัตวแพทย์',   widget.vetName),
+                    _infoRow(Icons.calendar_today,'วันที่จอง',   widget.createdAt),
                   ],
                 ),
               ),
@@ -76,7 +138,6 @@ class _InseminationRecordPageState extends State<InseminationRecordPage> {
 
             const SizedBox(height: 20),
 
-            // ── เลือกผลการผสม ───────────────────────────
             const Text('ผลการผสมเทียม *',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 10),
@@ -106,7 +167,6 @@ class _InseminationRecordPageState extends State<InseminationRecordPage> {
 
             const SizedBox(height: 20),
 
-            // ── หมายเหตุ ─────────────────────────────────
             const Text('หมายเหตุ (ถ้ามี)',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 8),
@@ -126,7 +186,6 @@ class _InseminationRecordPageState extends State<InseminationRecordPage> {
 
             const SizedBox(height: 30),
 
-            // ── ปุ่ม Submit ──────────────────────────────
             SizedBox(
               width: double.infinity,
               height: 52,
@@ -150,7 +209,6 @@ class _InseminationRecordPageState extends State<InseminationRecordPage> {
     );
   }
 
-  // ── Widgets ย่อย ─────────────────────────────────────
   Widget _infoRow(IconData icon, String label, String value) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),

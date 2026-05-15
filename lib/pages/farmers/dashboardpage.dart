@@ -73,11 +73,11 @@ class _InseminationDashboardPageState extends State<InseminationDashboardPage>
     try {
       final responses = await Future.wait([
         http.get(Uri.parse(
-            '$apiEndpoint/stats/insemination/my-overview?farmer_id=$farmerId')),
+            '$apiEndpoint/stats/insemination/my-overview/$farmerId')),
         http.get(Uri.parse(
-            '$apiEndpoint/stats/insemination/my-by-vet?farmer_id=$farmerId')),
+            '$apiEndpoint/stats/insemination/my-by-vet/$farmerId')),
         http.get(Uri.parse(
-            '$apiEndpoint/stats/insemination/my-by-bull?farmer_id=$farmerId')),
+            '$apiEndpoint/stats/insemination/my-by-bull/$farmerId')),
       ]);
       setState(() {
         overviewMine = jsonDecode(responses[0].body);

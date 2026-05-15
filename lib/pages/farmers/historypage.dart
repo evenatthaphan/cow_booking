@@ -9,7 +9,10 @@ import 'dart:convert';
 
 class InseminationHistoryPage extends StatefulWidget {
   final int farmerId;
-  const InseminationHistoryPage({super.key, required this.farmerId});
+
+  const InseminationHistoryPage({super.key, 
+    required this.farmerId
+});
 
   @override
   State<InseminationHistoryPage> createState() => _InseminationHistoryPageState();
@@ -47,17 +50,18 @@ class _InseminationHistoryPageState extends State<InseminationHistoryPage> {
         setState(() {
           // กรองเฉพาะ accepted เท่านั้น
           bookings = data
-              .where((b) => b['bookings_status'] == 'accepted')
-              .map((b) => {
-                    'booking_id': b['queue_bookings_id'],
-                    'bull_id': b['ref_bulls_id'],
-                    'vet_name': b['vetexperts_name'] ?? 'ไม่ระบุ',
-                    'detail': b['bookings_detail_bull'] ?? '-',
-                    'vet_notes': b['bookings_vet_notes'] ?? '-',
-                    'created_at': b['created_at'],
-                    'is_recorded': false, // TODO: เช็คจาก tb_insemination_records
-                  })
-              .toList();
+            .where((b) => b['bookings_status'] == 'accepted')
+            .map((b) => {
+                  'booking_id': b['queue_bookings_id'],
+                  'bull_id':    b['ref_bulls_id'],
+                  'vet_name':   b['vetexperts_name'] ?? 'ไม่ระบุ',
+                  'detail':     b['bookings_detail_bull'] ?? '-',
+                  'vet_notes':  b['bookings_vet_notes'] ?? '-',
+                  'created_at': b['created_at'],
+                  'is_recorded': b['record_id'] != null,
+                  'is_success':  b['record_id'] != null ? b['is_success'] == 1 : null,
+                })
+            .toList();
           _isLoading = false;
         });
       } else {
@@ -165,7 +169,7 @@ class _InseminationHistoryPageState extends State<InseminationHistoryPage> {
                   // Header 
                   Row(
                     children: [
-                      const Icon(Icons.pets,
+                      const Icon(Icons.calendar_today,
                           color: Color(0xFF4CAF50), size: 20),
                       const SizedBox(width: 8),
                       Expanded(
@@ -177,7 +181,7 @@ class _InseminationHistoryPageState extends State<InseminationHistoryPage> {
                           ),
                         ),
                       ),
-                      _statusBadge(isRecorded),
+                      _statusBadge(isRecorded, b['is_success'] as bool?),
                     ],
                   ),
 
@@ -194,15 +198,28 @@ class _InseminationHistoryPageState extends State<InseminationHistoryPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
+                        // onPressed: () {
+                        //   Navigator.push(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //       builder: (_) => InseminationRecordPage(
+                        //         bookingId: b['booking_id'],
+                        //       ),
+                        //     ),
+                        //   ).then((_) => _fetchBookings()); // refresh หลังกลับมา
+                        // },
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => InseminationRecordPage(
                                 bookingId: b['booking_id'],
+                                vetName:   b['vet_name'],
+                                detail:    b['detail'],
+                                createdAt: b['created_at'] ?? '-',
                               ),
                             ),
-                          ).then((_) => _fetchBookings()); // refresh หลังกลับมา
+                          ).then((_) => _fetchBookings());
                         },
                         icon: const Icon(Icons.edit, size: 18),
                         label: const Text('กรอกผลการผสม'),
@@ -225,21 +242,34 @@ class _InseminationHistoryPageState extends State<InseminationHistoryPage> {
     );
   }
 
-  Widget _statusBadge(bool isRecorded) {
+
+  Widget _statusBadge(bool isRecorded, bool? isSuccess) {
+    String label;
+    Color color;
+
+    if (!isRecorded) {
+      label = 'รอกรอกผล';
+      color = Colors.orange;
+    } else if (isSuccess == true) {
+      label = 'กรอกผลแล้ว · สำเร็จ';
+      color = Colors.green;
+    } else {
+      label = 'กรอกผลแล้ว · ไม่สำเร็จ';
+      color = Colors.red;
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: isRecorded ? Colors.green.shade50 : Colors.orange.shade50,
+        color: color.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isRecorded ? Colors.green : Colors.orange,
-        ),
+        border: Border.all(color: color),
       ),
       child: Text(
-        isRecorded ? 'กรอกผลแล้ว' : 'รอกรอกผล',
+        label,
         style: TextStyle(
           fontSize: 11,
-          color: isRecorded ? Colors.green : Colors.orange,
+          color: color,
           fontWeight: FontWeight.bold,
         ),
       ),

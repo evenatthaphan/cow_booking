@@ -1,5 +1,6 @@
 import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:cow_booking/pages/chooseregis.dart';
+import 'package:cow_booking/pages/farmers/favoritepage.dart';
 import 'package:cow_booking/pages/farmers/historypage.dart';
 import 'package:cow_booking/pages/farmers/dashboardpage.dart';
 import 'package:cow_booking/pages/farmers/viewprofile.dart';
@@ -114,7 +115,17 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
             ],
           ),
         ),
-        _buildMenuItem("ที่ถูกใจ", Icons.favorite),
+        // _buildMenuItem("ที่ถูกใจ", Icons.favorite),
+        _buildMenuItem(
+          "ที่ถูกใจ",
+          Icons.favorite,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const FavoritePage()),
+            );
+          },
+        ),
         _buildMenuItem(
           "ประวัติการผสม",
           Icons.library_books_sharp,

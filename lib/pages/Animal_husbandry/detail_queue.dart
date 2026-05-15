@@ -1,5 +1,5 @@
 import 'package:cow_booking/model/response/booking_response.dart';
-import 'package:cow_booking/pages/Animal_husbandry/docprofile.dart';
+import 'package:cow_booking/pages/Animal_husbandry/doc_profile.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

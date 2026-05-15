@@ -25,6 +25,30 @@ class _CowdetailpageState extends State<Cowdetailpage> {
   void initState() {
     super.initState();
     fetchVets(); // Reload Vetexpert
+    _checkIsLiked(); // ตรวจสอบสถานะถูกใจเมื่อหน้าโหลด
+  }
+
+  Future<void> _checkIsLiked() async {
+    final farmerId = context.read<DataFarmers>().datauser.farmersId;
+    final bullId = Provider.of<DataBull>(context, listen: false).selectedBull.bullId;
+
+    if (farmerId == 0) return; // ยังไม่ได้ login
+
+    try {
+      final response = await http.get(
+        Uri.parse('$apiEndpoint/like_bull/farmer/$farmerId'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        // เช็คว่ามี bulls_id ตัวนี้อยู่ในรายการถูกใจหรือไม่
+        final alreadyLiked = data.any((item) => item['ref_bulls_id'] == bullId);
+        setState(() => isLiked = alreadyLiked);
+      }
+    } catch (e) {
+      debugPrint('Error checking like: $e');
+    }
   }
 
   // function กดถูกใจ
@@ -349,8 +373,8 @@ class _CowdetailpageState extends State<Cowdetailpage> {
                                         ),
                                         trailing: ElevatedButton(
                                           onPressed: () {
-                                            //หา ID จากหลายๆ Key ที
-                                            var vetId = vet['id'] ?? vet['vetexperts_id'] ?? vet['vet_id'];
+                                            
+                                            var vetId = vet['vetexperts_id'];
                                             if (vetId != null) {
                                               seedocprofile(int.parse(vetId.toString()));
                                             } else {
