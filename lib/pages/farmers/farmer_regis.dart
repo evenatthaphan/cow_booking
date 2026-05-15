@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:cow_booking/pages/chooselogin.dart';
+import 'package:cow_booking/pages/choose_login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;

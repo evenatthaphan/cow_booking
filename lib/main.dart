@@ -1,6 +1,6 @@
 import 'package:cow_booking/pages/Animal_husbandry/homepage_doc.dart';
 import 'package:cow_booking/pages/Home/homepage.dart';
-import 'package:cow_booking/pages/chooselogin.dart';
+import 'package:cow_booking/pages/choose_login.dart';
 import 'package:cow_booking/pages/login.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_booking/share/ShareData.dart';

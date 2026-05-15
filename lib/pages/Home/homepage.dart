@@ -1,6 +1,6 @@
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/Farms_response.dart';
-import 'package:cow_booking/pages/Home/cowdetail.dart';
+import 'package:cow_booking/pages/Home/cows_detail.dart';
 import 'package:cow_booking/pages/Home/seach.dart';
 import 'package:cow_booking/pages/Home/seeall.dart';
 import 'package:cow_booking/pages/farmers/farmer_navbar.dart';

@@ -1,10 +1,10 @@
 import 'package:cow_booking/model/response/Farmers_response.dart';
-import 'package:cow_booking/pages/chooseregis.dart';
+import 'package:cow_booking/pages/choose_regis.dart';
 import 'package:cow_booking/pages/farmers/favorite_page.dart';
 import 'package:cow_booking/pages/farmers/history_page.dart';
 import 'package:cow_booking/pages/farmers/dashboard_page.dart';
 import 'package:cow_booking/pages/farmers/view_profile.dart';
-import 'package:cow_booking/pages/chooselogin.dart';
+import 'package:cow_booking/pages/choose_login.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cow_booking/share/ShareData.dart';
