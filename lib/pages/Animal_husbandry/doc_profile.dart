@@ -1,7 +1,10 @@
+import 'dart:convert';
+
+import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
 import 'package:cow_booking/pages/Animal_husbandry/cow_list_page.dart';
-import 'package:cow_booking/pages/Animal_husbandry/farm_list_page.dart';
 import 'package:cow_booking/pages/Animal_husbandry/manage_schedule.dart';
+import 'package:cow_booking/pages/Animal_husbandry/vet_profile_menu.dart';
 import 'package:cow_booking/pages/Home/homepage.dart';
 import 'package:cow_booking/pages/choose_login.dart';
 import 'package:cow_booking/share/ShareData.dart';
@@ -9,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 
 class VetProfilePage extends StatefulWidget {
@@ -19,20 +23,50 @@ class VetProfilePage extends StatefulWidget {
 }
 
 class _VetProfilePageState extends State<VetProfilePage> {
+
+  int _totalStock = 0;
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _fetchTotalStock();
+  // }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchTotalStock();
+    });
+  }
+
+  Future<void> _fetchTotalStock() async {
+    final vetId = Provider.of<DataVetExpert>(context, listen: false).datauser.id;
+    try {
+      final response = await http.get(
+        Uri.parse('$apiEndpoint/vet/vet-bulls/total-stock/$vetId'),
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() => _totalStock = data['total_stock'] ?? 0);
+      }
+    } catch (_) {}
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F1E8),
+      backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        title: const Text('โปรไฟล์',
+        title:  Text('โปรไฟล์',
             style: TextStyle(
               fontSize: 22,
-              color: Colors.white,
+              color: Colors.lightGreen[800],
               fontWeight: FontWeight.bold,
             )),
-        centerTitle: true,
-        backgroundColor: Colors.lightGreen[700],
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        iconTheme: IconThemeData(color: Colors.lightGreen[800]),
       ),
       body: ListView(
         children: [
@@ -81,16 +115,16 @@ class _VetProfilePageState extends State<VetProfilePage> {
                     ],
                   ),
                 ),
-                // IconButton(
-                //   icon: const Icon(Icons.arrow_forward_ios, size: 16),
-                //   onPressed: () {
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //           builder: (context) => const Viewprofile()),
-                //     );
-                //   },
-                // ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const VetProfileMenuPage()),
+                    );
+                  },
+                ),
               ],
             ),
           ),
@@ -145,7 +179,21 @@ class _VetProfilePageState extends State<VetProfilePage> {
                         fontSize: 16,
                       )),
                 ),
-                const Text("5"),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.green[50],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    "$_totalStock โดส",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green[700],
+                    ),
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.arrow_forward_ios, size: 14),
                   onPressed: () {
@@ -207,26 +255,7 @@ class _VetProfilePageState extends State<VetProfilePage> {
           const SizedBox(
             height: 10,
           ),
-          // Container(
-          //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-          //   margin: const EdgeInsets.symmetric(horizontal: 16),
-          //   decoration: BoxDecoration(
-          //     color: Colors.white,
-          //     borderRadius: BorderRadius.circular(12),
-          //   ),
-          //   child: const Row(
-          //     children: [
-          //       Spacer(),
-          //       Expanded(
-          //           child: Text("ออกจากระบบ",
-          //               style: TextStyle(
-          //                 fontSize: 18,
-          //                 color: Colors.red,
-          //               ))),
-          //       Spacer(),
-          //     ],
-          //   ),
-          // ),
+
           GestureDetector(
           onTap: () => _logout(context),
           child: Container(

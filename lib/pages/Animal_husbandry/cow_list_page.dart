@@ -81,7 +81,7 @@ class _CowListPageState extends State<CowListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F1E8),
+      backgroundColor: const Color(0xFFF5F7F2),
 
       floatingActionButton: FloatingActionButton.extended(
       backgroundColor: Colors.lightGreen[700],
@@ -109,13 +109,12 @@ class _CowListPageState extends State<CowListPage> {
           'รายการวัว',
           style: GoogleFonts.notoSansThai(
             fontSize: 22,
-            color: Colors.white,
+            color: Colors.green[800],
             fontWeight: FontWeight.bold,
           ),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.lightGreen[700],
-        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.white,
+        iconTheme: IconThemeData(color: Colors.green[800]),
       ),
 
       body: _buildBody(),

@@ -1,72 +1,97 @@
-import 'package:cow_booking/pages/farmers/edit_address.dart';
-import 'package:cow_booking/pages/farmers/edit_password.dart';
-import 'package:cow_booking/pages/farmers/edit_profile.dart';
-import 'package:cow_booking/pages/farmers/farmer_navbar.dart';
+import 'package:cow_booking/pages/Animal_husbandry/doc_profile.dart';
+import 'package:cow_booking/pages/Animal_husbandry/vet_change_password.dart';
+import 'package:cow_booking/pages/Animal_husbandry/vet_edit_address.dart';
+import 'package:cow_booking/pages/Animal_husbandry/vet_edit_profile.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class Viewprofile extends StatefulWidget {
-  const Viewprofile({super.key});
+// TODO: import หน้าที่จะสร้างทีหลัง
+// import 'package:cow_booking/pages/Animal_husbandry/vet_edit_profile.dart';
+// import 'package:cow_booking/pages/Animal_husbandry/vet_change_password.dart';
+// import 'package:cow_booking/pages/Animal_husbandry/vet_edit_address.dart';
 
-  @override
-  State<Viewprofile> createState() => _ViewprofileState();
-}
+class VetProfileMenuPage extends StatelessWidget {
+  const VetProfileMenuPage({super.key});
 
-class _ViewprofileState extends State<Viewprofile> {
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new, color:  Colors.green[800]),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "โปรไฟล์",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green[800]),
         ),
+        // actions: [
+        //   GestureDetector(
+        //     onTap: () => Navigator.push(
+        //       context,
+        //       MaterialPageRoute(builder: (_) => const VetProfilePage()),
+        //     ),
+        //     child: Padding(
+        //       padding: const EdgeInsets.only(right: 12),
+        //       child: Consumer<DataVetExpert>(
+        //         builder: (context, dataVet, _) {
+        //           final imageUrl = dataVet.datauser.profileImage;
+        //           return CircleAvatar(
+        //             radius: 20,
+        //             backgroundImage: imageUrl.isNotEmpty
+        //                 ? NetworkImage(imageUrl)
+        //                 : const NetworkImage(
+        //                     'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
+        //                   ),
+        //           );
+        //         },
+        //       ),
+        //     ),
+        //   ),
+        // ],
       ),
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header โปรไฟล์ 
+
             Container(
               width: double.infinity,
-              color: Colors.lightGreen,
+              color:  Colors.lightGreen,
               padding: const EdgeInsets.only(bottom: 28),
               child: Column(
                 children: [
-                  Consumer<DataFarmers>(
-                    builder: (context, dataFarmer, _) {
-                      final imageUrl = dataFarmer.datauser.farmersProfileImage;
-                      return CircleAvatar(
-                        radius: 44,
-                        backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
-                            ? NetworkImage(imageUrl)
-                            : const NetworkImage(
-                                'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
-                              ),
-                      );
-                    },
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Consumer<DataVetExpert>(
+                      builder: (context, dataVet, _) {
+                        final imageUrl = dataVet.datauser.profileImage;
+                        return CircleAvatar(
+                          radius: 44,
+                          backgroundImage: imageUrl.isNotEmpty
+                              ? NetworkImage(imageUrl)
+                              : const NetworkImage(
+                                  'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
+                                ),
+                        );
+                      },
+                    ),
                   ),
                   const SizedBox(height: 10),
-                  Consumer<DataFarmers>(
-                    builder: (context, dataFarmer, _) => Text(
-                      dataFarmer.datauser.farmersName,
+                  Consumer<DataVetExpert>(
+                    builder: (context, dataVet, _) => Text(
+                      dataVet.datauser.vetExpertName,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Consumer<DataFarmers>(
-                    builder: (context, dataFarmer, _) => Text(
-                      dataFarmer.datauser.farmersPhonenumber,
+                  Consumer<DataVetExpert>(
+                    builder: (context, dataVet, _) => Text(
+                      dataVet.datauser.phonenumber,
                       style: const TextStyle(fontSize: 14, color: Colors.white70),
                     ),
                   ),
@@ -76,7 +101,6 @@ class _ViewprofileState extends State<Viewprofile> {
 
             const SizedBox(height: 20),
 
-            // เมนู 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
@@ -89,10 +113,10 @@ class _ViewprofileState extends State<Viewprofile> {
                       iconColor: Colors.green,
                       label: "แก้ไขข้อมูลส่วนตัว",
                       subtitle: "ชื่อ, เบอร์โทร, รูปโปรไฟล์",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const Editprofilepage()),
-                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const VetEditProfilePage()));
+                        // _comingSoon(context);
+                      },
                     ),
                     const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                     _menuItem(
@@ -100,10 +124,10 @@ class _ViewprofileState extends State<Viewprofile> {
                       iconColor: Colors.orange,
                       label: "เปลี่ยนรหัสผ่าน",
                       subtitle: "อัพเดตรหัสผ่านของคุณ",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const Editpasswoedpage()),
-                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const VetChangePasswordPage()));
+                        // _comingSoon(context);
+                      },
                     ),
                     const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                     _menuItem(
@@ -111,10 +135,10 @@ class _ViewprofileState extends State<Viewprofile> {
                       iconColor: Colors.blue,
                       label: "แก้ไขที่อยู่",
                       subtitle: "ที่อยู่และพิกัดสถานที่",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const EditaddressPage()),
-                      ),
+                      onTap: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (_) => const VetEditAddressPage()));
+                        // _comingSoon(context);
+                      },
                     ),
                   ]),
 
@@ -125,10 +149,16 @@ class _ViewprofileState extends State<Viewprofile> {
           ],
         ),
       ),
-      bottomNavigationBar: FarmerNavigationBar(
-        selectedIndex: 1,
-        onDestinationSelected: (value) {},
-        screenSize: screenSize,
+    );
+  }
+
+  void _comingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('ยังไม่ได้เปิดใช้งาน'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(12),
       ),
     );
   }
@@ -189,9 +219,7 @@ class _ViewprofileState extends State<Viewprofile> {
                   children: [
                     Text(label,
                         style: const TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: Color(0xFF1A1A1A))),
+                            fontSize: 15, fontWeight: FontWeight.w500, color: Color(0xFF1A1A1A))),
                     const SizedBox(height: 2),
                     Text(subtitle,
                         style: const TextStyle(fontSize: 12, color: Colors.grey)),
