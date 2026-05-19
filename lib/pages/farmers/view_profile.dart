@@ -28,8 +28,8 @@ class _ViewprofileState extends State<Viewprofile> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "โปรไฟล์",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          "จัดการโปรไฟล์",
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
       body: SingleChildScrollView(
@@ -125,11 +125,11 @@ class _ViewprofileState extends State<Viewprofile> {
           ],
         ),
       ),
-      bottomNavigationBar: FarmerNavigationBar(
-        selectedIndex: 1,
-        onDestinationSelected: (value) {},
-        screenSize: screenSize,
-      ),
+      // bottomNavigationBar: FarmerNavigationBar(
+      //   selectedIndex: 1,
+      //   onDestinationSelected: (value) {},
+      //   screenSize: screenSize,
+      // ),
     );
   }
 

@@ -22,12 +22,12 @@ class VetProfileMenuPage extends StatelessWidget {
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color:  Colors.green[800]),
+          icon: Icon(Icons.arrow_back_ios_new, color:  Colors.lightGreen[800]),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           "โปรไฟล์",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green[800]),
+          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.lightGreen[800]),
         ),
         // actions: [
         //   GestureDetector(

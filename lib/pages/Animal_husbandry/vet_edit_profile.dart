@@ -166,7 +166,7 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text('แก้ไขข้อมูลส่วนตัว',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.lightGreen[800])),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.lightGreen[800])),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -246,17 +246,19 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // แสดงรูปปัจจุบัน
                       ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: _licenseImageFile != null
-                            ? Image.file(_licenseImageFile!,
-                                width: double.infinity, height: 180, fit: BoxFit.cover)
-                            : (vet.vetExpertPl.isNotEmpty
-                                ? Image.network(vet.vetExpertPl,
-                                    width: double.infinity, height: 180, fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) => _licensePlaceholder())
-                                : _licensePlaceholder()),
+                        child: Image(
+                          image: _licenseImageFile != null
+                              ? FileImage(_licenseImageFile!) as ImageProvider
+                              : (vet.vetExpertPl.isNotEmpty
+                                  ? NetworkImage(vet.vetExpertPl) as ImageProvider
+                                  : const AssetImage('assets/images/placeholder.png')),
+                          width: double.infinity,
+                          height: 180,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _licensePlaceholder(),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -289,6 +291,7 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
                     ],
                   ),
                 ),
+              
               ]),
 
               const SizedBox(height: 32),
