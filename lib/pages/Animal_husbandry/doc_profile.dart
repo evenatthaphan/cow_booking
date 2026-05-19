@@ -5,6 +5,7 @@ import 'package:cow_booking/model/response/Vet_response.dart';
 import 'package:cow_booking/pages/Animal_husbandry/cow_list_page.dart';
 import 'package:cow_booking/pages/Animal_husbandry/manage_schedule.dart';
 import 'package:cow_booking/pages/Animal_husbandry/vet_profile_menu.dart';
+import 'package:cow_booking/pages/Animal_husbandry/vet_stat_page.dart';
 import 'package:cow_booking/pages/Home/homepage.dart';
 import 'package:cow_booking/pages/choose_login.dart';
 import 'package:cow_booking/share/ShareData.dart';
@@ -227,7 +228,12 @@ class _VetProfilePageState extends State<VetProfilePage> {
                 const SizedBox(width: 5),
                 const SizedBox(width: 10),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const InseminationDashboardStatPage()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     padding:

@@ -48,7 +48,7 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
       final vetId = Provider.of<DataVetExpert>(context, listen: false).datauser.id;
 
       final response = await http.put(
-        Uri.parse('$apiEndpoint/vetexpert/update-address/$vetId'),
+        Uri.parse('$apiEndpoint/vet/vetexpert/update-address/$vetId'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'vetexperts_province': _provinceCtrl.text.trim(),
@@ -91,14 +91,14 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new, color:  Colors.lightGreen[800]),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('แก้ไขที่อยู่',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text('แก้ไขที่อยู่',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.lightGreen[800])),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -108,7 +108,6 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // ── Icon header ───────────────────────────────────────────────
               Center(
                 child: Container(
                   padding: const EdgeInsets.all(20),

@@ -26,7 +26,7 @@ class VetProfileMenuPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          "โปรไฟล์",
+          "จัดการบัญชี",
           style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.lightGreen[800]),
         ),
         // actions: [

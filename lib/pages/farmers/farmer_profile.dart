@@ -457,16 +457,6 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
   Widget _buildGuestView(BuildContext context) {
     return Column(
       children: [
-        Container(
-          height: 200,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1B5E20), Color(0xFF4CAF50)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
         Expanded(
           child: Center(
             child: Padding(

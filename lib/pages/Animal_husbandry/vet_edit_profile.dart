@@ -112,7 +112,7 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
       }
 
       final response = await http.put(
-        Uri.parse('$apiEndpoint/vetexpert/update-profile/${vet.id}'),
+        Uri.parse('$apiEndpoint/vet/vetexpert/update-profile/${vet.id}'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'vetexperts_name':          _nameCtrl.text.trim(),

@@ -40,7 +40,7 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
       final vetId = Provider.of<DataVetExpert>(context, listen: false).datauser.id;
 
       final response = await http.put(
-        Uri.parse('$apiEndpoint/vetexpert/change-password/$vetId'),
+        Uri.parse('$apiEndpoint/vet/vetexpert/change-password/$vetId'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'old_password': _oldPassCtrl.text,
@@ -79,14 +79,14 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new, color:  Colors.lightGreen[800]),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('เปลี่ยนรหัสผ่าน',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Text('เปลี่ยนรหัสผ่าน',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.lightGreen[800])),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
