@@ -3,6 +3,8 @@ import 'package:cow_booking/pages/Home/homepage.dart';
 import 'package:cow_booking/pages/Animal_husbandry/home_page_doc.dart';
 import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
+import 'package:cow_booking/pages/admin/admin_change_password.dart';
+import 'package:cow_booking/pages/admin/admin_dashbord_page.dart';
 import 'package:cow_booking/pages/farmers/farmer_profile.dart';
 
 import 'package:flutter/material.dart';
@@ -493,11 +495,11 @@ class _ChooseLoginState extends State<ChooseLogin> {
           await prefs.setInt('userId', admin.adminsId);
 
           // บังคับเปลี่ยนรหัสถ้า must_change_password == 1
-          // if (admin.mustChangePassword == 1) {
-          //   await _showSuccessDialogAndNavigate(context, AdminChangePasswordPage());
-          // } else {
-          //   await _showSuccessDialogAndNavigate(context, AdminDashboardPage());
-          // }
+          if (admin.mustChangePassword == 1) {
+            await _showSuccessDialogAndNavigate(context, AdminChangePasswordPage());
+          } else {
+            await _showSuccessDialogAndNavigate(context, AdminDashboardPage());
+          }
           return;
         }
        

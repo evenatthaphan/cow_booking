@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/pages/admin/admin_list.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -24,14 +25,14 @@ class AdminDashboardPage extends StatefulWidget {
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
   bool _isLoading = true;
 
-  // ── Stats ──────────────────────────────────────────────────────────────────
+  // Stats 
   int _totalBookings    = 0;
   int _totalFarmers     = 0;
   int _totalVets        = 0;
   int _pendingApprovals = 0;
   double _successRate   = 0.0;
 
-  // ── Trend รายเดือน ────────────────────────────────────────────────────────
+  // Trend รายเดือน 
   List<Map<String, dynamic>> _monthlyTrend = [];
 
   @override
@@ -40,13 +41,61 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchStats());
   }
 
+
+  // Future<void> _fetchStats() async {
+  //   try {
+  //     final res = await http.get(
+  //       Uri.parse('$apiEndpoint/admin/dashboard/stats'),
+  //     );
+  //     final trendRes = await http.get(
+  //       Uri.parse('$apiEndpoint/admin/dashboard/trend'),
+  //     );
+
+  //     if (res.statusCode == 200) {
+  //       final data = jsonDecode(res.body);
+  //       setState(() {
+  //         _totalBookings    = data['total_bookings']    ?? 0;
+  //         _totalFarmers     = data['total_farmers']     ?? 0;
+  //         _totalVets        = data['total_vets']        ?? 0;
+  //         _pendingApprovals = data['pending_approvals'] ?? 0;
+  //         _successRate      = (data['success_rate']     ?? 0).toDouble();
+  //       });
+  //     }
+
+  //     if (trendRes.statusCode == 200) {
+  //       final trendData = jsonDecode(trendRes.body) as List;
+  //       setState(() {
+  //         _monthlyTrend = trendData.cast<Map<String, dynamic>>();
+  //       });
+  //     }
+  //   } catch (e) {
+  //     debugPrint('fetch stats error: $e');
+  //   } finally {
+  //     if (mounted) setState(() => _isLoading = false);
+  //   }
+  // }
+
+
+
+
   Future<void> _fetchStats() async {
+    if (!mounted) return;
+    final auth = context.read<DataAdmin>();
+
     try {
+      final headers = {
+        'Content-Type': 'application/json',
+        'admin-type': auth.datauser.adminType.toString(),
+      };
+
       final res = await http.get(
         Uri.parse('$apiEndpoint/admin/dashboard/stats'),
+        headers: headers,
       );
+
       final trendRes = await http.get(
         Uri.parse('$apiEndpoint/admin/dashboard/trend'),
+        headers: headers,
       );
 
       if (res.statusCode == 200) {
@@ -60,6 +109,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         });
       }
 
+      if (res.statusCode == 403) {
+        // ไม่มีสิทธิ์ → กลับไปหน้า login หรือแสดง dialog
+        _showNoPermissionDialog();
+      }
+
       if (trendRes.statusCode == 200) {
         final trendData = jsonDecode(trendRes.body) as List;
         setState(() {
@@ -71,6 +125,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  void _showNoPermissionDialog() {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('ไม่มีสิทธิ์เข้าถึง'),
+        content: Text('บัญชีของคุณไม่มีสิทธิ์ใช้งานฟังก์ชันนี้'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('ตกลง'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _comingSoon() {
@@ -125,7 +195,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    // ── Welcome ──────────────────────────────────────────
+                    // Welcome 
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -185,7 +255,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
                     const SizedBox(height: 20),
 
-                    // ── Stats Cards ──────────────────────────────────────
+                    // Stats Cards
                     _sectionLabel('ภาพรวมระบบ'),
                     GridView.count(
                       crossAxisCount: 2,
@@ -208,7 +278,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
                     const SizedBox(height: 20),
 
-                    // ── Success Rate ─────────────────────────────────────
+                    // Success Rate
                     _sectionLabel('อัตราความสำเร็จการผสมเทียม'),
                     _infoCard([
                       Padding(
@@ -259,7 +329,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
                     const SizedBox(height: 20),
 
-                    // ── แนวโน้มรายเดือน ──────────────────────────────────
+                    // แนวโน้มรายเดือน
                     _sectionLabel('แนวโน้มรายเดือน'),
                     _infoCard([
                       Padding(
@@ -309,7 +379,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
                     const SizedBox(height: 20),
 
-                    // ── เมนูจัดการ ───────────────────────────────────────
+                    // เมนูจัดการ
                     _sectionLabel('จัดการระบบ'),
                     _menuCard([
                       // แสดงเฉพาะ Master + Super
@@ -319,7 +389,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                           iconColor: Colors.purple,
                           label: 'จัดการผู้ดูแลระบบ',
                           subtitle: 'เพิ่ม แก้ไข ลบ Admin',
-                          onTap: _comingSoon,
+                          onTap: 
+                            //_comingSoon
+                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => AdminListPage())),
                         ),
                         const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                       ],
@@ -381,7 +453,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
                     const SizedBox(height: 20),
 
-                    // ── ออกจากระบบ ────────────────────────────────────────
+                    // ออกจากระบบ
                     SizedBox(
                       width: double.infinity,
                       child: OutlinedButton.icon(
@@ -423,6 +495,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             onPressed: () {
               Navigator.pop(ctx);
               Provider.of<DataAdmin>(context, listen: false).clear();
+              Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
               // TODO: Navigator ไปหน้า Login
             },
             style: ElevatedButton.styleFrom(

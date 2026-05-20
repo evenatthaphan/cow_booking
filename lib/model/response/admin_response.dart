@@ -82,4 +82,17 @@ class AdminResponse {
         "created_at": createdAt.toIso8601String(),
         "updated_at": updatedAt.toIso8601String(),
     };
+
+    AdminResponse copyWith({int? mustChangePassword}) => AdminResponse(
+      adminsId: adminsId,
+      adminsName: adminsName,
+      adminsEmail: adminsEmail,
+      adminsPassword: adminsPassword,
+      adminsPhonenumber: adminsPhonenumber,
+      adminsAddress: adminsAddress,
+      adminType: adminType,
+      mustChangePassword: mustChangePassword ?? this.mustChangePassword,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
 }
