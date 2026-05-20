@@ -1,3 +1,4 @@
+import 'package:cow_booking/model/response/admin_response.dart';
 import 'package:cow_booking/pages/Home/homepage.dart';
 import 'package:cow_booking/pages/Animal_husbandry/home_page_doc.dart';
 import 'package:cow_booking/model/response/Farmers_response.dart';
@@ -448,30 +449,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
         }
 
-        // if (role == 'vet' && user != null) {
-        //   print("VET USER DATA: $user");
-        //   final vet = VetExpert.fromJson(user);
-        //   print("VET ID: ${vet.id}");           // ดูว่าแปลงสำเร็จมั้ย
-        //   print("VET NAME: ${vet.vetExpertName}");
-        //   context.read<DataVetExpert>().setDataUser(vet);
-
-        //   final prefs = await SharedPreferences.getInstance();
-
-        //   await prefs.setBool('isLoggedIn', true);
-        //   await prefs.setString('userType', 'vet');
-        //   await prefs.setInt('userId', vet.id);
-
-        //   // Navigator.pushReplacement(
-        //   //   context,
-        //   //   MaterialPageRoute(builder: (_) => Homepagedoc()),
-        //   // );
-        //   await _showSuccessDialogAndNavigate(
-        //     context,
-        //     Homepagedoc(),
-        //   );
-        //   return;
-
-        // }
         if (role == 'vet' && user != null) {
           print("VET USER DATA: $user");
 
@@ -503,6 +480,24 @@ class _ChooseLoginState extends State<ChooseLogin> {
           await prefs.setInt('userId', vet.id);
 
           await _showSuccessDialogAndNavigate(context, Homepagedoc());
+          return;
+        }
+
+        if (role == 'admin' && user != null) {
+          final admin = AdminResponse.fromJson(user);
+          context.read<DataAdmin>().setDataUser(admin);
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('isLoggedIn', true);
+          await prefs.setString('userType', 'admin');
+          await prefs.setInt('userId', admin.adminsId);
+
+          // บังคับเปลี่ยนรหัสถ้า must_change_password == 1
+          // if (admin.mustChangePassword == 1) {
+          //   await _showSuccessDialogAndNavigate(context, AdminChangePasswordPage());
+          // } else {
+          //   await _showSuccessDialogAndNavigate(context, AdminDashboardPage());
+          // }
           return;
         }
        

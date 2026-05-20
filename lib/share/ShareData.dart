@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:cow_booking/model/response/Farms_response.dart';
+import 'package:cow_booking/model/response/admin_response.dart';
 import 'package:flutter/material.dart';
 import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
@@ -183,73 +184,6 @@ class DataVetExpert with ChangeNotifier {
   }
 }
 
-// class DataVetExpert with ChangeNotifier {
-//   int _period = 0;
-//   int _lastperiod = 0;
-
-//   VetExpert _datauser = VetExpert(
-//       id: 0,
-//       vetExpertName: "" ,
-//       vetExpertPassword: "",
-//       password:"",
-//       phonenumber: "",
-//       vetExpertEmail: "",
-//       profileImage: "",
-//       vetExpertAddress: "",
-//       province: "",
-//       district: "",
-//       locality: "",
-//       vetExpertPl: "",
-//       totalSemenStock: 0,);
-
-//   VetExpert get datauser => _datauser;  
-//   int get period => _period;
-//   int get lastperiod => _lastperiod;
-
-//   void setDataUser(VetExpert user) {
-//     _datauser = user;
-//     notifyListeners();
-//   }
-
-//   void setLastperiod(int period) {
-//     _lastperiod = period;
-//     notifyListeners();
-//   }
-
-//   void setPeriod(int period) {
-//     _period = period;
-//     notifyListeners();
-//   }
-
-//   void updateProfileImage(String newProfileImage) {
-//     _datauser.profileImage = newProfileImage;
-//     notifyListeners();
-//   }
-
-//   Future<void> fetchVetById(int vetId) async {
-//     try {
-//       final res = await http.get(
-//         Uri.parse("$apiEndpoint/vetexpert/$vetId"),
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//       );
-
-//       if (res.statusCode == 200) {
-//         final data = jsonDecode(res.body);
-//         _datauser = VetExpert.fromJson(data);
-//         notifyListeners();
-//       } else {
-//         throw Exception("Failed to load vet expert");
-//       }
-//     } catch (e) {
-//       debugPrint("fetchVetById error: $e");
-//       rethrow;
-//     }
-//   }
-
-// }
-
 
 class DataBull with ChangeNotifier {
   FarmbullRequestResponse _selectedBull = FarmbullRequestResponse(
@@ -281,6 +215,44 @@ class DataBull with ChangeNotifier {
 
   void updateSemenStock(int newStock) {
     _selectedBull.semenStock = newStock;
+    notifyListeners();
+  }
+}
+
+class DataAdmin with ChangeNotifier {
+  AdminResponse _datauser = AdminResponse(
+    adminsId:           0,
+    adminsName:         '',
+    adminsEmail:        '',
+    adminsPassword:     '',
+    adminsPhonenumber:  '',
+    adminsAddress:      '',
+    adminType:          3,
+    mustChangePassword: 0,
+    createdAt:          DateTime.now(),
+    updatedAt:          DateTime.now(),
+  );
+
+  AdminResponse get datauser => _datauser;
+
+  void setDataUser(AdminResponse user) {
+    _datauser = user;
+    notifyListeners();
+  }
+
+  void clear() {
+    _datauser = AdminResponse(
+      adminsId:           0,
+      adminsName:         '',
+      adminsEmail:        '',
+      adminsPassword:     '',
+      adminsPhonenumber:  '',
+      adminsAddress:      '',
+      adminType:          3,
+      mustChangePassword: 0,
+      createdAt:          DateTime.now(),
+      updatedAt:          DateTime.now(),
+    );
     notifyListeners();
   }
 }
