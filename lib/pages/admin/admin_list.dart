@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
-import 'package:cow_booking/pages/admin/admin_from.dart';
+import 'package:cow_booking/pages/admin/admin_form.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -32,7 +32,7 @@ class _AdminListPageState extends State<AdminListPage> {
     super.dispose();
   }
 
-  // ── fetch ───────────────────────────────────────────────
+  // fetch 
   Future<void> _fetchAdmins() async {
     if (!mounted) return;
     final auth = context.read<DataAdmin>();
@@ -64,7 +64,7 @@ class _AdminListPageState extends State<AdminListPage> {
     }
   }
 
-  // ── search ──────────────────────────────────────────────
+  // search 
   void _onSearch() {
     final q = _searchCtrl.text.toLowerCase();
     setState(() {
@@ -129,7 +129,7 @@ class _AdminListPageState extends State<AdminListPage> {
     }
   }
 
-  // ── navigate to form ────────────────────────────────────
+  // navigate to form 
   Future<void> _openForm({Map<String, dynamic>? admin}) async {
     final result = await Navigator.push<bool>(
       context,
@@ -140,7 +140,7 @@ class _AdminListPageState extends State<AdminListPage> {
     if (result == true) _fetchAdmins(); // reload หลังบันทึก
   }
 
-  // ── helpers ─────────────────────────────────────────────
+  // helpers
   void _showSnack(String msg, {bool isError = false}) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

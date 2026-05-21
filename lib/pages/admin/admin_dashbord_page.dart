@@ -1,6 +1,10 @@
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/pages/admin/admin_list.dart';
+import 'package:cow_booking/pages/admin/bull_list.dart';
+import 'package:cow_booking/pages/admin/farm_list.dart';
+import 'package:cow_booking/pages/admin/member_list.dart';
+import 'package:cow_booking/pages/admin/vet_approval.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -400,7 +404,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         iconColor: Colors.blue,
                         label: 'จัดการสมาชิก',
                         subtitle: 'ดูและค้นหาสมาชิกทั้งหมด',
-                        onTap: _comingSoon,
+                        // onTap: _comingSoon,
+                        onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const MemberListPage())),
                       ),
                       const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                       _menuItem(
@@ -408,7 +414,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         iconColor: Colors.orange,
                         label: 'อนุมัติสัตวบาล',
                         subtitle: 'ตรวจสอบใบประกอบวิชาชีพ',
-                        onTap: _comingSoon,
+                        //onTap: _comingSoon,
+                        onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const VetApprovalPage())),
                         trailing: _pendingApprovals > 0
                             ? Container(
                                 padding: const EdgeInsets.symmetric(
@@ -431,7 +439,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         iconColor: Colors.teal,
                         label: 'จัดการฟาร์ม',
                         subtitle: 'เพิ่ม แก้ไข ลบ ข้อมูลฟาร์ม',
-                        onTap: _comingSoon,
+                        //onTap: _comingSoon,
+                        onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const FarmListPage())),
                       ),
                       const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                       _menuItem(
@@ -439,7 +449,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         iconColor: Colors.brown,
                         label: 'จัดการพ่อพันธุ์',
                         subtitle: 'ข้อมูลวัวพ่อพันธุ์ทั้งหมด',
-                        onTap: _comingSoon,
+                        //onTap: _comingSoon,
+                        onTap: () => Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const BullListPage())),
                       ),
                       const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                       _menuItem(
