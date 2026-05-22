@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/booking_response.dart';
@@ -25,9 +26,43 @@ class _HomepagedocState extends State<Homepagedoc> {
           backgroundColor: const Color.fromARGB(255, 255, 255, 255),
           elevation: 0,
           automaticallyImplyLeading: false,
-          title: Text(
-            "หน้าหลัก",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green[800]),
+          title: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Text('🐄', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cow Booking',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    'หน้าหลัก',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 11,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           actions: [
             GestureDetector(

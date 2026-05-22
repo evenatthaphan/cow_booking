@@ -60,14 +60,46 @@ class _VetProfilePageState extends State<VetProfilePage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        title:  Text('โปรไฟล์',
-            style: TextStyle(
-              fontSize: 22,
-              color: Colors.lightGreen[800],
-              fontWeight: FontWeight.bold,
-            )),
+        title: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Text('🐄', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cow Booking',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    'โปรไฟล์ส',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 11,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-        iconTheme: IconThemeData(color: Colors.lightGreen[800]),
+        iconTheme: IconThemeData(color: Colors.lightGreen[900]),
       ),
       body: ListView(
         children: [

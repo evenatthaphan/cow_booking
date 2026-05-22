@@ -4,6 +4,7 @@ import 'package:cow_booking/model/response/booking_response.dart';
 import 'package:cow_booking/pages/Animal_husbandry/doc_profile.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -264,16 +265,50 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios_new, color: Colors.green[900]),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "รายละเอียดคิว",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
+        title: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Text('🐄', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cow Booking',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    'รายละเอียดการจอง',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 11,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         actions: [
           GestureDetector(
             onTap: () => Navigator.push(

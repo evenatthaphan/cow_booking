@@ -122,7 +122,7 @@ class _FarmmerbookingpageState extends State<Farmmerbookingpage> {
           ],
         ),
         bottomNavigationBar: FarmerNavigationBar(
-        selectedIndex: 1,
+        selectedIndex: 0,
         onDestinationSelected: (value) {},
         screenSize: screenSize,
         ),

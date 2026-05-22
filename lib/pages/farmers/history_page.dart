@@ -245,16 +245,6 @@ class _InseminationHistoryPageState extends State<InseminationHistoryPage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        // onPressed: () {
-                        //   Navigator.push(
-                        //     context,
-                        //     MaterialPageRoute(
-                        //       builder: (_) => InseminationRecordPage(
-                        //         bookingId: b['booking_id'],
-                        //       ),
-                        //     ),
-                        //   ).then((_) => _fetchBookings()); // refresh หลังกลับมา
-                        // },
                         onPressed: () {
                           Navigator.push(
                             context,

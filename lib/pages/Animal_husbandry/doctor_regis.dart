@@ -51,6 +51,68 @@ class _DoctorRegisState extends State<DoctorRegis> {
   static const _border = Color(0xFFDDDDDD);
   static const _labelColor = Color(0xFF757575);
 
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: _green,
+      automaticallyImplyLeading: true,
+      iconTheme: const IconThemeData(color: Colors.white),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
+          ),
+        ),
+      ),
+      title: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text('🐄', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cow Booking',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                'ลงทะเบียนสัตวบาลใหม่',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 11,
+                  color: Colors.white70,
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+            height: 1, color: Colors.white.withOpacity(0.1)),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -707,29 +769,37 @@ class _DoctorRegisState extends State<DoctorRegis> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.lightGreen,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          'ลงทะเบียนสัตวบาล',
-          style: GoogleFonts.notoSansThai(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: _border),
-        ),
-      ),
+      appBar: _buildAppBar(),
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _greenLight,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFA5D6A7)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.eco_outlined, size: 16, color: _green),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "กรอกข้อมูลให้ครบถ้วนเพื่อเข้าใช้งานระบบการจองคิวผสมเทียม",
+                          style: GoogleFonts.notoSansThai(
+                              fontSize: 12, color: _green),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               // ── ข้อมูลบัญชี ──
               _sectionHeader("ข้อมูลบัญชี", Icons.person_outline),
               _buildField(

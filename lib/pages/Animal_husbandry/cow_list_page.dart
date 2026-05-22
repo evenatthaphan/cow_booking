@@ -105,16 +105,46 @@ class _CowListPageState extends State<CowListPage> {
     ),
 
       appBar: AppBar(
-        title: Text(
-          'รายการวัว',
-          style: GoogleFonts.notoSansThai(
-            fontSize: 22,
-            color: Colors.green[800],
-            fontWeight: FontWeight.bold,
+        title: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Text('🐄', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cow Booking',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    'รายการวัวของฉัน',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 11,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ),
         backgroundColor: Colors.white,
-        iconTheme: IconThemeData(color: Colors.green[800]),
+        iconTheme: IconThemeData(color: Colors.green[900]),
       ),
 
       body: _buildBody(),

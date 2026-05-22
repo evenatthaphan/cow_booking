@@ -4,6 +4,7 @@ import 'package:cow_booking/pages/Animal_husbandry/vet_edit_address.dart';
 import 'package:cow_booking/pages/Animal_husbandry/vet_edit_profile.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 // TODO: import หน้าที่จะสร้างทีหลัง
@@ -21,38 +22,49 @@ class VetProfileMenuPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color:  Colors.lightGreen[800]),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          "จัดการบัญชี",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.lightGreen[800]),
-        ),
-        // actions: [
-        //   GestureDetector(
-        //     onTap: () => Navigator.push(
-        //       context,
-        //       MaterialPageRoute(builder: (_) => const VetProfilePage()),
-        //     ),
-        //     child: Padding(
-        //       padding: const EdgeInsets.only(right: 12),
-        //       child: Consumer<DataVetExpert>(
-        //         builder: (context, dataVet, _) {
-        //           final imageUrl = dataVet.datauser.profileImage;
-        //           return CircleAvatar(
-        //             radius: 20,
-        //             backgroundImage: imageUrl.isNotEmpty
-        //                 ? NetworkImage(imageUrl)
-        //                 : const NetworkImage(
-        //                     'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
-        //                   ),
-        //           );
-        //         },
-        //       ),
-        //     ),
-        //   ),
-        // ],
+        automaticallyImplyLeading: true,
+        // leading: IconButton(
+        //   icon: Icon(Icons.arrow_back_ios_new, color:  Colors.lightGreen[800]),
+        //   onPressed: () => Navigator.pop(context),
+        // ),
+        title: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Text('🐄', style: TextStyle(fontSize: 16)),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Cow Booking',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    'ตั้งค่าบัญชีของคุณ',
+                    style: GoogleFonts.notoSansThai(
+                      fontSize: 11,
+                      color: Colors.green[900],
+                      height: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
       ),
       body: SingleChildScrollView(
         child: Column(

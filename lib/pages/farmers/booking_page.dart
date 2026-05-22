@@ -3,6 +3,7 @@ import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/bullstocks_response.dart';
 import 'package:cow_booking/pages/farmers/farmmer_booking.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:cow_booking/share/ShareData.dart';
@@ -45,7 +46,68 @@ class _BookingpageState extends State<Bookingpage> {
     _loadVetBulls();
   }
 
-  
+  static const _green = Color(0xFF2E7D32);
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: _green,
+      automaticallyImplyLeading: true,
+      iconTheme: const IconThemeData(color: Colors.white),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
+          ),
+        ),
+      ),
+      title: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text('🐄', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cow Booking',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                'จองคิวผสมเทียมกับ ${vetName ?? 'สัตวบาล'}',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 11,
+                  color: Colors.white70,
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+            height: 1, color: Colors.white.withOpacity(0.1)),
+      ),
+    );
+  }
 
   Future<void> _loadVetBulls() async {
     try {
@@ -203,13 +265,7 @@ class _BookingpageState extends State<Bookingpage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
-      appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('จองคิวผสมเทียม',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-      ),
+      appBar: _buildAppBar(),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.green))
           : SingleChildScrollView(
