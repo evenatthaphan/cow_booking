@@ -87,84 +87,143 @@ class _ChooseLoginState extends State<ChooseLogin> {
           }
 
           if (dialogCaptchaId == null) fetchCaptcha();
-
           return AlertDialog(
-            title: const Text("กรอกตัวอักษรให้ถูกต้องเพื่อยืนยันตัวตน"),
+            shape: RoundedRectangleBorder( borderRadius: BorderRadius.circular(18),),
+            title: const Text(
+              "ยืนยันตัวตน",
+              style: TextStyle(fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
             content: loading
                 ? const SizedBox(
-                    height: 60,
-                    child: Center(child: CircularProgressIndicator()))
+                    height: 80,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            dialogCaptchaCode ?? "",
-                            style:
-                                const TextStyle(fontSize: 18, letterSpacing: 2),
-                          ),
-                          IconButton(
-                            onPressed: fetchCaptcha,
-                            icon:
-                                const Icon(Icons.refresh, color: Colors.green),
-                          ),
-                        ],
+                      /// CAPTCHA
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              dialogCaptchaCode ?? "",
+                              style: const TextStyle(
+                                fontSize: 24,
+                                letterSpacing: 4,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            IconButton(
+                              onPressed: fetchCaptcha,
+                              icon: const Icon(
+                                Icons.refresh,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+
+                      const SizedBox(height: 18),
+
+                      /// INPUT
                       TextField(
                         controller: dialogCaptchaController,
-                        decoration: const InputDecoration(
-                          labelText: "กรอก CAPTCHA",
-                          border: OutlineInputBorder(),
+                        decoration: InputDecoration(
+                          hintText: "กรอก CAPTCHA",
+                          border: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius:
+                                BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text("ยกเลิก"),
-              ),
-              // ElevatedButton(
-              //   onPressed: loading
-              //       ? null
-              //       : () async {
-              //           if (dialogCaptchaController.text.isEmpty) return;
-              //           final isValid = await verifyCaptcha(
-              //               dialogCaptchaId!, dialogCaptchaController.text);
-              //           if (isValid) {
-              //             Navigator.of(context).pop();
-              //             await loginUser();
-              //           } else {
-              //             await fetchCaptcha();
-              //             dialogCaptchaController.clear();
-              //           }
-              //         },
-              //   child: const Text("ยืนยัน"),
-              // ),
-
-              ElevatedButton(
-              onPressed: loading
-                  ? null
-                  : () async {
-                      if (dialogCaptchaController.text.isEmpty) return;
-
-                      final isValid = await verifyCaptcha(
-                        dialogCaptchaId!,
-                        dialogCaptchaController.text,
-                      );
-
-                      if (isValid) {
-                        Navigator.of(context).pop();
-                        await loginUser(); // 
-                      } else {
-                        await fetchCaptcha();
-                        dialogCaptchaController.clear();
-                      }
-                    },
-              child: const Text("ยืนยัน"),
+            actionsPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
             ),
+            actions: [
 
+              /// CANCEL
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  "ยกเลิก",
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+
+              /// CONFIRM
+              ElevatedButton(
+                onPressed: loading
+                    ? null
+                    : () async {
+
+                        if (dialogCaptchaController.text
+                            .trim()
+                            .isEmpty) {
+                          return;
+                        }
+
+                        final isValid =
+                            await verifyCaptcha(
+                          dialogCaptchaId!,
+                          dialogCaptchaController.text
+                              .trim(),
+                        );
+
+                        if (isValid) {
+                          Navigator.of(context).pop();
+
+                          await loginUser();
+                        } else {
+                          await fetchCaptcha();
+
+                          dialogCaptchaController.clear();
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green[700],
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  "ยืนยัน",
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ],
           );
         });

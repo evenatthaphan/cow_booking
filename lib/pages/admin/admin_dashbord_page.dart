@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/pages/admin/admin_list.dart';
+import 'package:cow_booking/pages/admin/admin_profile.dart';
 import 'package:cow_booking/pages/admin/bull_list.dart';
 import 'package:cow_booking/pages/admin/farm_list.dart';
 import 'package:cow_booking/pages/admin/member_list.dart';
@@ -173,7 +174,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         actions: [
           // ปุ่มโปรไฟล์
           GestureDetector(
-            onTap: _comingSoon,
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProfilePage()));
+            },
             child: Padding(
               padding: const EdgeInsets.only(right: 12),
               child: CircleAvatar(
@@ -468,59 +471,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
                     const SizedBox(height: 20),
 
-                    // ออกจากระบบ
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showLogoutDialog(),
-                        icon: const Icon(Icons.logout, color: Colors.red, size: 18),
-                        label: const Text('ออกจากระบบ',
-                            style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.red),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                      ),
-                    ),
+                    
 
                     const SizedBox(height: 24),
                   ],
                 ),
               ),
             ),
-    );
-  }
-
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('ออกจากระบบ',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('คุณต้องการออกจากระบบใช่หรือไม่?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              Provider.of<DataAdmin>(context, listen: false).clear();
-              Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-              // TODO: Navigator ไปหน้า Login
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('ออกจากระบบ', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
     );
   }
 

@@ -9,14 +9,23 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:get/get.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-// void main() {
-//   runApp(const MyApp());
-// }
+
 
 void main(List<String> arguments) async {
   WidgetsFlutterBinding.ensureInitialized(); // async ก่อน runApp
   // await fetchSomething();
+ 
+  await dotenv.load(fileName: ".env");  // โหลด .env
+  // set mapbox token
+  MapboxOptions.setAccessToken(
+    dotenv.env['MAPBOX_ACCESS_TOKEN']!,
+  );
+  
+
   runApp(
     MultiProvider(
       providers: [
@@ -29,6 +38,8 @@ void main(List<String> arguments) async {
     ),
   );
 }
+
+
 
 Future<void> testAsync() {
   return Future.delayed(const Duration(seconds: 2), () => print("BBB"));
@@ -78,7 +89,7 @@ class MyApp extends StatelessWidget {
       builder: (context, snapshot) {
         // waittng SharedPreferences load
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return MaterialApp(
+          return GetMaterialApp(
             home: Scaffold(
               backgroundColor: Colors.white,
               body: Center(
@@ -92,7 +103,7 @@ class MyApp extends StatelessWidget {
 
         // if download sucess
         if (snapshot.hasData) {
-          return MaterialApp(
+          return GetMaterialApp(
             title: 'App Demo',
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
@@ -110,7 +121,7 @@ class MyApp extends StatelessWidget {
             home: snapshot.data, //
           );
         }
-        return const MaterialApp(
+        return const GetMaterialApp(
           home: Scaffold(
             body: Center(child: Text('เกิดข้อผิดพลาดในการโหลดหน้าเริ่มต้น')),
           ),

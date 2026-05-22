@@ -1,6 +1,4 @@
-import 'dart:developer';
-
-import 'package:cow_booking/pages/choose_login.dart';
+import 'package:cow_booking/pages/Home/map_picker_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
@@ -19,7 +17,6 @@ class FarmerRegister extends StatefulWidget {
 class _FarmerRegisterState extends State<FarmerRegister> {
   final _formKey = GlobalKey<FormState>();
 
-  // Controllers
   final TextEditingController farmNameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -28,21 +25,28 @@ class _FarmerRegisterState extends State<FarmerRegister> {
   final TextEditingController subdistrictCtrl = TextEditingController();
   final TextEditingController farmAddressController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final TextEditingController confirmPasswordController = TextEditingController();
 
   bool isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
+  double? selectedLat;
+  double? selectedLng;
 
-    // ตัวแปรเก็บค่า dropdown
   String? selectedProvince;
   String? selectedDistrict;
   String? selectedSubDistrict;
 
-  //example
   List provinces = [];
   List districts = [];
   List subDistricts = [];
+
+  // ── สี ──
+  static const _green = Color(0xFF2E7D32);
+  static const _greenLight = Color(0xFFE8F5E9);
+  static const _border = Color(0xFFDDDDDD);
+  static const _labelColor = Color(0xFF757575);
 
   @override
   void initState() {
@@ -56,12 +60,7 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     );
     final res = await http.get(url);
     if (res.statusCode == 200) {
-      final data = jsonDecode(res.body);
-      setState(() {
-        provinces = data;
-      });
-    } else {
-      print("โหลดข้อมูลจังหวัดล้มเหลว");
+      setState(() => provinces = jsonDecode(res.body));
     }
   }
 
@@ -79,20 +78,19 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     super.dispose();
   }
 
-  // ฟังก์ชันลงทะเบียน
   Future<void> registerFarmer() async {
     if (!_formKey.currentState!.validate()) return;
-
+    if (selectedLat == null) {
+      _showErrorDialog("กรุณาเลือกตำแหน่งฟาร์มบนแผนที่");
+      return;
+    }
     if (passwordController.text != confirmPasswordController.text) {
       _showErrorDialog("รหัสผ่านไม่ตรงกัน");
       return;
     }
-
-    // แสดง CAPTCHA Dialog
     await showCaptchaDialog();
   }
 
-  // CAPTCHA Dialog
   Future<void> showCaptchaDialog() async {
     String? dialogCaptchaId;
     String? dialogCaptchaCode;
@@ -102,154 +100,143 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) {
-        return StatefulBuilder(builder: (context, setState) {
-          Future<void> fetchCaptcha() async {
-            setState(() {
-              loading = true;
-            });
-            try {
-              final url = Uri.parse("$apiEndpoint/api/captcha");
-              final response = await http.get(url);
-              if (response.statusCode == 201) {
-                final data = jsonDecode(response.body);
-                setState(() {
-                  dialogCaptchaId = data['captchaId'];
-                  dialogCaptchaCode = data['captcha'];
-                });
-              } else {
-                _showErrorDialog("ไม่สามารถโหลด CAPTCHA ได้");
-              }
-            } catch (e) {
-              _showErrorDialog("เกิดข้อผิดพลาด: $e");
-            } finally {
+      builder: (_) => StatefulBuilder(builder: (context, setState) {
+        Future<void> fetchCaptcha() async {
+          setState(() => loading = true);
+          try {
+            final url = Uri.parse("$apiEndpoint/api/captcha");
+            final response = await http.get(url);
+            if (response.statusCode == 201) {
+              final data = jsonDecode(response.body);
               setState(() {
-                loading = false;
+                dialogCaptchaId = data['captchaId'];
+                dialogCaptchaCode = data['captcha'];
               });
             }
+          } catch (e) {
+            _showErrorDialog("เกิดข้อผิดพลาด: $e");
+          } finally {
+            setState(() => loading = false);
           }
+        }
 
-          if (dialogCaptchaId == null) fetchCaptcha();
+        if (dialogCaptchaId == null) fetchCaptcha();
 
-          return AlertDialog(
-            title: const Text("กรอกตัวอักษรให้ถูกต้องเพื่อยืนยันตัวตน"),
-            content: loading
-                ? const SizedBox(
-                    height: 60,
-                    child: Center(child: CircularProgressIndicator()))
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text(
+            "ยืนยันตัวตน",
+            style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600),
+          ),
+          content: loading
+              ? const SizedBox(
+                  height: 60, child: Center(child: CircularProgressIndicator()))
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("กรอกตัวอักษรในภาพให้ถูกต้อง",
+                        style:
+                            GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _greenLight,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
                         children: [
                           Text(
                             dialogCaptchaCode ?? "",
-                            style:
-                                const TextStyle(fontSize: 18, letterSpacing: 2),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              letterSpacing: 6,
+                              fontWeight: FontWeight.bold,
+                              color: _green,
+                            ),
                           ),
+                          const Spacer(),
                           IconButton(
                             onPressed: fetchCaptcha,
                             icon:
-                                const Icon(Icons.refresh, color: Colors.green),
+                                const Icon(Icons.refresh, color: _green, size: 20),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
                           ),
                         ],
                       ),
-                      TextField(
-                        controller: dialogCaptchaController,
-                        decoration: const InputDecoration(
-                          labelText: "กรอก CAPTCHA",
-                          border: OutlineInputBorder(),
-                        ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: dialogCaptchaController,
+                      decoration: InputDecoration(
+                        hintText: "กรอก CAPTCHA",
+                        hintStyle: GoogleFonts.notoSansThai(color: _labelColor),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
                       ),
-                    ],
-                  ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text("ยกเลิก"),
+                    ),
+                  ],
+                ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child:
+                  Text("ยกเลิก", style: GoogleFonts.notoSansThai(color: _labelColor)),
+            ),
+            ElevatedButton(
+              onPressed: loading
+                  ? null
+                  : () async {
+                      if (dialogCaptchaController.text.isEmpty) return;
+                      final isValid = await verifyCaptcha(
+                          dialogCaptchaId!, dialogCaptchaController.text);
+                      if (isValid) {
+                        Navigator.of(context).pop();
+                        await submitForm();
+                      } else {
+                        await fetchCaptcha();
+                        dialogCaptchaController.clear();
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _green,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
-              ElevatedButton(
-                onPressed: loading
-                    ? null
-                    : () async {
-                        if (dialogCaptchaController.text.isEmpty) return;
-                        final isValid = await verifyCaptcha(
-                            dialogCaptchaId!, dialogCaptchaController.text);
-                        if (isValid) {
-                          Navigator.of(context).pop();
-                          await submitForm();
-                        } else {
-                          await fetchCaptcha();
-                          dialogCaptchaController.clear();
-                        }
-                      },
-                child: const Text("ยืนยัน"),
-              ),
-            ],
-          );
-        });
-      },
+              child: Text("ยืนยัน",
+                  style: GoogleFonts.notoSansThai(color: Colors.white)),
+            ),
+          ],
+        );
+      }),
     );
   }
 
   Future<bool> verifyCaptcha(String captchaId, String answer) async {
     try {
       final url = Uri.parse("$apiEndpoint/api/captcha/verify");
-      print("POST to: $url");
-      print("Body: ${jsonEncode({"captchaId": captchaId, "answer": answer})}");
-
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"captchaId": captchaId, "answer": answer}),
       );
-
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}");
-
       final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && data['success'] == true) {
-        return true;
-      } else {
-        _showErrorDialog(data['message'] ?? "CAPTCHA ไม่ถูกต้อง");
-        return false;
-      }
+      if (response.statusCode == 200 && data['success'] == true) return true;
+      _showErrorDialog(data['message'] ?? "CAPTCHA ไม่ถูกต้อง");
+      return false;
     } catch (e) {
-      print("verifyCaptcha error: $e");
       _showErrorDialog("เกิดข้อผิดพลาด: $e");
       return false;
     }
   }
 
-    Future<void> showRegisterSuccessDialog() async {
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Text("สมัครสมาชิกสำเร็จ 🎉"),
-        content: const Text("บัญชีของคุณถูกสร้างเรียบร้อยแล้ว กรุณาเข้าสู่ระบบ"),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (_) => const ChooseLogin()),
-              );
-            },
-            child: const Text("เข้าสู่ระบบ"),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-
   Future<void> submitForm() async {
-    setState(() {
-      isLoading = true;
-    });
-
+    setState(() => isLoading = true);
     try {
       final url = Uri.parse("$apiEndpoint/farmer/register");
       final response = await http.post(
@@ -266,22 +253,22 @@ class _FarmerRegisterState extends State<FarmerRegister> {
           "province": provinceCtrl.text.trim(),
           "district": districtCtrl.text.trim(),
           "locality": subdistrictCtrl.text.trim(),
+          "lat": selectedLat,
+          "lng": selectedLng,
         }),
       );
 
       if (response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        _showSuccessDialog(data['message'] ?? "ลงทะเบียนสำเร็จ");
+        _showSuccessDialog(
+            jsonDecode(response.body)['message'] ?? "ลงทะเบียนสำเร็จ");
       } else {
-        final errorData = jsonDecode(response.body);
-        _showErrorDialog(errorData['error'] ?? "เกิดข้อผิดพลาดในการลงทะเบียน");
+        _showErrorDialog(
+            jsonDecode(response.body)['error'] ?? "เกิดข้อผิดพลาด");
       }
     } catch (e) {
       _showErrorDialog("เกิดข้อผิดพลาด: $e");
     } finally {
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
   }
 
@@ -289,15 +276,22 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('สำเร็จ'),
-        content: Text(message),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text("สำเร็จ ✓",
+            style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
+        content: Text(message, style: GoogleFonts.notoSansThai()),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.popUntil(context, (route) => route.isFirst);
-            },
-            child: const Text('ตกลง'),
-          )
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.popUntil(context, (route) => route.isFirst),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _green,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text("ตกลง",
+                style: GoogleFonts.notoSansThai(color: Colors.white)),
+          ),
         ],
       ),
     );
@@ -307,52 +301,250 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('ข้อผิดพลาด'),
-        content: Text(message),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text("เกิดข้อผิดพลาด",
+            style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
+        content: Text(message, style: GoogleFonts.notoSansThai()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('ตกลง'),
-          )
+            child: Text("ตกลง",
+                style: GoogleFonts.notoSansThai(color: _green)),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildLabel(String text, bool required) {
+  // ── Widget helpers ──
+
+  Widget _sectionHeader(String title, IconData icon) {
     return Padding(
-      padding: const EdgeInsets.only(top: 10, left: 30),
+      padding: const EdgeInsets.only(top: 28, bottom: 8, left: 20, right: 20),
       child: Row(
         children: [
-          Text(text,
-              style:
-                  GoogleFonts.notoSansThai(fontSize: 14, color: Colors.grey)),
-          if (required)
-            const Text(
-              ' *',
-              style: TextStyle(color: Colors.red, fontSize: 14),
-            )
+          Icon(icon, size: 16, color: _green),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: GoogleFonts.notoSansThai(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: _green,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Expanded(child: Divider(color: _border, thickness: 1)),
         ],
       ),
     );
   }
 
-  Widget _buildTextForm(TextEditingController controller, String errorText,
-      {TextInputType? keyboardType, bool obscure = false}) {
+  Widget _buildField({
+    required String label,
+    required TextEditingController controller,
+    bool required = false,
+    TextInputType? keyboardType,
+    bool obscure = false,
+    bool? showObscureToggle,
+    VoidCallback? onToggleObscure,
+    String? Function(String?)? validator,
+  }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 5),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        obscureText: obscure,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-        ),
-        validator: (value) {
-          if (errorText.isEmpty) return null;
-          if (value == null || value.isEmpty) return errorText;
-          return null;
-        },
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(label,
+                  style:
+                      GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
+              if (required)
+                const Text(" *",
+                    style: TextStyle(color: Colors.red, fontSize: 13)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: controller,
+            keyboardType: keyboardType,
+            obscureText: obscure,
+            style: GoogleFonts.notoSansThai(fontSize: 14),
+            decoration: InputDecoration(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _green, width: 1.5),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Colors.red),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              suffixIcon: showObscureToggle == true
+                  ? IconButton(
+                      icon: Icon(
+                        obscure
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        size: 18,
+                        color: _labelColor,
+                      ),
+                      onPressed: onToggleObscure,
+                    )
+                  : null,
+            ),
+            validator: validator ??
+                (value) {
+                  if (!required) return null;
+                  if (value == null || value.isEmpty) return "กรุณากรอก$label";
+                  return null;
+                },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required String label,
+    required String? value,
+    required List items,
+    required void Function(String?) onChanged,
+    bool enabled = true,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(label,
+                  style:
+                      GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
+              const Text(" *",
+                  style: TextStyle(color: Colors.red, fontSize: 13)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          DropdownButtonFormField<String>(
+            value: value,
+            isExpanded: true,
+            style: GoogleFonts.notoSansThai(fontSize: 14, color: Colors.black87),
+            decoration: InputDecoration(
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _green, width: 1.5),
+              ),
+              filled: true,
+              fillColor: enabled ? Colors.white : const Color(0xFFF5F5F5),
+            ),
+            items: items.map<DropdownMenuItem<String>>((item) {
+              return DropdownMenuItem(
+                value: item["name_th"],
+                child: Text(item["name_th"],
+                    style: GoogleFonts.notoSansThai(fontSize: 14)),
+              );
+            }).toList(),
+            onChanged: enabled ? onChanged : null,
+            validator: (v) =>
+                (v == null || v.isEmpty) ? "กรุณาเลือก$label" : null,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLocationPicker() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text("ตำแหน่งฟาร์ม",
+                  style:
+                      GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
+              const Text(" *",
+                  style: TextStyle(color: Colors.red, fontSize: 13)),
+            ],
+          ),
+          const SizedBox(height: 6),
+          GestureDetector(
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MapPickerPage()),
+              );
+              if (result != null) {
+                setState(() {
+                  selectedLat = result['lat'];
+                  selectedLng = result['lng'];
+                });
+              }
+            },
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              decoration: BoxDecoration(
+                color: selectedLat != null ? _greenLight : Colors.white,
+                border: Border.all(
+                  color: selectedLat != null ? _green : _border,
+                  width: selectedLat != null ? 1.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    selectedLat != null
+                        ? Icons.location_on
+                        : Icons.location_on_outlined,
+                    color: selectedLat != null ? _green : _labelColor,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      selectedLat != null
+                          ? 'lat: ${selectedLat!.toStringAsFixed(5)},  lng: ${selectedLng!.toStringAsFixed(5)}'
+                          : 'แตะเพื่อเลือกตำแหน่งบนแผนที่',
+                      style: GoogleFonts.notoSansThai(
+                        fontSize: 13,
+                        color: selectedLat != null ? _green : _labelColor,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: _labelColor, size: 18),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -360,182 +552,190 @@ class _FarmerRegisterState extends State<FarmerRegister> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF7F7F7),
       appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Colors.lightGreen,
+        iconTheme: const IconThemeData(color: Colors.white),
         title: Text(
           'ลงทะเบียนเกษตรกร',
           style: GoogleFonts.notoSansThai(
-              textStyle: Theme.of(context).textTheme.displayLarge,
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.white),
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
-        backgroundColor: Colors.green[700],
-        iconTheme: const IconThemeData(color: Colors.white),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: _border),
+        ),
       ),
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 10),
-              _buildLabel("ชื่อผู้ใช้", true),
-              _buildTextForm(farmNameController, "กรุณากรอกชื่อผู้ใช้"),
-              _buildLabel("เบอร์โทรศัพท์", true),
-              _buildTextForm(phoneNumberController, "กรุณากรอกเบอร์โทรศัพท์",
-                  keyboardType: TextInputType.phone),
-              _buildLabel("อีเมลล์", false),
-              _buildTextForm(emailController, "",
-                  keyboardType: TextInputType.emailAddress),
-               Padding(
-                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'จังหวัด *',
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1, color: Colors.grey),
-                      ),
-                    ),
-                    value: selectedProvince,
-                    items: provinces.map<DropdownMenuItem<String>>((p) {
-                      return DropdownMenuItem(
-                        value: p["name_th"],
-                        child: Text(p["name_th"]),
-                      );
-                    }).toList(),
-                    onChanged: (farmer) {
-                      setState(() {
-                        selectedProvince = farmer;
-                        provinceCtrl.text = farmer ?? '';
-                        selectedDistrict = null;
-                        selectedSubDistrict = null;
-
-                        // หาอำเภอในจังหวัดที่เลือก
-                        final provinceData = provinces.firstWhere(
-                          (p) => p["name_th"] == farmer,
-                          orElse: () => {},
-                        );
-                        districts = provinceData["districts"] ?? [];
-                        subDistricts = [];
-                      });
-                    },
-                  ),
-                ),
+              // ── Banner ──
               Padding(
-                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'อำเภอ *',
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1, color: Colors.grey),
-                      ),
-                    ),
-                    value: selectedDistrict,
-                    items: districts.map<DropdownMenuItem<String>>((d) {
-                      return DropdownMenuItem(
-                        value: d["name_th"],
-                        child: Text(d["name_th"]),
-                      );
-                    }).toList(),
-                    onChanged: (farmer) {
-                      setState(() {
-                        selectedDistrict = farmer;
-                        districtCtrl.text = farmer ?? ''; 
-                        selectedSubDistrict = null;
-
-                        // หา “ตำบล” ในอำเภอที่เลือก
-                        final districtData = districts.firstWhere(
-                          (d) => d["name_th"] == farmer,
-                          orElse: () => {},
-                        );
-                        subDistricts = districtData["sub_districts"] ?? [];
-                      });
-                    },
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _greenLight,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFA5D6A7)),
                   ),
-                ),
-              Padding(
-                  padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
-                  child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'ตำบล *',
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(width: 1, color: Colors.grey),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.eco_outlined, size: 16, color: _green),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "กรอกข้อมูลให้ครบถ้วนเพื่อเข้าใช้งานระบบการจัดการฟาร์ม",
+                          style: GoogleFonts.notoSansThai(
+                              fontSize: 12, color: _green),
+                        ),
                       ),
-                    ),
-                    value: selectedSubDistrict,
-                    items: subDistricts.map<DropdownMenuItem<String>>((s) {
-                      return DropdownMenuItem(
-                        value: s["name_th"],
-                        child: Text(s["name_th"]),
-                      );
-                    }).toList(),
-                    onChanged: (farmer) {
-                      setState(() {
-                        selectedSubDistrict = farmer;
-                        subdistrictCtrl.text = farmer ?? '';
-                      });
-                    },
+                    ],
                   ),
-                ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                child: Row(
-                  children: [
-                    ElevatedButton(
-                      onPressed: () {}, // TODO: Map picker
-                      style: ButtonStyle(
-                        backgroundColor:
-                            MaterialStateProperty.all(Colors.green[900]!),
-                        shape: MaterialStateProperty.all(const CircleBorder()),
-                        padding:
-                            MaterialStateProperty.all(const EdgeInsets.all(20)),
-                      ),
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      'คลิกเพื่อเลือกตำแหน่งที่อยู่ *',
-                      style: GoogleFonts.notoSansThai(
-                          fontSize: 14, color: Colors.grey),
-                    ),
-                  ],
                 ),
               ),
-              _buildTextForm(farmAddressController, "กรุณากรอกที่อยู่"),
-              _buildLabel("รหัสผ่าน", true),
-              _buildTextForm(passwordController, "กรุณากรอกรหัสผ่าน",
-                  obscure: true),
-              _buildLabel("ยืนยันรหัสผ่าน", true),
-              _buildTextForm(confirmPasswordController, "กรุณายืนยันรหัสผ่าน",
-                  obscure: true),
+
+              // ── ข้อมูลบัญชี ──
+              _sectionHeader("ข้อมูลบัญชี", Icons.person_outline),
+              _buildField(
+                label: "ชื่อผู้ใช้",
+                controller: farmNameController,
+                required: true,
+              ),
+              _buildField(
+                label: "เบอร์โทรศัพท์",
+                controller: phoneNumberController,
+                required: true,
+                keyboardType: TextInputType.phone,
+              ),
+              _buildField(
+                label: "อีเมล",
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+              ),
+
+              // ── ที่อยู่ฟาร์ม ──
+              _sectionHeader("ที่อยู่ฟาร์ม", Icons.home_outlined),
+              _buildDropdown(
+                label: "จังหวัด",
+                value: selectedProvince,
+                items: provinces,
+                onChanged: (val) {
+                  setState(() {
+                    selectedProvince = val;
+                    provinceCtrl.text = val ?? '';
+                    selectedDistrict = null;
+                    selectedSubDistrict = null;
+                    final p = provinces.firstWhere(
+                        (p) => p["name_th"] == val,
+                        orElse: () => {});
+                    districts = p["districts"] ?? [];
+                    subDistricts = [];
+                  });
+                },
+              ),
+              _buildDropdown(
+                label: "อำเภอ",
+                value: selectedDistrict,
+                items: districts,
+                enabled: districts.isNotEmpty,
+                onChanged: (val) {
+                  setState(() {
+                    selectedDistrict = val;
+                    districtCtrl.text = val ?? '';
+                    selectedSubDistrict = null;
+                    final d = districts.firstWhere(
+                        (d) => d["name_th"] == val,
+                        orElse: () => {});
+                    subDistricts = d["sub_districts"] ?? [];
+                  });
+                },
+              ),
+              _buildDropdown(
+                label: "ตำบล",
+                value: selectedSubDistrict,
+                items: subDistricts,
+                enabled: subDistricts.isNotEmpty,
+                onChanged: (val) {
+                  setState(() {
+                    selectedSubDistrict = val;
+                    subdistrictCtrl.text = val ?? '';
+                  });
+                },
+              ),
+              _buildLocationPicker(),
+              _buildField(
+                label: "ที่อยู่เพิ่มเติม",
+                controller: farmAddressController,
+                required: true,
+              ),
+
+              // ── รหัสผ่าน ──
+              _sectionHeader("รหัสผ่าน", Icons.lock_outline),
+              _buildField(
+                label: "รหัสผ่าน",
+                controller: passwordController,
+                required: true,
+                obscure: _obscurePassword,
+                showObscureToggle: true,
+                onToggleObscure: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
+              ),
+              _buildField(
+                label: "ยืนยันรหัสผ่าน",
+                controller: confirmPasswordController,
+                required: true,
+                obscure: _obscureConfirm,
+                showObscureToggle: true,
+                onToggleObscure: () =>
+                    setState(() => _obscureConfirm = !_obscureConfirm),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return "กรุณายืนยันรหัสผ่าน";
+                  if (v != passwordController.text) return "รหัสผ่านไม่ตรงกัน";
+                  return null;
+                },
+              ),
+
+              // ── ปุ่มลงทะเบียน ──
               Padding(
-                padding: const EdgeInsets.all(20),
-                child: OutlinedButton(
-                  onPressed: isLoading ? null : registerFarmer,
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.green, width: 2),
-                  ),
-                  child: isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.green),
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 40),
+                child: SizedBox(
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: isLoading ? null : registerFarmer,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _green,
+                      disabledBackgroundColor: Colors.grey[300],
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white),
+                            ),
+                          )
+                        : Text(
+                            'ลงทะเบียน',
+                            style: GoogleFonts.notoSansThai(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
                           ),
-                        )
-                      : Text(
-                          'ลงทะเบียน',
-                          style: GoogleFonts.notoSansThai(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green[900]),
-                        ),
+                  ),
                 ),
               ),
             ],

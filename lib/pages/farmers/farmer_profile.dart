@@ -22,6 +22,68 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
   static const _green700 = Color(0xFF2d6a2d);
   static const _green500 = Color(0xFF4CAF50);
   static const _bgColor = Color(0xFFf0f4f0);
+  static const _green = Color(0xFF2E7D32);
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: _green,
+      automaticallyImplyLeading: true,
+      iconTheme: const IconThemeData(color: Colors.white),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
+          ),
+        ),
+      ),
+      title: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text('🐄', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cow Booking',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                'โปรไฟล์ของคุณ',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 11,
+                  color: Colors.white70,
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+            height: 1, color: Colors.white.withOpacity(0.1)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,17 +91,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
     final bool isLoggedIn = dataUser.farmersId != 0;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
-        elevation: 0,
-        title: Text('โปรไฟล์',
-            style: GoogleFonts.notoSansThai(
-              fontSize: 22,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            )),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      appBar: _buildAppBar(),
       backgroundColor: _bgColor,
       body: isLoggedIn
           ? _buildLoggedInView(context)

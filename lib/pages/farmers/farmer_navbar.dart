@@ -26,18 +26,18 @@ class FarmerNavigationBar extends StatelessWidget {
         data: NavigationBarThemeData(
           height: 65,
           labelTextStyle: WidgetStateProperty.all(
-            TextStyle(color: Colors.white, fontSize: screenSize.width * 0.035),
+            TextStyle(color: Colors.green[900], fontSize: screenSize.width * 0.035),
           ),
           iconTheme: WidgetStateProperty.all(
             IconThemeData(size: screenSize.width * 0.06),
           ),
-          indicatorColor: Colors.white.withOpacity(0.2),
+          indicatorColor: Colors.green[900]?.withOpacity(0.2),
           indicatorShape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(100),
           ),
         ),
         child: NavigationBar(
-          backgroundColor: Colors.lightGreen[700],
+          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
           selectedIndex: selectedIndex,
           onDestinationSelected: (int index) {
             onDestinationSelected(index); // Call the passed function
@@ -61,12 +61,12 @@ class FarmerNavigationBar extends StatelessWidget {
               //   break;
             }
           },
-          destinations: const [
+          destinations: [
             NavigationDestination(
-                icon: Icon(Iconsax.folder_2, color: Colors.white,), label: "คิวของฉัน"),
-            NavigationDestination(icon: Icon(Iconsax.home,  color: Colors.white), label: "หน้าหลัก"),
+                icon: Icon(Iconsax.folder_2, color: Colors.green[900]), label: "คิวของฉัน"),
+            NavigationDestination(icon: Icon(Iconsax.home,  color: Colors.green[900]), label: "หน้าหลัก"),
             NavigationDestination(
-                icon: Icon(Iconsax.notification,  color: Colors.white), label: "แจ้งเตือน"),
+                icon: Icon(Iconsax.notification,  color: Colors.green[900]), label: "แจ้งเตือน"),
             // NavigationDestination(
             //     icon: Icon(Iconsax.money_tick), label: "ซื้อสลาก"),
             // NavigationDestination(

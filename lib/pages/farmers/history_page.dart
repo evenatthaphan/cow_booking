@@ -23,6 +23,69 @@ class _InseminationHistoryPageState extends State<InseminationHistoryPage> {
   bool _isLoading = true;
   String? _error;
 
+  static const _green = Color(0xFF2E7D32);
+
+    PreferredSizeWidget _buildAppBar() {
+      return AppBar(
+        elevation: 0,
+        backgroundColor: _green,
+        automaticallyImplyLeading: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
+            ),
+          ),
+        ),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Cow Booking',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  'ประวัติการผสมเทียม',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 11,
+                    color: Colors.white70,
+                    height: 1.1,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(
+              height: 1, color: Colors.white.withOpacity(0.1)),
+        ),
+      );
+    }
+
   @override
   void initState() {
     super.initState();
@@ -82,23 +145,7 @@ class _InseminationHistoryPageState extends State<InseminationHistoryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: Text('ประวัติการผสมเทียม',
-            style: GoogleFonts.notoSansThai(
-              fontSize: 22,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            )),
-        backgroundColor:  Colors.lightGreen[700],
-        foregroundColor: Colors.white,
-        actions: [
-          // ปุ่ม refresh
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _fetchBookings,
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(),
       body: _buildBody(),
     );
   }

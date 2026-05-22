@@ -4,6 +4,7 @@ import 'package:cow_booking/pages/farmers/edit_profile.dart';
 import 'package:cow_booking/pages/farmers/farmer_navbar.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class Viewprofile extends StatefulWidget {
@@ -14,31 +15,84 @@ class Viewprofile extends StatefulWidget {
 }
 
 class _ViewprofileState extends State<Viewprofile> {
+  static const _green = Color(0xFF2E7D32);
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: _green,
+      automaticallyImplyLeading: true,
+      iconTheme: const IconThemeData(color: Colors.white),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
+          ),
+        ),
+      ),
+      title: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text('🐄', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cow Booking',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                'จัดการโปรไฟล์ของคุณ',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 11,
+                  color: Colors.white70,
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+            height: 1, color: Colors.white.withOpacity(0.1)),
+      ),
+    );
+  }
+  
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
-      appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          "จัดการโปรไฟล์",
-          style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-      ),
+      appBar: _buildAppBar(),
       body: SingleChildScrollView(
         child: Column(
           children: [
             // Header โปรไฟล์ 
+            SizedBox(height: 20),
             Container(
               width: double.infinity,
-              color: Colors.lightGreen,
+              color: const Color.fromARGB(255, 243, 249, 237),
               padding: const EdgeInsets.only(bottom: 28),
               child: Column(
                 children: [
@@ -59,15 +113,15 @@ class _ViewprofileState extends State<Viewprofile> {
                   Consumer<DataFarmers>(
                     builder: (context, dataFarmer, _) => Text(
                       dataFarmer.datauser.farmersName,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: GoogleFonts.notoSansThai(
+                          fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green[900]),
                     ),
                   ),
                   const SizedBox(height: 4),
                   Consumer<DataFarmers>(
                     builder: (context, dataFarmer, _) => Text(
                       dataFarmer.datauser.farmersPhonenumber,
-                      style: const TextStyle(fontSize: 14, color: Colors.white70),
+                      style: GoogleFonts.notoSansThai(fontSize: 14, color: Colors.green[700]),
                     ),
                   ),
                 ],
