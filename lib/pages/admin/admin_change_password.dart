@@ -14,19 +14,20 @@ class AdminChangePasswordPage extends StatefulWidget {
   const AdminChangePasswordPage({super.key, this.isFirstLogin = true});
 
   @override
-  State<AdminChangePasswordPage> createState() => _AdminChangePasswordPageState();
+  State<AdminChangePasswordPage> createState() =>
+      _AdminChangePasswordPageState();
 }
 
 class _AdminChangePasswordPageState extends State<AdminChangePasswordPage> {
-  final _formKey   = GlobalKey<FormState>();
-  bool _isLoading  = false;
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
-  final _oldPassCtrl  = TextEditingController();
-  final _newPassCtrl  = TextEditingController();
+  final _oldPassCtrl = TextEditingController();
+  final _newPassCtrl = TextEditingController();
   final _confPassCtrl = TextEditingController();
 
-  bool _showOld  = false;
-  bool _showNew  = false;
+  bool _showOld = false;
+  bool _showNew = false;
   bool _showConf = false;
 
   @override
@@ -42,14 +43,17 @@ class _AdminChangePasswordPageState extends State<AdminChangePasswordPage> {
     setState(() => _isLoading = true);
 
     try {
-      final adminId = Provider.of<DataAdmin>(context, listen: false).datauser.adminsId;
+      final adminId =
+          Provider.of<DataAdmin>(context, listen: false).datauser.adminsId;
 
       final response = await http.put(
         Uri.parse('$apiEndpoint/admin/admin/change-password/$adminId'),
         headers: {
           'Content-Type': 'application/json',
           'admin-type': Provider.of<DataAdmin>(context, listen: false)
-              .datauser.adminType.toString(),
+              .datauser
+              .adminType
+              .toString(),
         },
         body: jsonEncode({
           'old_password': _oldPassCtrl.text,
@@ -104,20 +108,38 @@ class _AdminChangePasswordPageState extends State<AdminChangePasswordPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
         // ถ้าบังคับเปลี่ยน ไม่ให้กดย้อนกลับได้
         automaticallyImplyLeading: !widget.isFirstLogin,
         leading: widget.isFirstLogin
             ? null
             : IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                icon: Icon(Icons.arrow_back_ios_new, color: Colors.green[900]),
                 onPressed: () => Navigator.pop(context),
               ),
-        title: Text(
-          widget.isFirstLogin ? 'ตั้งรหัสผ่านใหม่' : 'เปลี่ยนรหัสผ่าน',
-          style: const TextStyle(
-              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              widget.isFirstLogin ? 'ตั้งรหัสผ่านใหม่' : 'เปลี่ยนรหัสผ่าน',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[900]),
+            ),
+          ],
         ),
       ),
       // ป้องกัน back gesture บน iOS ถ้าเป็นครั้งแรก
@@ -130,7 +152,6 @@ class _AdminChangePasswordPageState extends State<AdminChangePasswordPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 // ── Banner แจ้งเตือน (เฉพาะครั้งแรก) ───────────────────
                 if (widget.isFirstLogin) ...[
                   Container(
@@ -207,8 +228,10 @@ class _AdminChangePasswordPageState extends State<AdminChangePasswordPage> {
                     onToggle: () => setState(() => _showNew = !_showNew),
                     validator: (v) {
                       if (v!.isEmpty) return 'กรุณากรอกรหัสผ่านใหม่';
-                      if (v.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
-                      if (v == _oldPassCtrl.text) return 'รหัสผ่านใหม่ต้องไม่เหมือนเดิม';
+                      if (v.length < 8)
+                        return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+                      if (v == _oldPassCtrl.text)
+                        return 'รหัสผ่านใหม่ต้องไม่เหมือนเดิม';
                       return null;
                     },
                   ),
@@ -336,14 +359,11 @@ class _AdminChangePasswordPageState extends State<AdminChangePasswordPage> {
                 validator: validator,
                 decoration: InputDecoration(
                   labelText: label,
-                  labelStyle:
-                      const TextStyle(fontSize: 13, color: Colors.grey),
+                  labelStyle: const TextStyle(fontSize: 13, color: Colors.grey),
                   border: InputBorder.none,
                   suffixIcon: IconButton(
-                    icon: Icon(
-                        show ? Icons.visibility_off : Icons.visibility,
-                        size: 18,
-                        color: Colors.grey),
+                    icon: Icon(show ? Icons.visibility_off : Icons.visibility,
+                        size: 18, color: Colors.grey),
                     onPressed: onToggle,
                   ),
                 ),

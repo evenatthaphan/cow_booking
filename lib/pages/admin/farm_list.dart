@@ -174,14 +174,30 @@ class _FarmListPageState extends State<FarmListPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('จัดการฟาร์ม',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.green[900]),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text('จัดการฟาร์ม',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green[900])),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
+            icon: Icon(Icons.add, color: Colors.green[900]),
             onPressed: () => _goToForm(),
             tooltip: 'เพิ่มฟาร์ม',
           ),

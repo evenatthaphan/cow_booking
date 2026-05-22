@@ -432,17 +432,29 @@ class _BullFormPageState extends State<BullFormPage>
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Colors.green[900]),
         title: Row(
           children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 10),
             Text(
               isEdit ? 'แก้ไขข้อมูลพ่อพันธุ์' : 'เพิ่มพ่อพันธุ์',
-              style: const TextStyle(
-                  fontSize: 18,
+              style: TextStyle(
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Colors.white),
+                  color: Colors.green[900]),
             ),
           ],
         ),
@@ -494,7 +506,10 @@ class _BullFormPageState extends State<BullFormPage>
                         color: Colors.brown[50],
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.pets, size: 28, color: Colors.brown[600]),
+                      child: Text(
+                        '🐂',
+                        style: TextStyle(fontSize: 18, color: Colors.brown[700]),
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(

@@ -3,6 +3,7 @@ import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/pages/admin/admin_form.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -178,16 +179,39 @@ class _AdminListPageState extends State<AdminListPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
-        title: const Text(
-          'จัดการผู้ดูแลระบบ',
-          style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white),
+        iconTheme: IconThemeData(color: Colors.green[900]),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'รายชื่อผู้ดูแลระบบ',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.green[900],
+                    height: 1.1,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           if (canCreate)
             IconButton(

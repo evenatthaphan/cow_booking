@@ -446,14 +446,30 @@ class _MemberListPageState extends State<MemberListPage>
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('จัดการสมาชิก',
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.green[900]),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text('จัดการสมาชิก',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green[900])),
+          ],
+        ),
         actions: [
           Stack(
             children: [
@@ -476,9 +492,9 @@ class _MemberListPageState extends State<MemberListPage>
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
+          indicatorColor: Colors.green[900],
+          labelColor: Colors.green[900],
+          unselectedLabelColor: Colors.grey[600],
           tabs: [
             Tab(text: 'เกษตรกร (${_filteredFarmers.length})'),
             Tab(text: 'สัตวบาล (${_filteredVets.length})'),

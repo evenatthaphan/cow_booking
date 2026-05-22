@@ -3,6 +3,7 @@ import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/pages/admin/admin_change_password.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,8 +19,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   bool _isLoading = false;
 
   // ── Controllers ───────────────────────────────────────────────────────────
-  final _phoneCtrl   = TextEditingController();
-  final _emailCtrl   = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
 
   @override
@@ -30,8 +31,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
 
   void _loadData() {
     final admin = Provider.of<DataAdmin>(context, listen: false).datauser;
-    _phoneCtrl.text   = admin.adminsPhonenumber;
-    _emailCtrl.text   = admin.adminsEmail;
+    _phoneCtrl.text = admin.adminsPhonenumber;
+    _emailCtrl.text = admin.adminsEmail;
     _addressCtrl.text = admin.adminsAddress;
   }
 
@@ -43,8 +44,10 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     super.dispose();
   }
 
-  String get _adminType =>
-      Provider.of<DataAdmin>(context, listen: false).datauser.adminType.toString();
+  String get _adminType => Provider.of<DataAdmin>(context, listen: false)
+      .datauser
+      .adminType
+      .toString();
 
   // ── บันทึกข้อมูล ──────────────────────────────────────────────────────────
   Future<void> _saveProfile() async {
@@ -61,8 +64,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
         },
         body: jsonEncode({
           'admins_phonenumber': _phoneCtrl.text.trim(),
-          'admins_email':       _emailCtrl.text.trim(),
-          'admins_address':     _addressCtrl.text.trim(),
+          'admins_email': _emailCtrl.text.trim(),
+          'admins_address': _addressCtrl.text.trim(),
         }),
       );
 
@@ -132,8 +135,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   ),
                   child: const Text('ออกจากระบบ',
                       style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold)),
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -171,21 +173,45 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('โปรไฟล์',
-            style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white)),
+        iconTheme: IconThemeData(color: Colors.green[900]),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'โปรไฟล์ของฉัน',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.green[900],
+                    height: 1.1,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // ── Avatar + ชื่อ + type ──────────────────────────────────
             Center(
               child: Column(
@@ -211,8 +237,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.green[50],
                       borderRadius: BorderRadius.circular(12),
@@ -266,7 +292,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 onPressed: _isLoading ? null : _saveProfile,
                 icon: _isLoading
                     ? const SizedBox(
-                        width: 18, height: 18,
+                        width: 18,
+                        height: 18,
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2))
                     : const Icon(Icons.save_outlined,
@@ -301,8 +328,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const AdminChangePasswordPage(
-                        isFirstLogin: false),
+                    builder: (_) =>
+                        const AdminChangePasswordPage(isFirstLogin: false),
                   ),
                 ),
               ),
@@ -318,8 +345,8 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 icon: const Icon(Icons.logout, color: Colors.red, size: 18),
                 label: const Text(
                   'ออกจากระบบ',
-                  style: TextStyle(
-                      color: Colors.red, fontWeight: FontWeight.bold),
+                  style:
+                      TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                 ),
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Colors.red),
@@ -340,9 +367,12 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
   // ── Helpers ────────────────────────────────────────────────────────────────
   String _adminTypeLabel(int type) {
     switch (type) {
-      case 1:  return 'Master Admin';
-      case 2:  return 'Super Admin';
-      default: return 'Admin';
+      case 1:
+        return 'Master Admin';
+      case 2:
+        return 'Super Admin';
+      default:
+        return 'Admin';
     }
   }
 
@@ -397,8 +427,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                 maxLines: maxLines,
                 decoration: InputDecoration(
                   labelText: label,
-                  labelStyle:
-                      const TextStyle(fontSize: 13, color: Colors.grey),
+                  labelStyle: const TextStyle(fontSize: 13, color: Colors.grey),
                   border: InputBorder.none,
                 ),
               ),
@@ -454,13 +483,12 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
                             fontWeight: FontWeight.w500,
                             color: Color(0xFF1A1A1A))),
                     Text(subtitle,
-                        style: const TextStyle(
-                            fontSize: 12, color: Colors.grey)),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey)),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios,
-                  size: 14, color: Colors.grey),
+              const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
             ],
           ),
         ),

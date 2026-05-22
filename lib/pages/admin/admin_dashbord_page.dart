@@ -9,17 +9,9 @@ import 'package:cow_booking/pages/admin/vet_approval.dart';
 import 'package:cow_booking/pages/admin/insemination_history.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-
-// TODO: import หน้าอื่นๆ เมื่อสร้างแล้ว
-// import 'package:cow_booking/pages/admin/admin_list.dart';
-// import 'package:cow_booking/pages/admin/member_list.dart';
-// import 'package:cow_booking/pages/admin/vet_approval.dart';
-// import 'package:cow_booking/pages/admin/farm_list.dart';
-// import 'package:cow_booking/pages/admin/bull_list.dart';
-// import 'package:cow_booking/pages/admin/insemination_history.dart';
-// import 'package:cow_booking/pages/admin/admin_profile.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -31,14 +23,14 @@ class AdminDashboardPage extends StatefulWidget {
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
   bool _isLoading = true;
 
-  // Stats 
-  int _totalBookings    = 0;
-  int _totalFarmers     = 0;
-  int _totalVets        = 0;
+  // Stats
+  int _totalBookings = 0;
+  int _totalFarmers = 0;
+  int _totalVets = 0;
   int _pendingApprovals = 0;
-  double _successRate   = 0.0;
+  double _successRate = 0.0;
 
-  // Trend รายเดือน 
+  // Trend รายเดือน
   List<Map<String, dynamic>> _monthlyTrend = [];
 
   @override
@@ -46,43 +38,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchStats());
   }
-
-
-  // Future<void> _fetchStats() async {
-  //   try {
-  //     final res = await http.get(
-  //       Uri.parse('$apiEndpoint/admin/dashboard/stats'),
-  //     );
-  //     final trendRes = await http.get(
-  //       Uri.parse('$apiEndpoint/admin/dashboard/trend'),
-  //     );
-
-  //     if (res.statusCode == 200) {
-  //       final data = jsonDecode(res.body);
-  //       setState(() {
-  //         _totalBookings    = data['total_bookings']    ?? 0;
-  //         _totalFarmers     = data['total_farmers']     ?? 0;
-  //         _totalVets        = data['total_vets']        ?? 0;
-  //         _pendingApprovals = data['pending_approvals'] ?? 0;
-  //         _successRate      = (data['success_rate']     ?? 0).toDouble();
-  //       });
-  //     }
-
-  //     if (trendRes.statusCode == 200) {
-  //       final trendData = jsonDecode(trendRes.body) as List;
-  //       setState(() {
-  //         _monthlyTrend = trendData.cast<Map<String, dynamic>>();
-  //       });
-  //     }
-  //   } catch (e) {
-  //     debugPrint('fetch stats error: $e');
-  //   } finally {
-  //     if (mounted) setState(() => _isLoading = false);
-  //   }
-  // }
-
-
-
 
   Future<void> _fetchStats() async {
     if (!mounted) return;
@@ -107,11 +62,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         setState(() {
-          _totalBookings    = data['total_bookings']    ?? 0;
-          _totalFarmers     = data['total_farmers']     ?? 0;
-          _totalVets        = data['total_vets']        ?? 0;
+          _totalBookings = data['total_bookings'] ?? 0;
+          _totalFarmers = data['total_farmers'] ?? 0;
+          _totalVets = data['total_vets'] ?? 0;
           _pendingApprovals = data['pending_approvals'] ?? 0;
-          _successRate      = (data['success_rate']     ?? 0).toDouble();
+          _successRate = (data['success_rate'] ?? 0).toDouble();
         });
       }
 
@@ -160,22 +115,51 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    final admin    = Provider.of<DataAdmin>(context).datauser;
+    final admin = Provider.of<DataAdmin>(context).datauser;
     final adminType = admin.adminType;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: const Text('แดชบอร์ด',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'แดชบอร์ด',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.green[900],
+                    height: 1.1,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           // ปุ่มโปรไฟล์
           GestureDetector(
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const AdminProfilePage()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const AdminProfilePage()));
             },
             child: Padding(
               padding: const EdgeInsets.only(right: 12),
@@ -183,13 +167,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 radius: 18,
                 backgroundColor: Colors.green[200],
                 child: Text(
-                  admin.adminsName.isNotEmpty ? admin.adminsName[0].toUpperCase() : 'A',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green[900]),
+                  admin.adminsName.isNotEmpty
+                      ? admin.adminsName[0].toUpperCase()
+                      : 'A',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.green[900]),
                 ),
               ),
             ),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: Colors.green))
@@ -202,8 +193,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
-                    // Welcome 
+                    // Welcome
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -326,8 +316,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('0%', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
-                                Text('100%', style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                                Text('0%',
+                                    style: TextStyle(
+                                        fontSize: 11, color: Colors.grey[500])),
+                                Text('100%',
+                                    style: TextStyle(
+                                        fontSize: 11, color: Colors.grey[500])),
                               ],
                             ),
                           ],
@@ -349,7 +343,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                               )
                             : Column(
                                 children: _monthlyTrend.map((item) {
-                                  final rate = (item['success_rate'] ?? 0).toDouble();
+                                  final rate =
+                                      (item['success_rate'] ?? 0).toDouble();
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 10),
                                     child: Row(
@@ -358,12 +353,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                                           width: 60,
                                           child: Text(
                                             item['month']?.toString() ?? '-',
-                                            style: const TextStyle(fontSize: 12),
+                                            style:
+                                                const TextStyle(fontSize: 12),
                                           ),
                                         ),
                                         Expanded(
                                           child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(4),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
                                             child: LinearProgressIndicator(
                                               value: rate / 100,
                                               minHeight: 10,
@@ -397,11 +394,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                           iconColor: Colors.purple,
                           label: 'จัดการผู้ดูแลระบบ',
                           subtitle: 'เพิ่ม แก้ไข ลบ Admin',
-                          onTap: 
-                            //_comingSoon
-                            () => Navigator.push(context, MaterialPageRoute(builder: (_) => AdminListPage())),
+                          onTap:
+                              //_comingSoon
+                              () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) => AdminListPage())),
                         ),
-                        const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
+                        const Divider(
+                            height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                       ],
                       _menuItem(
                         icon: Icons.people_outline,
@@ -409,18 +410,23 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                         label: 'จัดการสมาชิก',
                         subtitle: 'ดูและค้นหาสมาชิกทั้งหมด',
                         // onTap: _comingSoon,
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const MemberListPage())),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const MemberListPage())),
                       ),
-                      const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
+                      const Divider(
+                          height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                       _menuItem(
                         icon: Icons.verified_user_outlined,
                         iconColor: Colors.orange,
                         label: 'อนุมัติสัตวบาล',
                         subtitle: 'ตรวจสอบใบประกอบวิชาชีพ',
                         //onTap: _comingSoon,
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const VetApprovalPage())),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const VetApprovalPage())),
                         trailing: _pendingApprovals > 0
                             ? Container(
                                 padding: const EdgeInsets.symmetric(
@@ -437,41 +443,49 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                               )
                             : null,
                       ),
-                      const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
+                      const Divider(
+                          height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                       _menuItem(
                         icon: Icons.home_work_outlined,
                         iconColor: Colors.teal,
                         label: 'จัดการฟาร์ม',
                         subtitle: 'เพิ่ม แก้ไข ลบ ข้อมูลฟาร์ม',
                         //onTap: _comingSoon,
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const FarmListPage())),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const FarmListPage())),
                       ),
-                      const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
+                      const Divider(
+                          height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                       _menuItem(
                         icon: Icons.pets,
                         iconColor: Colors.brown,
                         label: 'จัดการพ่อพันธุ์',
                         subtitle: 'ข้อมูลวัวพ่อพันธุ์ทั้งหมด',
                         //onTap: _comingSoon,
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const BullListPage())),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const BullListPage())),
                       ),
-                      const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
+                      const Divider(
+                          height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                       _menuItem(
                         icon: Icons.history,
                         iconColor: Colors.indigo,
                         label: 'ประวัติการผสมเทียม',
                         subtitle: 'ดูประวัติทั้งหมด',
                         // onTap: _comingSoon,
-                        onTap: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const InseminationHistoryPage())),
+                        onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    const InseminationHistoryPage())),
                       ),
                     ]),
 
                     const SizedBox(height: 20),
-
-                    
 
                     const SizedBox(height: 24),
                   ],
@@ -484,9 +498,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   // ── Helpers ────────────────────────────────────────────────────────────────
   String _adminTypeLabel(int type) {
     switch (type) {
-      case 1: return 'Master Admin';
-      case 2: return 'Super Admin';
-      default: return 'Admin';
+      case 1:
+        return 'Master Admin';
+      case 2:
+        return 'Super Admin';
+      default:
+        return 'Admin';
     }
   }
 
@@ -607,11 +624,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                             fontWeight: FontWeight.w500,
                             color: Color(0xFF1A1A1A))),
                     Text(subtitle,
-                        style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey)),
                   ],
                 ),
               ),
-              trailing ?? const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+              trailing ??
+                  const Icon(Icons.arrow_forward_ios,
+                      size: 14, color: Colors.grey),
             ],
           ),
         ),

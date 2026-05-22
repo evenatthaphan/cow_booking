@@ -137,16 +137,33 @@ class _AdminFormPageState extends State<AdminFormPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
       appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: Colors.white,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: Text(
-          _isEdit ? 'แก้ไขผู้ดูแลระบบ' : 'เพิ่มผู้ดูแลระบบ',
-          style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white),
+        iconTheme: IconThemeData(color: Colors.green[900]),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              _isEdit ? 'แก้ไขผู้ดูแลระบบ' : 'เพิ่มผู้ดูแลระบบ',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[900]),
+            ),
+          ],
         ),
+        
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
