@@ -462,35 +462,6 @@ class _CowListPageState extends State<CowListPage> {
                         ),
                       ),
 
-                      const SizedBox(width: 8),
-
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            // TODO: เปิดหน้ารายละเอียด
-                          },
-
-                          icon: const Icon(Icons.visibility, size: 18),
-
-                          label: Text(
-                            'ดูข้อมูล',
-                            style: GoogleFonts.notoSansThai(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.lightGreen[700],
-                            foregroundColor: Colors.white,
-
-                            elevation: 0,
-
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ],

@@ -65,6 +65,59 @@ class _InsertCowPageState extends State<InsertCowPage> {
   //     ),
   //   );
   // }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      automaticallyImplyLeading: true,
+      iconTheme: IconThemeData(color: Colors.green[900]),
+      title: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text('🐄', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cow Booking',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.green[900],
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                'เพิ่มข้อมูลวัว',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 11,
+                  color: Colors.green[900],
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+            height: 1, color: Colors.white.withOpacity(0.1)),
+      ),
+    );
+  }
+
   Future<void> _save() async {
     try {
       // loading
@@ -550,18 +603,7 @@ class _InsertCowPageState extends State<InsertCowPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
-      appBar: AppBar(
-        title: Text(
-          'เพิ่มข้อมูลวัว',
-          style: GoogleFonts.notoSansThai(
-            fontSize: 20,
-            color: Colors.green[800],
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        iconTheme: IconThemeData(color: Colors.green[800]),
-      ),
+      appBar: _buildAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

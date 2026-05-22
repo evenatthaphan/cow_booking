@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/share/ShareData.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -30,6 +31,58 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
     _newPassCtrl.dispose();
     _confPassCtrl.dispose();
     super.dispose();
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      automaticallyImplyLeading: true,
+      iconTheme: IconThemeData(color: Colors.green[900]),
+      title: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text('🐄', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cow Booking',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.green[900],
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                'เปลี่ยนรหัสผ่าน',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 11,
+                  color: Colors.green[900],
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+            height: 1, color: Colors.white.withOpacity(0.1)),
+      ),
+    );
   }
 
   Future<void> _save() async {
@@ -78,16 +131,7 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color:  Colors.lightGreen[800]),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text('เปลี่ยนรหัสผ่าน',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.lightGreen[800])),
-      ),
+      appBar: _buildAppBar(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(

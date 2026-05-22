@@ -45,6 +45,69 @@ class _InseminationDashboardStatPageState extends State<InseminationDashboardSta
     super.dispose();
   }
 
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      automaticallyImplyLeading: true,
+      iconTheme: IconThemeData(color: Colors.green[900]),
+      title: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text('🐄', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cow Booking',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.green[900],
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                'สถิติการผสมเทียม',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 11,
+                  color: Colors.green[900],
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.green[900],
+          labelColor: Colors.lightGreen[800],
+          unselectedLabelColor: Colors.grey,
+          tabs: [
+            Tab(
+              child: Text('ของฉัน',
+                  style: GoogleFonts.notoSansThai(fontSize: 15)),
+            ),
+            Tab(
+              child: Text('ทั้งระบบ',
+                  style: GoogleFonts.notoSansThai(fontSize: 15)),
+            ),
+          ],
+        ),
+    );
+  }
+
   // ดึงสถิติรวมทั้งระบบ 
   Future<void> _fetchGlobal() async {
     setState(() => isLoadingGlobal = true);
@@ -94,29 +157,7 @@ class _InseminationDashboardStatPageState extends State<InseminationDashboardSta
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
-      appBar: AppBar(
-        title: Text('สถิติการผสมเทียม',
-            style: GoogleFonts.notoSansThai(
-                color: Colors.lightGreen[800], fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.lightGreen[800],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.green[900],
-          labelColor: Colors.lightGreen[800],
-          unselectedLabelColor: Colors.grey,
-          tabs: [
-            Tab(
-              child: Text('ของฉัน',
-                  style: GoogleFonts.notoSansThai(fontSize: 15)),
-            ),
-            Tab(
-              child: Text('ทั้งระบบ',
-                  style: GoogleFonts.notoSansThai(fontSize: 15)),
-            ),
-          ],
-        ),
-      ),
+      appBar: _buildAppBar(),
       body: TabBarView(
         controller: _tabController,
         children: [
