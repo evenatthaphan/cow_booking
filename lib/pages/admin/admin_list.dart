@@ -347,6 +347,7 @@ class _AdminListPageState extends State<AdminListPage> {
                   style: const TextStyle(
                       fontWeight: FontWeight.w600, fontSize: 15)),
             ),
+            const SizedBox(width: 6),
             Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -360,6 +361,8 @@ class _AdminListPageState extends State<AdminListPage> {
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: _typeColor(type)),
+                    overflow: TextOverflow.ellipsis, // 
+                    maxLines: 1,                     // 
               ),
             ),
           ],
@@ -372,41 +375,55 @@ class _AdminListPageState extends State<AdminListPage> {
               Row(children: [
                 const Icon(Icons.email_outlined, size: 13, color: Colors.grey),
                 const SizedBox(width: 4),
-                Text(email,
-                    style:
-                        const TextStyle(fontSize: 12, color: Colors.grey)),
+                Expanded(  
+                  child: Text(
+                    email,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    overflow: TextOverflow.ellipsis,  
+                  ),
+                ),
               ]),
               const SizedBox(height: 2),
               Row(children: [
                 const Icon(Icons.phone_outlined, size: 13, color: Colors.grey),
                 const SizedBox(width: 4),
-                Text(phone,
-                    style:
-                        const TextStyle(fontSize: 12, color: Colors.grey)),
+                Expanded( 
+                  child: Text(
+                    phone,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    overflow: TextOverflow.ellipsis,  
+                  ),
+                ),
               ]),
             ],
           ),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // ปุ่มแก้ไข (master + super)
-            if (myType <= 2)
-              IconButton(
-                icon: const Icon(Icons.edit_outlined,
-                    color: Colors.blue, size: 20),
-                tooltip: 'แก้ไข',
-                onPressed: () => _openForm(admin: admin),
-              ),
-            // ปุ่มลบ
-            if (canDeleteThis)
-              IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    color: Colors.red, size: 20),
-                tooltip: 'ลบ',
-                onPressed: () => _deleteAdmin(admin),
-              ),
-          ],
+        trailing: SizedBox(
+          width: 80, 
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (myType <= 2)
+                IconButton(
+                  icon: const Icon(Icons.edit_outlined,
+                      color: Colors.blue, size: 20),
+                  tooltip: 'แก้ไข',
+                  onPressed: () => _openForm(admin: admin),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              if (canDeleteThis)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline,
+                      color: Colors.red, size: 20),
+                  tooltip: 'ลบ',
+                  onPressed: () => _deleteAdmin(admin),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+            ],
+          ),
         ),
       ),
     );

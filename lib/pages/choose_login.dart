@@ -45,7 +45,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
         url = value['apiEndpoint'].toString();
       },
     ).catchError((err) {
-      myWidget.showCustomSnackbar("Message", 'Error in initState: $err');
+      // myWidget.showCustomSnackbar("Message", 'Error in initState: $err');
     });
   }
 

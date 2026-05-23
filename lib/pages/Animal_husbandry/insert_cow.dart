@@ -110,6 +110,7 @@ class _InsertCowPageState extends State<InsertCowPage> {
           ),
         ],
       ),
+      
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(

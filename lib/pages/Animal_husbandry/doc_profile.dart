@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
-import 'package:cow_booking/pages/Animal_husbandry/cow_list_page.dart';
+import 'package:cow_booking/pages/Animal_husbandry/bull_list_page.dart';
 import 'package:cow_booking/pages/Animal_husbandry/manage_schedule.dart';
 import 'package:cow_booking/pages/Animal_husbandry/vet_profile_menu.dart';
 import 'package:cow_booking/pages/Animal_husbandry/vet_stat_page.dart';
@@ -323,7 +323,7 @@ class _VetProfilePageState extends State<VetProfilePage> {
               ),
             ),
             onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const CowListPage())),
+                MaterialPageRoute(builder: (_) => const VetBullListPage())),
           ),
 
           // ── ข้อมูล ──
