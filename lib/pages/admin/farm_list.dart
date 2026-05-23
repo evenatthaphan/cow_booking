@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/pages/admin/farm_form.dart';
-import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;

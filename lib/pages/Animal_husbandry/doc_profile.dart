@@ -7,7 +7,7 @@ import 'package:cow_booking/pages/Animal_husbandry/manage_schedule.dart';
 import 'package:cow_booking/pages/Animal_husbandry/vet_profile_menu.dart';
 import 'package:cow_booking/pages/Animal_husbandry/vet_stat_page.dart';
 import 'package:cow_booking/pages/Home/homepage.dart';
-import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';

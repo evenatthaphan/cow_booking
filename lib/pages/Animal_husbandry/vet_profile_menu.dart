@@ -2,7 +2,7 @@ import 'package:cow_booking/pages/Animal_husbandry/doc_profile.dart';
 import 'package:cow_booking/pages/Animal_husbandry/vet_change_password.dart';
 import 'package:cow_booking/pages/Animal_husbandry/vet_edit_address.dart';
 import 'package:cow_booking/pages/Animal_husbandry/vet_edit_profile.dart';
-import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';

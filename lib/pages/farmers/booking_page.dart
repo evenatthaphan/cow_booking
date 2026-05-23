@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/share_data.dart';
 import 'package:http/http.dart' as http;
 
 class Bookingpage extends StatefulWidget {

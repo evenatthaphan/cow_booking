@@ -7,7 +7,7 @@ import 'package:cow_booking/pages/admin/farm_list.dart';
 import 'package:cow_booking/pages/admin/member_list.dart';
 import 'package:cow_booking/pages/admin/vet_approval.dart';
 import 'package:cow_booking/pages/admin/insemination_history.dart';
-import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';

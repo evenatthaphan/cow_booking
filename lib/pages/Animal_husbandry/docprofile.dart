@@ -3,7 +3,7 @@ import 'package:cow_booking/pages/Animal_husbandry/cow_list_page.dart';
 import 'package:cow_booking/pages/Animal_husbandry/manage_schedule.dart';
 import 'package:cow_booking/pages/Home/homepage.dart';
 import 'package:cow_booking/pages/choose_login.dart';
-import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';

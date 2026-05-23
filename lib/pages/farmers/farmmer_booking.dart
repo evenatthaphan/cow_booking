@@ -4,7 +4,7 @@ import 'package:cow_booking/model/response/booking_response.dart';
 import 'package:cow_booking/pages/farmers/detail_queue_page.dart';
 import 'package:cow_booking/pages/farmers/farmer_navbar.dart';
 import 'package:cow_booking/pages/farmers/farmer_profile.dart';
-import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';

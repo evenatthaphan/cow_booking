@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/share_data.dart';
 // TODO: แก้ path ให้ตรงกับที่วาง model จริง
 import 'package:cow_booking/model/response/getfevbull_farmer.dart';
 import 'package:cow_booking/config/internal_config.dart';

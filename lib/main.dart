@@ -3,7 +3,7 @@ import 'package:cow_booking/pages/Home/homepage.dart';
 import 'package:cow_booking/pages/choose_login.dart';
 import 'package:cow_booking/pages/login.dart';
 import 'package:provider/provider.dart';
-import 'package:cow_booking/share/ShareData.dart';
+import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
