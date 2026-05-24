@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/Farmers_response.dart';
 import 'package:cow_booking/pages/choose_regis.dart';
 import 'package:cow_booking/pages/farmers/favorite_page.dart';
@@ -10,6 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cow_booking/share/share_data.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 class Farmerprofilepage extends StatefulWidget {
   const Farmerprofilepage({super.key});
@@ -23,6 +27,36 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
   static const _green500 = Color(0xFF4CAF50);
   static const _bgColor = Color(0xFFf0f4f0);
   static const _green = Color(0xFF2E7D32);
+
+  // state
+  int _totalBookings = 0;
+  int _totalLikes    = 0;
+  int _successRate   = 0;
+
+   @override
+  void initState() {
+    super.initState();
+    _fetchStats();
+  }
+
+  // fetch ใน initState
+  Future<void> _fetchStats() async {
+    final farmer_id = Provider.of<DataFarmers>(context, listen: false).datauser.farmersId;
+    try {
+      final res = await http.get(
+        Uri.parse('$apiEndpoint/farmer/farmers/stats/$farmer_id'),
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        setState(() {
+          _totalBookings = data['total_bookings'] ?? 0;
+          _totalLikes    = data['total_likes']    ?? 0;
+          _successRate   = data['success_rate']   ?? 0;
+        });
+      }
+    } catch (_) {}
+  }
+  
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
@@ -115,70 +149,6 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
     );
   }
 
-
-  // Widget _buildHeader(BuildContext context) {
-  //   return Container(
-  //     height: 160,
-  //     decoration: const BoxDecoration(
-  //       gradient: LinearGradient(
-  //         colors: [Color(0xFF1B5E20), Color(0xFF4CAF50), Color(0xFF81C784)],
-  //         begin: Alignment.topLeft,
-  //         end: Alignment.bottomRight,
-  //       ),
-  //     ),
-  //     child: Stack(
-  //       children: [
-  //         Positioned(
-  //           top: -30, right: -30,
-  //           child: Container(
-  //             width: 140, height: 140,
-  //             decoration: BoxDecoration(
-  //               shape: BoxShape.circle,
-  //               color: Colors.white.withOpacity(0.08),
-  //             ),
-  //           ),
-  //         ),
-  //         Positioned(
-  //           bottom: -20, left: -20,
-  //           child: Container(
-  //             width: 100, height: 100,
-  //             decoration: BoxDecoration(
-  //               shape: BoxShape.circle,
-  //               color: Colors.white.withOpacity(0.05),
-  //             ),
-  //           ),
-  //         ),
-  //         SafeArea(
-  //           child: Stack(
-  //             alignment: Alignment.center,
-  //             children: [
-  //               // ปุ่มกลับ ซ้าย
-  //               Align(
-  //                 alignment: Alignment.centerLeft,
-  //                 child: IconButton(
-  //                   onPressed: () => Navigator.pop(context),
-  //                   icon: const Icon(
-  //                     Icons.arrow_back_ios_new_rounded,
-  //                     color: Colors.white,
-  //                     size: 20,
-  //                   ),
-  //                 ),
-  //               ),
-  //               Text(
-  //                 'โปรไฟล์',
-  //                 style: GoogleFonts.notoSansThai(
-  //                   fontSize: 20,
-  //                   fontWeight: FontWeight.w600,
-  //                   color: Colors.white.withOpacity(0.9),
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
 
   Widget _buildProfileCard(BuildContext context) {
@@ -297,11 +267,11 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
             // Stats row
             Row(
               children: [
-                _buildStatItem('12', 'ที่ถูกใจ'),
+                _buildStatItem('$_totalLikes', 'ที่ถูกใจ'),
                 _buildStatDivider(),
-                _buildStatItem('47', 'ประวัติ'),
+                _buildStatItem('$_totalBookings', 'ประวัติ'),
                 _buildStatDivider(),
-                _buildStatItem('93%', 'อัตราสำเร็จ'),
+                _buildStatItem('$_successRate%', 'อัตราสำเร็จ'),
               ],
             ),
           ],

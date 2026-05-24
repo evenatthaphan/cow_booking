@@ -114,8 +114,8 @@ class _InseminationDashboardStatPageState extends State<InseminationDashboardSta
     try {
       final responses = await Future.wait([
         http.get(Uri.parse('$apiEndpoint/stats/stats/overview')),
-        http.get(Uri.parse('$apiEndpoint/stats/insemination/by-vet')),
-        http.get(Uri.parse('$apiEndpoint/stats/insemination/by-bull')),
+        http.get(Uri.parse('$apiEndpoint/stats/stats/by-vet')),
+        http.get(Uri.parse('$apiEndpoint/stats/stats/by-bull')),
       ]);
       setState(() {
         overviewGlobal = jsonDecode(responses[0].body);
@@ -130,17 +130,17 @@ class _InseminationDashboardStatPageState extends State<InseminationDashboardSta
 
   // ดึงสถิติเฉพาะของฉัน 
   Future<void> _fetchMine() async {
-    final Vetexport_id =
+    final vetexpert_id =
         context.read<DataVetExpert>().datauser.id;
     setState(() => isLoadingMine = true);
     try {
       final responses = await Future.wait([
         http.get(Uri.parse(
-            '$apiEndpoint/stats/insemination/my-overview/$Vetexport_id')),
+            '$apiEndpoint/stats/vet/insemination/my-overview/$vetexpert_id')),
         http.get(Uri.parse(
-            '$apiEndpoint/stats/insemination/my-by-vet/$Vetexport_id')),
+            '$apiEndpoint/stats/vet/insemination/my-by-vet/$vetexpert_id')),
         http.get(Uri.parse(
-            '$apiEndpoint/stats/insemination/my-by-bull/$Vetexport_id')),
+            '$apiEndpoint/stats/vet/insemination/my-by-bull/$vetexpert_id')),
       ]);
       setState(() {
         overviewMine = jsonDecode(responses[0].body);

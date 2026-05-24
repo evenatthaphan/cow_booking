@@ -159,8 +159,8 @@ class _InseminationDashboardPageState extends State<InseminationDashboardPage>
     try {
       final responses = await Future.wait([
         http.get(Uri.parse('$apiEndpoint/stats/stats/overview')),
-        http.get(Uri.parse('$apiEndpoint/stats/insemination/by-vet')),
-        http.get(Uri.parse('$apiEndpoint/stats/insemination/by-bull')),
+        http.get(Uri.parse('$apiEndpoint/stats/stats/by-vet')),
+        http.get(Uri.parse('$apiEndpoint/stats/stats/by-bull')),
       ]);
       setState(() {
         overviewGlobal = jsonDecode(responses[0].body);
@@ -201,7 +201,7 @@ class _InseminationDashboardPageState extends State<InseminationDashboardPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F1E8),
+      backgroundColor: const Color.fromARGB(255, 248, 253, 245),
       appBar: _buildAppBar(),
       body: TabBarView(
         controller: _tabController,
