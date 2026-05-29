@@ -27,19 +27,19 @@ class _DoctorRegisState extends State<DoctorRegis> {
   final TextEditingController districtCtrl = TextEditingController();
   final TextEditingController subdistrictCtrl = TextEditingController();
 
+  double? selectedLat;
+  double? selectedLng;
+
   String? selectedProvince;
   String? selectedDistrict;
   String? selectedSubDistrict;
 
+  File? _imageFile;
+  String? _imageFileName; 
+  
   List provinces = [];
   List districts = [];
   List subDistricts = [];
-
-  double? selectedLat;
-  double? selectedLng;
-
-  File? _imageFile;
-  String? _imageFileName;
 
   bool isLoading = false;
   bool _obscurePassword = true;

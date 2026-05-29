@@ -472,15 +472,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
         final role = data['role'] as String?;
         final user = data['user'] as Map<String, dynamic>?;
 
-        // if (role == 'farmer' && user != null) {
-        //   final farmer = Farmers.fromJson(user);
-        //   context.read<DataFarmers>().setDataUser(farmer);
-        //   Navigator.push(
-        //     context,
-        //     MaterialPageRoute(builder: (_) => Homepage()),
-        //   );
-        //   return;
-        // }
 
         if (role == 'farmer' && user != null) {
           final farmer = Farmers.fromJson(user);
@@ -492,16 +483,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
           await prefs.setString('userType', 'farmer');
           await prefs.setInt('userId', farmer.farmersId);
 
-          // Navigator.pushReplacement(
-          //   context,
-          //   MaterialPageRoute(builder: (_) => Homepage()),
-          // );
-
-          // Navigator.pushAndRemoveUntil(
-          //   context,
-          //   MaterialPageRoute(builder: (context) => Homepage()),
-          //   (route) => false,
-          // );
           await _showSuccessDialogAndNavigate(
             context,
             Homepage(),

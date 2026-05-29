@@ -27,10 +27,6 @@ class _FarmerRegisterState extends State<FarmerRegister> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
-  bool isLoading = false;
-  bool _obscurePassword = true;
-  bool _obscureConfirm = true;
-
   double? selectedLat;
   double? selectedLng;
 
@@ -40,7 +36,11 @@ class _FarmerRegisterState extends State<FarmerRegister> {
 
   List provinces = [];
   List districts = [];
-  List subDistricts = [];
+  List subDistricts = []; 
+  
+  bool isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   // ── สี ──
   static const _green = Color(0xFF2E7D32);

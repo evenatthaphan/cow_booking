@@ -22,6 +22,8 @@ class VetExpert {
     String vetExpertAddress;
     String vetExpertPl;
     int totalSemenStock;
+    final String? vetexperts_loc_lat;
+    final String? vetexperts_loc_long;
 
     VetExpert({
         required this.id,
@@ -37,6 +39,8 @@ class VetExpert {
         required this.vetExpertAddress,
         required this.vetExpertPl,
         this.totalSemenStock = 0,
+        this.vetexperts_loc_lat,
+        this.vetexperts_loc_long,
     });
 
     // factory VetExpert.fromJson(Map<String, dynamic> json) => VetExpert(
@@ -67,6 +71,8 @@ class VetExpert {
       vetExpertAddress: json["vetexperts__address"],
       vetExpertPl: json["vetexperts_license"],
       totalSemenStock: json["totalSemenStock"] ?? 0,
+      vetexperts_loc_lat: json["vetexperts_loc_lat"],
+      vetexperts_loc_long: json["vetexperts_loc_long"],
     );
 
 
@@ -83,5 +89,7 @@ class VetExpert {
         "locality": locality,
         "VetExpert_address": vetExpertAddress,
         "VetExpert_PL": vetExpertPl,
+        "vetexperts_loc_lat": vetexperts_loc_lat,
+        "vetexperts_loc_long": vetexperts_loc_long,
     };
 }

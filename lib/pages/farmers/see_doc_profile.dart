@@ -1,16 +1,17 @@
 import 'dart:convert';
-
 import 'package:cow_booking/config/internal_config.dart';
-import 'package:cow_booking/model/response/GetVet_response.dart';
 import 'package:cow_booking/model/response/bullstocks_response.dart';
 import 'package:cow_booking/pages/farmers/booking_page.dart';
 import 'package:cow_booking/share/share_data.dart';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
 import 'package:http/http.dart' as http;
+import 'package:cow_booking/share/minimap_widget.dart';
 
 class Seedocprofilepage extends StatefulWidget {
   final int vetId;
@@ -27,7 +28,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
   bool _isLoading = true;
   CalendarFormat _calendarFormat = CalendarFormat.month;
 
-  // ── สีหลัก ──
+  // ── สีหลัก ──────────────────────────────────────────────────
   static const _darkGreen = Color(0xFF1B5E20);
   static const _green = Color(0xFF2E7D32);
   static const _midGreen = Color(0xFF43A047);
@@ -44,6 +45,12 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     super.initState();
     fetchVetProfile();
     _fetchSchedules();
+  }
+
+  // ── helper: แปลง String? → double? ──────────────────────────
+  double? _parseCoord(String? val) {
+    if (val == null || val.trim().isEmpty) return null;
+    return double.tryParse(val.trim());
   }
 
   Future<void> fetchVetProfile() async {
@@ -68,6 +75,8 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
           vetExpertAddress: data['vetexperts_address'] ?? '',
           vetExpertPl: data['vetexperts_license'] ?? '',
           totalSemenStock: data['total_semen_stock'] ?? 0,
+          vetexperts_loc_lat: data['vetexperts_loc_lat']?.toString(),
+          vetexperts_loc_long: data['vetexperts_loc_long']?.toString(),
         );
         dataVet.setDataUser(vet);
         dataVet.setPeriod(vet.totalSemenStock);
@@ -127,11 +136,10 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     }
   }
 
-  List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
-    return _scheduleData[DateTime(day.year, day.month, day.day)] ?? [];
-  }
+  List<Map<String, dynamic>> _getEventsForDay(DateTime day) =>
+      _scheduleData[DateTime(day.year, day.month, day.day)] ?? [];
 
-  // ── Profile header ──
+  // ── Profile header ───────────────────────────────────────────
   Widget _buildProfileHeader(VetExpert vet) {
     return Container(
       width: double.infinity,
@@ -145,7 +153,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
       child: Column(
         children: [
           const SizedBox(height: 24),
-          // avatar
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -155,7 +162,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                   color: Colors.black.withOpacity(0.2),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
-                ),
+                )
               ],
             ),
             child: CircleAvatar(
@@ -167,19 +174,12 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
             ),
           ),
           const SizedBox(height: 12),
-
-          // ชื่อ
           Text(
             vet.vetExpertName.isNotEmpty ? vet.vetExpertName : 'กำลังโหลด...',
             style: GoogleFonts.notoSansThai(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
-            ),
+                fontSize: 20, fontWeight: FontWeight.w700, color: Colors.white),
           ),
           const SizedBox(height: 4),
-
-          // ที่อยู่
           if (vet.province.isNotEmpty)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -196,18 +196,14 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                 ),
               ],
             ),
-
           const SizedBox(height: 14),
-
-          // stats row
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 24),
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
-              border:
-                  Border.all(color: Colors.white.withOpacity(0.25), width: 1),
+              border: Border.all(color: Colors.white.withOpacity(0.25)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -217,7 +213,9 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                 _statItem('📍', vet.province.isNotEmpty ? vet.province : '-',
                     'จังหวัด'),
                 Container(width: 1, height: 36, color: Colors.white24),
-                _statItem('📞', vet.phonenumber.isNotEmpty ? vet.phonenumber : '-',
+                _statItem(
+                    '📞',
+                    vet.phonenumber.isNotEmpty ? vet.phonenumber : '-',
                     'เบอร์โทร'),
               ],
             ),
@@ -228,31 +226,28 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     );
   }
 
-  Widget _statItem(String emoji, String value, String label) {
-    return Column(
-      children: [
-        Text(emoji, style: const TextStyle(fontSize: 16)),
-        const SizedBox(height: 2),
-        Text(value,
-            style: GoogleFonts.notoSansThai(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: Colors.white)),
-        Text(label,
-            style: GoogleFonts.notoSansThai(
-                fontSize: 10, color: Colors.white70)),
-      ],
-    );
-  }
+  Widget _statItem(String emoji, String value, String label) => Column(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 16)),
+          const SizedBox(height: 2),
+          Text(value,
+              style: GoogleFonts.notoSansThai(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white)),
+          Text(label,
+              style: GoogleFonts.notoSansThai(
+                  fontSize: 10, color: Colors.white70)),
+        ],
+      );
 
-  // ── Tab: สต็อก ──
+  // ── Tab: สต็อก ───────────────────────────────────────────────
   Widget _stockTab() {
     return FutureBuilder<List<BullStock>>(
       future: fetchVetBulls(widget.vetId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-              child: CircularProgressIndicator(color: _green));
+          return const Center(child: CircularProgressIndicator(color: _green));
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Center(
@@ -286,7 +281,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                     color: _green.withOpacity(0.06),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
-                  ),
+                  )
                 ],
               ),
               child: Padding(
@@ -301,8 +296,8 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: _border),
                       ),
-                      child:
-                          const Icon(Icons.science_outlined, color: _green, size: 22),
+                      child: const Icon(Icons.science_outlined,
+                          color: _green, size: 22),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -315,18 +310,14 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                                   fontWeight: FontWeight.w700,
                                   color: _textPrimary)),
                           const SizedBox(height: 3),
-                          Row(
-                            children: [
-                              const Icon(Icons.store_outlined,
-                                  size: 12, color: _midGreen),
-                              const SizedBox(width: 4),
-                              Text(
-                                '${bull.bullbreed}  ·  ${bull.farmName}',
+                          Row(children: [
+                            const Icon(Icons.store_outlined,
+                                size: 12, color: _midGreen),
+                            const SizedBox(width: 4),
+                            Text('${bull.bullbreed}  ·  ${bull.farmName}',
                                 style: GoogleFonts.notoSansThai(
-                                    fontSize: 12, color: _textSecondary),
-                              ),
-                            ],
-                          ),
+                                    fontSize: 12, color: _textSecondary)),
+                          ]),
                         ],
                       ),
                     ),
@@ -340,13 +331,11 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                       ),
                       child: Column(
                         children: [
-                          Text(
-                            '${bull.semenStock}',
-                            style: GoogleFonts.notoSansThai(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w800,
-                                color: _green),
-                          ),
+                          Text('${bull.semenStock}',
+                              style: GoogleFonts.notoSansThai(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: _green)),
                           Text('โดส',
                               style: GoogleFonts.notoSansThai(
                                   fontSize: 10, color: _textSecondary)),
@@ -363,7 +352,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     );
   }
 
-  // ── Tab: ตารางงาน ──
+  // ── Tab: ตารางงาน ────────────────────────────────────────────
   Widget _workSchedule() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator(color: _green));
@@ -375,7 +364,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     return ListView(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
       children: [
-        // legend
         Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: Wrap(
@@ -387,8 +375,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
             ],
           ),
         ),
-
-        // calendar
         Container(
           decoration: BoxDecoration(
             color: _cardBg,
@@ -396,9 +382,10 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
             border: Border.all(color: _border),
             boxShadow: [
               BoxShadow(
-                  color: _green.withOpacity(0.06),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3))
+                color: _green.withOpacity(0.06),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              )
             ],
           ),
           clipBehavior: Clip.antiAlias,
@@ -409,27 +396,19 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
             lastDay: DateTime(2030),
             calendarFormat: _calendarFormat,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
+            onDaySelected: (selectedDay, focusedDay) => setState(() {
+              _selectedDay = selectedDay;
+              _focusedDay = focusedDay;
+            }),
             onFormatChanged: (f) => setState(() => _calendarFormat = f),
-            onPageChanged: (focusedDay) => _focusedDay = focusedDay,
+            onPageChanged: (d) => _focusedDay = d,
             calendarStyle: CalendarStyle(
               todayDecoration: BoxDecoration(
-                color: _midGreen.withOpacity(0.3),
-                shape: BoxShape.circle,
-              ),
-              selectedDecoration: const BoxDecoration(
-                color: _green,
-                shape: BoxShape.circle,
-              ),
-              markerDecoration: const BoxDecoration(
-                color: _green,
-                shape: BoxShape.circle,
-              ),
+                  color: _midGreen.withOpacity(0.3), shape: BoxShape.circle),
+              selectedDecoration:
+                  const BoxDecoration(color: _green, shape: BoxShape.circle),
+              markerDecoration:
+                  const BoxDecoration(color: _green, shape: BoxShape.circle),
             ),
             headerStyle: HeaderStyle(
               formatButtonDecoration: BoxDecoration(
@@ -442,91 +421,58 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: _textPrimary),
-              leftChevronIcon:
-                  const Icon(Icons.chevron_left, color: _green),
-              rightChevronIcon:
-                  const Icon(Icons.chevron_right, color: _green),
+              leftChevronIcon: const Icon(Icons.chevron_left, color: _green),
+              rightChevronIcon: const Icon(Icons.chevron_right, color: _green),
             ),
             calendarBuilders: CalendarBuilders(
               markerBuilder: (context, day, events) {
                 final eventList = _getEventsForDay(day);
                 if (eventList.isEmpty) return const SizedBox.shrink();
-                final allBooked =
-                    eventList.every((e) => e["is_booked"] == 1);
-                final allFree =
-                    eventList.every((e) => e["is_booked"] == 0);
-                Color bg = allBooked
+                final allBooked = eventList.every((e) => e["is_booked"] == 1);
+                final allFree = eventList.every((e) => e["is_booked"] == 0);
+                final bg = allBooked
                     ? Colors.red[400]!
                     : allFree
                         ? Colors.green[400]!
                         : Colors.blue[400]!;
                 return Container(
                   decoration: BoxDecoration(
-                    color: bg,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                      color: bg, borderRadius: BorderRadius.circular(8)),
                   margin: const EdgeInsets.all(6),
                   alignment: Alignment.center,
                   child: Text('${day.day}',
                       style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold)),
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 );
               },
             ),
           ),
         ),
-
         const SizedBox(height: 16),
-
-        // slot list
         if (_selectedDay != null) ...[
           Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: Row(
-              children: [
-                Container(
-                  width: 4,
-                  height: 18,
-                  decoration: BoxDecoration(
-                      color: _green,
-                      borderRadius: BorderRadius.circular(2)),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'ช่วงเวลาที่ว่าง',
+            child: Row(children: [
+              Container(
+                width: 4,
+                height: 18,
+                decoration: BoxDecoration(
+                    color: _green, borderRadius: BorderRadius.circular(2)),
+              ),
+              const SizedBox(width: 10),
+              Text('ช่วงเวลาที่ว่าง',
                   style: GoogleFonts.notoSansThai(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: _textPrimary),
-                ),
-                const SizedBox(width: 8),
-                Text('(${selectedEvents.length} ช่วง)',
-                    style: GoogleFonts.notoSansThai(
-                        fontSize: 12, color: _labelColor)),
-              ],
-            ),
+                      color: _textPrimary)),
+              const SizedBox(width: 8),
+              Text('(${selectedEvents.length} ช่วง)',
+                  style: GoogleFonts.notoSansThai(
+                      fontSize: 12, color: _labelColor)),
+            ]),
           ),
           if (selectedEvents.isEmpty)
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: _cardBg,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _border),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.event_busy_outlined,
-                      size: 18, color: _labelColor),
-                  const SizedBox(width: 8),
-                  Text('ไม่มีตารางงานในวันนี้',
-                      style: GoogleFonts.notoSansThai(
-                          fontSize: 13, color: _labelColor)),
-                ],
-              ),
-            )
+            _emptyBox('ไม่มีตารางงานในวันนี้', Icons.event_busy_outlined)
           else
             ...selectedEvents.map((event) {
               final isBooked = event["is_booked"] == 1;
@@ -536,20 +482,18 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                   color: _cardBg,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isBooked
-                        ? Colors.red.withOpacity(0.2)
-                        : _border,
-                  ),
+                      color: isBooked ? Colors.red.withOpacity(0.2) : _border),
                   boxShadow: [
                     BoxShadow(
-                        color: _green.withOpacity(0.05),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2))
+                      color: _green.withOpacity(0.05),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                    )
                   ],
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   child: Row(
                     children: [
                       Container(
@@ -574,21 +518,17 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'เวลา ${event["time"]}',
-                              style: GoogleFonts.notoSansThai(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: _textPrimary),
-                            ),
-                            Text(
-                              isBooked ? 'ถูกจองแล้ว' : 'ว่าง',
-                              style: GoogleFonts.notoSansThai(
-                                  fontSize: 12,
-                                  color: isBooked
-                                      ? Colors.red[400]
-                                      : _midGreen),
-                            ),
+                            Text('เวลา ${event["time"]}',
+                                style: GoogleFonts.notoSansThai(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: _textPrimary)),
+                            Text(isBooked ? 'ถูกจองแล้ว' : 'ว่าง',
+                                style: GoogleFonts.notoSansThai(
+                                    fontSize: 12,
+                                    color: isBooked
+                                        ? Colors.red[400]
+                                        : _midGreen)),
                           ],
                         ),
                       ),
@@ -625,90 +565,211 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
               );
             }),
         ] else
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: _cardBg,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: _border),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.touch_app_outlined, size: 16, color: _labelColor),
-                const SizedBox(width: 8),
-                Text('เลือกวันในปฏิทินเพื่อดูตารางงาน',
-                    style: GoogleFonts.notoSansThai(
-                        fontSize: 13, color: _labelColor)),
-              ],
-            ),
-          ),
+          _emptyBox(
+              'เลือกวันในปฏิทินเพื่อดูตารางงาน', Icons.touch_app_outlined),
       ],
     );
   }
 
-  Widget _legendItem(Color color, String label) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration:
-              BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
-        ),
-        const SizedBox(width: 4),
-        Text(label,
-            style: GoogleFonts.notoSansThai(
-                fontSize: 11, color: _labelColor)),
-      ],
-    );
-  }
-
+  // ── Tab: ที่อยู่ + Mini map ───────────────────────────────────
   Widget _mapAddress() {
     return Consumer<DataVetExpert>(
       builder: (_, dataVet, __) {
         final vet = dataVet.datauser;
-        return Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    color: _lightGreen,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: _border),
-                  ),
-                  child: const Icon(Icons.map_outlined,
-                      color: _green, size: 32),
+
+        // แปลง String? → double?
+        final double? lat = _parseCoord(vet.vetexperts_loc_lat);
+        final double? lng = _parseCoord(vet.vetexperts_loc_long);
+        final bool hasCoords = lat != null && lng != null;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Mini map ────────────────────────────────────────
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: SizedBox(
+                  height: 220,
+                  child: hasCoords
+                      ? MiniMap(lat: lat, lng: lng) 
+                      : _NoMapPlaceholder(),
                 ),
-                const SizedBox(height: 16),
-                Text(vet.vetExpertAddress.isNotEmpty
-                    ? vet.vetExpertAddress
-                    : 'ไม่ระบุที่อยู่',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.notoSansThai(
-                        fontSize: 14, color: _textPrimary)),
-                const SizedBox(height: 6),
-                Text(
-                  [vet.locality, vet.district, vet.province]
-                      .where((s) => s.isNotEmpty)
-                      .join(', '),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.notoSansThai(
-                      fontSize: 13, color: _labelColor),
+              ),
+              const SizedBox(height: 16),
+
+              // ── ที่อยู่ card ─────────────────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _cardBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: _border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _green.withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    )
+                  ],
                 ),
-              ],
-            ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: _lightGreen,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: _border),
+                      ),
+                      child: const Icon(Icons.location_on_outlined,
+                          color: _green, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            vet.vetExpertAddress.isNotEmpty
+                                ? vet.vetExpertAddress
+                                : 'ไม่ระบุที่อยู่',
+                            style: GoogleFonts.notoSansThai(
+                                fontSize: 14, color: _textPrimary),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            [vet.locality, vet.district, vet.province]
+                                .where((s) => s.isNotEmpty)
+                                .join(', '),
+                            style: GoogleFonts.notoSansThai(
+                                fontSize: 13, color: _labelColor),
+                          ),
+                          if (hasCoords) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _lightGreen,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.gps_fixed,
+                                      size: 12, color: _green),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}',
+                                    style: GoogleFonts.notoSansThai(
+                                        fontSize: 11, color: _green),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
     );
   }
+
+  // ── helpers ──────────────────────────────────────────────────
+  Widget _emptyBox(String text, IconData icon) => Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: _cardBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _border),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 16, color: _labelColor),
+            const SizedBox(width: 8),
+            Text(text,
+                style:
+                    GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
+          ],
+        ),
+      );
+
+  Widget _legendItem(Color color, String label) => Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(
+                color: color, borderRadius: BorderRadius.circular(3)),
+          ),
+          const SizedBox(width: 4),
+          Text(label,
+              style:
+                  GoogleFonts.notoSansThai(fontSize: 11, color: _labelColor)),
+        ],
+      );
+
+  // ── AppBar ───────────────────────────────────────────────────
+  PreferredSizeWidget _buildAppBar() => AppBar(
+        elevation: 0,
+        backgroundColor: _darkGreen,
+        automaticallyImplyLeading: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+        flexibleSpace: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [_darkGreen, _midGreen],
+            ),
+          ),
+        ),
+        title: Row(
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Center(
+                  child: Text('🐄', style: TextStyle(fontSize: 16))),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Cow Booking',
+                    style: GoogleFonts.notoSansThai(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        height: 1.1)),
+                Text('โปรไฟล์สัตวบาล',
+                    style: GoogleFonts.notoSansThai(
+                        fontSize: 11, color: Colors.white70, height: 1.1)),
+              ],
+            ),
+          ],
+        ),
+        bottom: PreferredSize(
+          preferredSize: const ui.Size.fromHeight(1),
+          child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -719,12 +780,10 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
         appBar: _buildAppBar(),
         body: Column(
           children: [
-            // ── Profile header ──
             Consumer<DataVetExpert>(
-              builder: (_, dataVet, __) => _buildProfileHeader(dataVet.datauser),
+              builder: (_, dataVet, __) =>
+                  _buildProfileHeader(dataVet.datauser),
             ),
-
-            // ── TabBar ──
             Container(
               color: _cardBg,
               child: TabBar(
@@ -734,17 +793,21 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
                 indicatorWeight: 3,
                 labelStyle: GoogleFonts.notoSansThai(
                     fontWeight: FontWeight.w700, fontSize: 14),
-                unselectedLabelStyle:
-                    GoogleFonts.notoSansThai(fontSize: 14),
+                unselectedLabelStyle: GoogleFonts.notoSansThai(fontSize: 14),
                 tabs: const [
-                  Tab(icon: Icon(Icons.science_outlined, size: 18), text: 'สต็อก'),
-                  Tab(icon: Icon(Icons.calendar_month_outlined, size: 18), text: 'ตารางงาน'),
-                  Tab(icon: Icon(Icons.location_on_outlined, size: 18), text: 'ที่อยู่'),
+                  Tab(
+                      icon: Icon(Icons.science_outlined, size: 18),
+                      text: 'สต็อก'),
+                  Tab(
+                      icon: Icon(Icons.calendar_month_outlined, size: 18),
+                      text: 'ตารางงาน'),
+                  Tab(
+                      icon: Icon(Icons.location_on_outlined, size: 18),
+                      text: 'ที่อยู่'),
                 ],
               ),
             ),
             const Divider(height: 1, color: Color(0xFFE8E8E8)),
-
             Expanded(
               child: TabBarView(
                 children: [
@@ -759,57 +822,82 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
       ),
     );
   }
+}
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      elevation: 0,
-      backgroundColor: _darkGreen,
-      automaticallyImplyLeading: true,
-      iconTheme: const IconThemeData(color: Colors.white),
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [_darkGreen, _midGreen],
-          ),
-        ),
-      ),
-      title: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Center(
-              child: Text('🐄', style: TextStyle(fontSize: 16)),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Cow Booking',
-                  style: GoogleFonts.notoSansThai(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      height: 1.1)),
-              Text('โปรไฟล์สัตวบาล',
-                  style: GoogleFonts.notoSansThai(
-                      fontSize: 11, color: Colors.white70, height: 1.1)),
-            ],
-          ),
-        ],
-      ),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child:
-            Container(height: 1, color: Colors.white.withOpacity(0.1)),
-      ),
-    );
+// ── Mini map (Mapbox) ─────────────────────────────────────────
+class _MiniMap extends StatefulWidget {
+  final double lat;
+  final double lng;
+  const _MiniMap({required this.lat, required this.lng});
+
+  @override
+  State<_MiniMap> createState() => _MiniMapState();
+}
+
+class _MiniMapState extends State<_MiniMap> {
+  MapboxMap? _controller;
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
   }
+
+  Future<void> _onMapCreated(MapboxMap controller) async {
+    _controller = controller;
+
+    // ปิด gesture ทั้งหมด (mini map ไม่ให้เลื่อน)
+    await controller.gestures.updateSettings(GesturesSettings(
+      scrollEnabled: false,
+      rotateEnabled: false,
+      pinchToZoomEnabled: false,
+      doubleTapToZoomInEnabled: false,
+      quickZoomEnabled: false,
+      pitchEnabled: false,
+    ));
+
+    // ซ่อน UI controls
+    await controller.logo.updateSettings(LogoSettings(enabled: false));
+    await controller.attribution
+        .updateSettings(AttributionSettings(enabled: false));
+    await controller.compass.updateSettings(CompassSettings(enabled: false));
+    await controller.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
+
+    // วาง marker
+    final manager = await controller.annotations.createPointAnnotationManager();
+    await manager.create(PointAnnotationOptions(
+      geometry: Point(coordinates: Position(widget.lng, widget.lat)),
+      iconImage: 'marker-15',
+      iconSize: 2.0,
+      iconColor: 0xFFE53935,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) => MapWidget(
+        cameraOptions: CameraOptions(
+          center: Point(coordinates: Position(widget.lng, widget.lat)),
+          zoom: 14.0,
+        ),
+        styleUri: MapboxStyles.MAPBOX_STREETS,
+        onMapCreated: _onMapCreated,
+      );
+}
+
+// ── Placeholder เมื่อไม่มีพิกัด ───────────────────────────────
+class _NoMapPlaceholder extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+        color: const Color(0xFFF1F3F4),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map_outlined, size: 40, color: Colors.grey[400]),
+            const SizedBox(height: 8),
+            Text('ไม่มีข้อมูลพิกัด',
+                style: GoogleFonts.notoSansThai(
+                    fontSize: 13, color: Colors.grey[400])),
+          ],
+        ),
+      );
 }

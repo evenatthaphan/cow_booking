@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/pages/Home/map_picker_page.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:latlong2/latlong.dart';
+import 'dart:ui' as ui;
 
 class EditaddressPage extends StatefulWidget {
   const EditaddressPage({super.key});
@@ -19,6 +20,13 @@ class _EditaddressPageState extends State<EditaddressPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading    = false;
   bool _isSaving     = false;
+
+  static const _green = Color(0xFF2E7D32);
+  static const _lightGreen = Color(0xFFE8F5E9);
+  static const _cardBg = Color(0xFFFFFFFF);
+  static const _border = Color(0xFFD8EDD8);
+  static const _textPrimary = Color(0xFF1A2E1A);
+  static const _labelColor = Color(0xFF757575);
 
   // Controllers
   final _addressCtrl    = TextEditingController();
@@ -39,11 +47,13 @@ class _EditaddressPageState extends State<EditaddressPage> {
   double? _lat;
   double? _lng;
 
-
-  static const _green      = Color(0xFF2E7D32);
   static const _greenLight = Color(0xFFE8F5E9);
-  static const _border     = Color(0xFFDDDDDD);
-  static const _labelColor = Color(0xFF757575);
+
+   // ── helper: แปลง String? → double? ──────────────────────────
+  double? _parseCoord(String? val) {
+    if (val == null || val.trim().isEmpty) return null;
+    return double.tryParse(val.trim());
+  }
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
@@ -99,7 +109,7 @@ class _EditaddressPageState extends State<EditaddressPage> {
         ],
       ),
       bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
+        preferredSize: const ui.Size.fromHeight(1),
         child: Container(
             height: 1, color: Colors.white.withOpacity(0.1)),
       ),
@@ -234,6 +244,121 @@ class _EditaddressPageState extends State<EditaddressPage> {
     }
   }
 
+  // ── Tab: ที่อยู่ + Mini map ───────────────────────────────────
+  Widget _mapAddress() {
+    return Consumer<DataFarmers>(
+      builder: (_, dataFarmer, __) {
+        final farmer = dataFarmer.datauser;
+
+        // แปลง String? → double?
+        final double? lat = _parseCoord(farmer.farmersLocLat);
+        final double? lng = _parseCoord(farmer.farmersLocLong);
+        final bool hasCoords = lat != null && lng != null;
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Mini map ────────────────────────────────────────
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: SizedBox(
+                  height: 220,
+                  child: hasCoords
+                      ? _MiniMap(lat: lat, lng: lng)
+                      : _NoMapPlaceholder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // ── ที่อยู่ card ─────────────────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _cardBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: _border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _green.withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    )
+                  ],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: _lightGreen,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: _border),
+                      ),
+                      child: const Icon(Icons.location_on_outlined,
+                          color: _green, size: 22),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            farmer.farmersAddress.isNotEmpty
+                                ? farmer.farmersAddress
+                                : 'ไม่ระบุที่อยู่',
+                            style: GoogleFonts.notoSansThai(
+                                fontSize: 14, color: _textPrimary),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            [farmer.farmersProvince, farmer.farmersDistrict, farmer.farmersLocality]
+                                .where((s) => s.isNotEmpty)
+                                .join(', '),
+                            style: GoogleFonts.notoSansThai(
+                                fontSize: 13, color: _labelColor),
+                          ),
+                          if (hasCoords) ...[
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _lightGreen,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.gps_fixed,
+                                      size: 12, color: _green),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}',
+                                    style: GoogleFonts.notoSansThai(
+                                        fontSize: 11, color: _green),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+
   void _showSnackbar(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg, style: const TextStyle(color: Colors.white)),
@@ -260,6 +385,7 @@ class _EditaddressPageState extends State<EditaddressPage> {
 
                     // แผนที่ปัจจุบัน 
                     _sectionHeader('ตำแหน่งที่อยู่', Icons.location_on_outlined),
+                    _mapAddress(),
                     _buildLocationPicker(),
 
                     // จังหวัด / อำเภอ / ตำบล 
@@ -540,6 +666,84 @@ class _EditaddressPageState extends State<EditaddressPage> {
               validator: (v) =>
                   (v == null || v.isEmpty) ? 'กรุณาเลือก$label' : null,
             ),
+          ],
+        ),
+      );
+}
+
+// ── Mini map (Mapbox) ─────────────────────────────────────────
+class _MiniMap extends StatefulWidget {
+  final double lat;
+  final double lng;
+  const _MiniMap({required this.lat, required this.lng});
+
+  @override
+  State<_MiniMap> createState() => _MiniMapState();
+}
+
+class _MiniMapState extends State<_MiniMap> {
+  MapboxMap? _controller;
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onMapCreated(MapboxMap controller) async {
+    _controller = controller;
+
+    // ปิด gesture ทั้งหมด (mini map ไม่ให้เลื่อน)
+    await controller.gestures.updateSettings(GesturesSettings(
+      scrollEnabled: false,
+      rotateEnabled: false,
+      pinchToZoomEnabled: false,
+      doubleTapToZoomInEnabled: false,
+      quickZoomEnabled: false,
+      pitchEnabled: false,
+    ));
+
+    // ซ่อน UI controls
+    await controller.logo.updateSettings(LogoSettings(enabled: false));
+    await controller.attribution
+        .updateSettings(AttributionSettings(enabled: false));
+    await controller.compass.updateSettings(CompassSettings(enabled: false));
+    await controller.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
+
+    // วาง marker
+    final manager = await controller.annotations.createPointAnnotationManager();
+    await manager.create(PointAnnotationOptions(
+      geometry: Point(coordinates: Position(widget.lng, widget.lat)),
+      iconImage: 'marker-15',
+      iconSize: 2.0,
+      iconColor: 0xFFE53935,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) => MapWidget(
+        cameraOptions: CameraOptions(
+          center: Point(coordinates: Position(widget.lng, widget.lat)),
+          zoom: 14.0,
+        ),
+        styleUri: MapboxStyles.MAPBOX_STREETS,
+        onMapCreated: _onMapCreated,
+      );
+}
+
+// ── Placeholder เมื่อไม่มีพิกัด ───────────────────────────────
+class _NoMapPlaceholder extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Container(
+        color: const Color(0xFFF1F3F4),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.map_outlined, size: 40, color: Colors.grey[400]),
+            const SizedBox(height: 8),
+            Text('ไม่มีข้อมูลพิกัด',
+                style: GoogleFonts.notoSansThai(
+                    fontSize: 13, color: Colors.grey[400])),
           ],
         ),
       );
