@@ -47,38 +47,6 @@ Future<void> testAsync() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // Future<Widget> _getStartPage(BuildContext context) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  //   final userType = prefs.getString('userType');
-  //   final userId = prefs.getInt('userId');
-
-  //   if (isLoggedIn && userType != null && userId != null) {
-  //     try {
-  //       if (userType == 'farmer') {
-  //         await context
-  //             .read<DataFarmers>()
-  //             .fetchFarmerById(userId);
-
-  //         return Homepage();
-  //       }
-
-  //       if (userType == 'vet') {
-  //         await context
-  //             .read<DataVetExpert>()
-  //             .fetchVetById(userId);
-
-  //         return Homepagedoc();
-  //       }
-  //     } catch (e) {
-  //       // session / token หมดอายุ
-  //       await prefs.clear();
-  //     }
-  //   }
-
-  //   return const Loginpage();
-  // }
-
   Future<Widget> _getStartPage(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;

@@ -33,7 +33,8 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
   static const _border = Color(0xFFDDDDDD);
   static const _labelColor = Color(0xFF757575);
 
-  static const _googleApiKey = 'YOUR_GOOGLE_API_KEY';
+  //static const _googleApiKey = '{GOOGLE_API_KEY}';
+  static const _googleApiKey = googleApiKey;
 
   @override
   void initState() {
