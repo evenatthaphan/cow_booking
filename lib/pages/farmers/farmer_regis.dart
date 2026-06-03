@@ -17,42 +17,32 @@ class FarmerRegister extends StatefulWidget {
 class _FarmerRegisterState extends State<FarmerRegister> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController farmNameController = TextEditingController();
-  final TextEditingController phoneNumberController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();
-  final TextEditingController provinceCtrl = TextEditingController();
-  final TextEditingController districtCtrl = TextEditingController();
-  final TextEditingController subdistrictCtrl = TextEditingController();
-  final TextEditingController farmAddressController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController farmNameController        = TextEditingController();
+  final TextEditingController phoneNumberController     = TextEditingController();
+  final TextEditingController emailController           = TextEditingController();
+  final TextEditingController farmAddressController     = TextEditingController();
+  final TextEditingController passwordController        = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
+  // ── ข้อมูลจากแผนที่ ──
   double? selectedLat;
   double? selectedLng;
+  String  selectedProvince    = '';
+  String  selectedDistrict    = '';
+  String  selectedSubDistrict = '';
 
-  String? selectedProvince;
-  String? selectedDistrict;
-  String? selectedSubDistrict;
-
-  List provinces = [];
-  List districts = [];
-  List subDistricts = []; 
-  
-  bool isLoading = false;
+  bool isLoading        = false;
   bool _obscurePassword = true;
-  bool _obscureConfirm = true;
+  bool _obscureConfirm  = true;
 
   // ── สี ──
-  static const _green = Color(0xFF2E7D32);
+  static const _green      = Color(0xFF2E7D32);
   static const _greenLight = Color(0xFFE8F5E9);
-  static const _border = Color(0xFFDDDDDD);
+  static const _border     = Color(0xFFDDDDDD);
   static const _labelColor = Color(0xFF757575);
 
-  @override
-  void initState() {
-    super.initState();
-    fetchProvinces();
-  }
+  // ── ใส่ Google API Key ตรงนี้ ──
+  static const _googleApiKey = 'YOUR_GOOGLE_API_KEY';
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
@@ -115,30 +105,46 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     );
   }
 
-  Future<void> fetchProvinces() async {
-    final url = Uri.parse(
-      "https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/province_with_district_and_sub_district.json",
-    );
-    final res = await http.get(url);
-    if (res.statusCode == 200) {
-      setState(() => provinces = jsonDecode(res.body));
-    }
-  }
-
   @override
   void dispose() {
     farmNameController.dispose();
     phoneNumberController.dispose();
     emailController.dispose();
-    provinceCtrl.dispose();
-    districtCtrl.dispose();
-    subdistrictCtrl.dispose();
     farmAddressController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     super.dispose();
   }
 
+  // ─── เปิด MapPickerPage ───────────────────────────────────────────────────
+  Future<void> _openMapPicker() async {
+    final result = await Navigator.push<MapPickerResult>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapPickerPage(
+          googleApiKey: _googleApiKey,
+          initialLat: selectedLat,
+          initialLng: selectedLng,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        selectedLat         = result.lat;
+        selectedLng         = result.lng;
+        selectedProvince    = result.province;
+        selectedDistrict    = result.district;
+        selectedSubDistrict = result.subDistrict;
+        // ถ้าจาก map มีรายละเอียดที่อยู่และ field ว่างอยู่ ให้ pre-fill
+        if (farmAddressController.text.isEmpty && result.addressDetail.isNotEmpty) {
+          farmAddressController.text = result.addressDetail;
+        }
+      });
+    }
+  }
+
+  // ─── register ────────────────────────────────────────────────────────────────
   Future<void> registerFarmer() async {
     if (!_formKey.currentState!.validate()) return;
     if (selectedLat == null) {
@@ -170,7 +176,7 @@ class _FarmerRegisterState extends State<FarmerRegister> {
             if (response.statusCode == 201) {
               final data = jsonDecode(response.body);
               setState(() {
-                dialogCaptchaId = data['captchaId'];
+                dialogCaptchaId   = data['captchaId'];
                 dialogCaptchaCode = data['captcha'];
               });
             }
@@ -185,20 +191,19 @@ class _FarmerRegisterState extends State<FarmerRegister> {
 
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text(
-            "ยืนยันตัวตน",
-            style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600),
-          ),
+          title: Text("ยืนยันตัวตน",
+              style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
           content: loading
               ? const SizedBox(
-                  height: 60, child: Center(child: CircularProgressIndicator()))
+                  height: 60,
+                  child: Center(child: CircularProgressIndicator()))
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("กรอกตัวอักษรในภาพให้ถูกต้อง",
-                        style:
-                            GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
+                        style: GoogleFonts.notoSansThai(
+                            fontSize: 13, color: _labelColor)),
                     const SizedBox(height: 12),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -221,8 +226,8 @@ class _FarmerRegisterState extends State<FarmerRegister> {
                           const Spacer(),
                           IconButton(
                             onPressed: fetchCaptcha,
-                            icon:
-                                const Icon(Icons.refresh, color: _green, size: 20),
+                            icon: const Icon(Icons.refresh,
+                                color: _green, size: 20),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                           ),
@@ -234,7 +239,8 @@ class _FarmerRegisterState extends State<FarmerRegister> {
                       controller: dialogCaptchaController,
                       decoration: InputDecoration(
                         hintText: "กรอก CAPTCHA",
-                        hintStyle: GoogleFonts.notoSansThai(color: _labelColor),
+                        hintStyle:
+                            GoogleFonts.notoSansThai(color: _labelColor),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8)),
                         contentPadding: const EdgeInsets.symmetric(
@@ -246,8 +252,8 @@ class _FarmerRegisterState extends State<FarmerRegister> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child:
-                  Text("ยกเลิก", style: GoogleFonts.notoSansThai(color: _labelColor)),
+              child: Text("ยกเลิก",
+                  style: GoogleFonts.notoSansThai(color: _labelColor)),
             ),
             ElevatedButton(
               onPressed: loading
@@ -304,18 +310,18 @@ class _FarmerRegisterState extends State<FarmerRegister> {
         url,
         headers: {"Content-Type": "application/json; charset=utf-8"},
         body: jsonEncode({
-          "farm_name": farmNameController.text.trim(),
-          "phonenumber": phoneNumberController.text.trim(),
+          "farm_name":    farmNameController.text.trim(),
+          "phonenumber":  phoneNumberController.text.trim(),
           "farmer_email": emailController.text.trim().isEmpty
               ? null
               : emailController.text.trim(),
           "farm_password": passwordController.text.trim(),
-          "farm_address": farmAddressController.text.trim(),
-          "province": provinceCtrl.text.trim(),
-          "district": districtCtrl.text.trim(),
-          "locality": subdistrictCtrl.text.trim(),
-          "lat": selectedLat,
-          "lng": selectedLng,
+          "farm_address":  farmAddressController.text.trim(),
+          "province":      selectedProvince,
+          "district":      selectedDistrict,
+          "locality":      selectedSubDistrict,
+          "lat":           selectedLat,
+          "lng":           selectedLng,
         }),
       );
 
@@ -337,7 +343,8 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text("สำเร็จ ✓",
             style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
         content: Text(message, style: GoogleFonts.notoSansThai()),
@@ -362,22 +369,23 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text("เกิดข้อผิดพลาด",
             style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
         content: Text(message, style: GoogleFonts.notoSansThai()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text("ตกลง",
-                style: GoogleFonts.notoSansThai(color: _green)),
+            child:
+                Text("ตกลง", style: GoogleFonts.notoSansThai(color: _green)),
           ),
         ],
       ),
     );
   }
 
-  // ── Widget helpers ──
+  // ── Widget helpers ───────────────────────────────────────────────────────────
 
   Widget _sectionHeader(String title, IconData icon) {
     return Padding(
@@ -420,8 +428,8 @@ class _FarmerRegisterState extends State<FarmerRegister> {
           Row(
             children: [
               Text(label,
-                  style:
-                      GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
+                  style: GoogleFonts.notoSansThai(
+                      fontSize: 13, color: _labelColor)),
               if (required)
                 const Text(" *",
                     style: TextStyle(color: Colors.red, fontSize: 13)),
@@ -479,67 +487,10 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     );
   }
 
-  Widget _buildDropdown({
-    required String label,
-    required String? value,
-    required List items,
-    required void Function(String?) onChanged,
-    bool enabled = true,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(label,
-                  style:
-                      GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
-              const Text(" *",
-                  style: TextStyle(color: Colors.red, fontSize: 13)),
-            ],
-          ),
-          const SizedBox(height: 6),
-          DropdownButtonFormField<String>(
-            value: value,
-            isExpanded: true,
-            style: GoogleFonts.notoSansThai(fontSize: 14, color: Colors.black87),
-            decoration: InputDecoration(
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: _border),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: _border),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: const BorderSide(color: _green, width: 1.5),
-              ),
-              filled: true,
-              fillColor: enabled ? Colors.white : const Color(0xFFF5F5F5),
-            ),
-            items: items.map<DropdownMenuItem<String>>((item) {
-              return DropdownMenuItem(
-                value: item["name_th"],
-                child: Text(item["name_th"],
-                    style: GoogleFonts.notoSansThai(fontSize: 14)),
-              );
-            }).toList(),
-            onChanged: enabled ? onChanged : null,
-            validator: (v) =>
-                (v == null || v.isEmpty) ? "กรุณาเลือก$label" : null,
-          ),
-        ],
-      ),
-    );
-  }
-
+  /// แสดงปุ่มเปิดแผนที่ + summary ที่อยู่ที่เลือกไว้
   Widget _buildLocationPicker() {
+    final hasPicked = selectedLat != null;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       child: Column(
@@ -548,60 +499,98 @@ class _FarmerRegisterState extends State<FarmerRegister> {
           Row(
             children: [
               Text("ตำแหน่งฟาร์ม",
-                  style:
-                      GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
+                  style: GoogleFonts.notoSansThai(
+                      fontSize: 13, color: _labelColor)),
               const Text(" *",
                   style: TextStyle(color: Colors.red, fontSize: 13)),
             ],
           ),
           const SizedBox(height: 6),
+
+          // ── ปุ่มเปิดแผนที่ ──
           GestureDetector(
-            onTap: () async {
-              final result = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const MapPickerPage()),
-              );
-              if (result != null) {
-                setState(() {
-                  selectedLat = result['lat'];
-                  selectedLng = result['lng'];
-                });
-              }
-            },
+            onTap: _openMapPicker,
             child: Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
               decoration: BoxDecoration(
-                color: selectedLat != null ? _greenLight : Colors.white,
+                color: hasPicked ? _greenLight : Colors.white,
                 border: Border.all(
-                  color: selectedLat != null ? _green : _border,
-                  width: selectedLat != null ? 1.5 : 1,
+                  color: hasPicked ? _green : _border,
+                  width: hasPicked ? 1.5 : 1,
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
                 children: [
                   Icon(
-                    selectedLat != null
+                    hasPicked
                         ? Icons.location_on
                         : Icons.location_on_outlined,
-                    color: selectedLat != null ? _green : _labelColor,
+                    color: hasPicked ? _green : _labelColor,
                     size: 18,
                   ),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      selectedLat != null
+                      hasPicked
                           ? 'lat: ${selectedLat!.toStringAsFixed(5)},  lng: ${selectedLng!.toStringAsFixed(5)}'
-                          : 'แตะเพื่อเลือกตำแหน่งบนแผนที่',
+                          : 'แตะเพื่อค้นหาหรือเลือกตำแหน่งบนแผนที่',
                       style: GoogleFonts.notoSansThai(
                         fontSize: 13,
-                        color: selectedLat != null ? _green : _labelColor,
+                        color: hasPicked ? _green : _labelColor,
                       ),
                     ),
                   ),
                   Icon(Icons.chevron_right, color: _labelColor, size: 18),
                 ],
+              ),
+            ),
+          ),
+
+          // ── Address summary card (แสดงหลังเลือกแล้ว) ──
+          if (hasPicked) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _greenLight,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFA5D6A7)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _addressRow('จังหวัด', selectedProvince),
+                  _addressRow('อำเภอ',   selectedDistrict),
+                  _addressRow('ตำบล',    selectedSubDistrict),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _addressRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 56,
+            child: Text('$label:',
+                style: GoogleFonts.notoSansThai(
+                    fontSize: 12, color: _labelColor)),
+          ),
+          Expanded(
+            child: Text(
+              value.isNotEmpty ? value : '—',
+              style: GoogleFonts.notoSansThai(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: value.isNotEmpty ? Colors.black87 : Colors.grey,
               ),
             ),
           ),
@@ -633,7 +622,8 @@ class _FarmerRegisterState extends State<FarmerRegister> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.eco_outlined, size: 16, color: _green),
+                      const Icon(Icons.eco_outlined,
+                          size: 16, color: _green),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -668,54 +658,10 @@ class _FarmerRegisterState extends State<FarmerRegister> {
 
               // ── ที่อยู่ฟาร์ม ──
               _sectionHeader("ที่อยู่ฟาร์ม", Icons.home_outlined),
-              _buildDropdown(
-                label: "จังหวัด",
-                value: selectedProvince,
-                items: provinces,
-                onChanged: (val) {
-                  setState(() {
-                    selectedProvince = val;
-                    provinceCtrl.text = val ?? '';
-                    selectedDistrict = null;
-                    selectedSubDistrict = null;
-                    final p = provinces.firstWhere(
-                        (p) => p["name_th"] == val,
-                        orElse: () => {});
-                    districts = p["districts"] ?? [];
-                    subDistricts = [];
-                  });
-                },
-              ),
-              _buildDropdown(
-                label: "อำเภอ",
-                value: selectedDistrict,
-                items: districts,
-                enabled: districts.isNotEmpty,
-                onChanged: (val) {
-                  setState(() {
-                    selectedDistrict = val;
-                    districtCtrl.text = val ?? '';
-                    selectedSubDistrict = null;
-                    final d = districts.firstWhere(
-                        (d) => d["name_th"] == val,
-                        orElse: () => {});
-                    subDistricts = d["sub_districts"] ?? [];
-                  });
-                },
-              ),
-              _buildDropdown(
-                label: "ตำบล",
-                value: selectedSubDistrict,
-                items: subDistricts,
-                enabled: subDistricts.isNotEmpty,
-                onChanged: (val) {
-                  setState(() {
-                    selectedSubDistrict = val;
-                    subdistrictCtrl.text = val ?? '';
-                  });
-                },
-              ),
+
+              // location picker (แทน dropdown 3 ชั้น)
               _buildLocationPicker(),
+
               _buildField(
                 label: "ที่อยู่เพิ่มเติม",
                 controller: farmAddressController,

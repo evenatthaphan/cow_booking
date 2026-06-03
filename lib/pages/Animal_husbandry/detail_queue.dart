@@ -4,8 +4,10 @@ import 'package:cow_booking/model/response/booking_response.dart';
 import 'package:cow_booking/pages/Animal_husbandry/doc_profile.dart';
 import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -31,13 +33,14 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
     _currentStatus = widget.booking.bookingsStatus;
   }
 
-  // API อัพเดตสถานะ 
+  // API อัพเดตสถานะ
   Future<void> _updateBookingStatus(String status, {String? vetNotes}) async {
     setState(() => _isLoading = true);
 
     try {
       final response = await http.put(
-        Uri.parse('$apiEndpoint/queuebook/bookings/update/${widget.booking.queueBookingsId}'),
+        Uri.parse(
+            '$apiEndpoint/queuebook/bookings/update/${widget.booking.queueBookingsId}'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'status': status,
@@ -50,15 +53,19 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
       if (response.statusCode == 200) {
         setState(() => _currentStatus = status);
         _showResultSnackbar(
-          status == 'accepted' ? 'ยืนยันการจองเรียบร้อยแล้ว ✓' : 'ปฏิเสธการจองเรียบร้อยแล้ว',
+          status == 'accepted'
+              ? 'ยืนยันการจองเรียบร้อยแล้ว ✓'
+              : 'ปฏิเสธการจองเรียบร้อยแล้ว',
           status == 'accepted' ? Colors.green : Colors.red,
         );
       } else {
         final body = jsonDecode(response.body);
-        _showResultSnackbar('เกิดข้อผิดพลาด: ${body['error'] ?? 'ไม่ทราบสาเหตุ'}', Colors.red);
+        _showResultSnackbar(
+            'เกิดข้อผิดพลาด: ${body['error'] ?? 'ไม่ทราบสาเหตุ'}', Colors.red);
       }
     } catch (e) {
-      if (mounted) _showResultSnackbar('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', Colors.red);
+      if (mounted)
+        _showResultSnackbar('ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', Colors.red);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -76,7 +83,7 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
     );
   }
 
-  // Dialog ยืนยันการจอง 
+  // Dialog ยืนยันการจอง
   void _showAcceptDialog() {
     showDialog(
       context: context,
@@ -90,7 +97,8 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                 color: const Color(0xFFE8F5E9),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.check_circle_outline, color: Colors.green, size: 24),
+              child: const Icon(Icons.check_circle_outline,
+                  color: Colors.green, size: 24),
             ),
             const SizedBox(width: 10),
             const Text('ยืนยันการจอง',
@@ -111,7 +119,8 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
               '${DateFormat('dd/MM/yyyy').format(widget.booking.scheduleDate)}  •  ${widget.booking.scheduleTime}',
             ),
             const SizedBox(height: 6),
-            _dialogInfoChip(Icons.science_outlined, '${widget.booking.bookingsDose} โดส'),
+            _dialogInfoChip(
+                Icons.science_outlined, '${widget.booking.bookingsDose} โดส'),
           ],
         ),
         actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -122,11 +131,13 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(ctx),
                   style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     side: const BorderSide(color: Colors.grey),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
+                  child: const Text('ยกเลิก',
+                      style: TextStyle(color: Colors.grey)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -138,11 +149,13 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: const Text('ยืนยัน',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -152,7 +165,7 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
     );
   }
 
-  // Dialog ปฏิเสธ 
+  // Dialog ปฏิเสธ
   void _showRejectDialog() {
     final noteController = TextEditingController();
 
@@ -168,7 +181,8 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                 color: const Color(0xFFFFEBEE),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.cancel_outlined, color: Colors.red, size: 24),
+              child: const Icon(Icons.cancel_outlined,
+                  color: Colors.red, size: 24),
             ),
             const SizedBox(width: 10),
             const Text('ปฏิเสธการจอง',
@@ -207,11 +221,13 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.pop(ctx),
                   style: OutlinedButton.styleFrom(
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     side: const BorderSide(color: Colors.grey),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
-                  child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
+                  child: const Text('ยกเลิก',
+                      style: TextStyle(color: Colors.grey)),
                 ),
               ),
               const SizedBox(width: 10),
@@ -224,11 +240,13 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                   child: const Text('ปฏิเสธ',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
@@ -251,7 +269,8 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(text,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                style:
+                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
           ),
         ],
       ),
@@ -272,43 +291,43 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                  child: Text('🐄', style: TextStyle(fontSize: 16)),
-                ),
+          children: [
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(8),
               ),
-              const SizedBox(width: 10),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Cow Booking',
-                    style: GoogleFonts.notoSansThai(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.green[900],
-                      height: 1.1,
-                    ),
-                  ),
-                  Text(
-                    'รายละเอียดการจอง',
-                    style: GoogleFonts.notoSansThai(
-                      fontSize: 11,
-                      color: Colors.green[900],
-                      height: 1.1,
-                    ),
-                  ),
-                ],
+              child: const Center(
+                child: Text('🐄', style: TextStyle(fontSize: 16)),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Cow Booking',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.green[900],
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  'รายละเอียดการจอง',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 11,
+                    color: Colors.green[900],
+                    height: 1.1,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
         actions: [
           GestureDetector(
             onTap: () => Navigator.push(
@@ -350,40 +369,47 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _sectionLabel("ข้อมูลเกษตรกร"),
-                        _infoCard([_infoRow(Icons.person, "ชื่อเกษตรกร", booking.farmersName)]),
-
+                        _infoCard([
+                          _infoRow(
+                              Icons.person, "ชื่อเกษตรกร", booking.farmersName)
+                        ]),
                         const SizedBox(height: 14),
                         _sectionLabel("ข้อมูลนัดหมาย"),
                         _infoCard([
-                          _infoRow(Icons.calendar_today, "วันที่",
-                              DateFormat('dd MMMM yyyy', 'th').format(booking.scheduleDate)),
+                          _infoRow(
+                              Icons.calendar_today,
+                              "วันที่",
+                              DateFormat('dd MMMM yyyy', 'th')
+                                  .format(booking.scheduleDate)),
                           const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                          _infoRow(Icons.access_time, "เวลา", booking.scheduleTime),
+                          _infoRow(
+                              Icons.access_time, "เวลา", booking.scheduleTime),
                         ]),
-
                         const SizedBox(height: 14),
                         _sectionLabel("ข้อมูลพ่อพันธุ์"),
                         _infoCard([
-                          _infoRow(Icons.pets, "ชื่อพ่อพันธุ์", booking.bullsName),
+                          _infoRow(
+                              Icons.pets, "ชื่อพ่อพันธุ์", booking.bullsName),
                           const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                          _infoRow(Icons.category, "สายพันธุ์", booking.bullsBreed),
+                          _infoRow(
+                              Icons.category, "สายพันธุ์", booking.bullsBreed),
                           const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                          _infoRow(Icons.science, "จำนวนโดส", "${booking.bookingsDose} โดส"),
+                          _infoRow(Icons.science, "จำนวนโดส",
+                              "${booking.bookingsDose} โดส"),
                         ]),
-
                         const SizedBox(height: 14),
                         _sectionLabel("รายละเอียดเพิ่มเติม"),
                         _infoCard([
-                          _infoRow(Icons.notes, "หมายเหตุ",
+                          _infoRow(
+                              Icons.notes,
+                              "หมายเหตุ",
                               booking.bookingsDetailBull.isNotEmpty
                                   ? booking.bookingsDetailBull
                                   : "-"),
                         ]),
-
                         const SizedBox(height: 14),
                         _sectionLabel("สถานะ"),
                         _infoCard([_statusRow(_currentStatus)]),
-
                         const SizedBox(height: 24),
                       ],
                     ),
@@ -393,7 +419,7 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
             ),
           ),
 
-          // Action bar (แสดงเฉพาะตอน pending) 
+          // Action bar (แสดงเฉพาะตอน pending)
           if (_currentStatus == 'pending')
             Container(
               decoration: BoxDecoration(
@@ -413,12 +439,15 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _isLoading ? null : _showRejectDialog,
-                      icon: const Icon(Icons.close, size: 18, color: Colors.red),
+                      icon:
+                          const Icon(Icons.close, size: 18, color: Colors.red),
                       label: const Text('ปฏิเสธ',
-                          style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                          style: TextStyle(
+                              color: Colors.red, fontWeight: FontWeight.bold)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.red, width: 1.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                     ),
@@ -436,15 +465,19 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                               child: CircularProgressIndicator(
                                   color: Colors.white, strokeWidth: 2),
                             )
-                          : const Icon(Icons.check, size: 18, color: Colors.white),
+                          : const Icon(Icons.check,
+                              size: 18, color: Colors.white),
                       label: Text(
                         _isLoading ? 'กำลังบันทึก...' : 'ยืนยันรับคิว',
                         style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         elevation: 2,
                       ),
@@ -458,50 +491,122 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
     );
   }
 
-  // แผนที่ placeholder 
+  Future<Map<String, double?>?> _fetchFarmerCoords(int farmerId) async {
+    try {
+      final res = await http.get(
+        Uri.parse('$apiEndpoint/farmer/getFarmer/$farmerId'),
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        // แก้จาก double.tryParse → toDouble() ตรงๆ เพราะ API ส่งมาเป็น number
+        final lat = (data['farmers_loc_lat'] as num?)?.toDouble();
+        final lng = (data['farmers_loc_long'] as num?)?.toDouble();
+        debugPrint('📍 lat: $lat, lng: $lng');
+        return {'lat': lat, 'lng': lng};
+      }
+    } catch (e) {
+      debugPrint('❌ error: $e');
+    }
+    return null;
+  }
+
+  // แผนที่ placeholder
   Widget _buildMapSection(BookingResponse booking) {
-    return Stack(
-      children: [
-        Container(
-          width: double.infinity,
-          height: 220,
-          color: const Color(0xFFD6EAD4),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.map_outlined, size: 64, color: Colors.green[700]),
-              const SizedBox(height: 8),
-              Text("แผนที่บ้านเกษตรกร",
-                  style: TextStyle(
-                      fontSize: 15, color: Colors.green[800], fontWeight: FontWeight.w500)),
-              const SizedBox(height: 4),
-              Text("กำลังโหลดแผนที่...",
-                  style: TextStyle(fontSize: 12, color: Colors.green[600])),
-            ],
-          ),
-        ),
-        Positioned(
-          bottom: 12,
-          left: 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.92),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+    return FutureBuilder<Map<String, double?>?>(
+      future: _fetchFarmerCoords(booking.refFarmersId),
+      builder: (context, snapshot) {
+        final lat = snapshot.data?['lat'];
+        final lng = snapshot.data?['lng'];
+        final hasCoords = lat != null && lng != null;
+
+        return Stack(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 220,
+              clipBehavior: Clip.antiAlias,
+              decoration: const BoxDecoration(color: Color(0xFFD6EAD4)),
+              child: snapshot.connectionState == ConnectionState.waiting
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const CircularProgressIndicator(color: Colors.green),
+                        const SizedBox(height: 8),
+                        Text("กำลังโหลดแผนที่...",
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.green[600])),
+                      ],
+                    )
+                  : hasCoords
+                      ? FlutterMap(
+                          options: MapOptions(
+                            initialCenter: LatLng(lat, lng),
+                            initialZoom: 15,
+                            interactionOptions: const InteractionOptions(
+                              flags: InteractiveFlag.none,
+                            ),
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate:
+                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                              userAgentPackageName: 'com.example.cow_booking',
+                            ),
+                            MarkerLayer(
+                              markers: [
+                                Marker(
+                                  point: LatLng(lat, lng),
+                                  width: 40,
+                                  height: 40,
+                                  child: const Icon(Icons.location_on,
+                                      color: Colors.red, size: 40),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.map_outlined,
+                                size: 64, color: Colors.green[700]),
+                            const SizedBox(height: 8),
+                            Text("ไม่มีข้อมูลพิกัด",
+                                style: TextStyle(
+                                    fontSize: 15, color: Colors.green[800])),
+                          ],
+                        ),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.location_on, size: 16, color: Colors.red),
-                const SizedBox(width: 4),
-                Text(booking.farmersName,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-              ],
+
+            // label ชื่อเกษตรกร
+            Positioned(
+              bottom: 12,
+              left: 12,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.92),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 4)
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.location_on, size: 16, color: Colors.red),
+                    const SizedBox(width: 4),
+                    Text(booking.farmersName,
+                        style: const TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -541,7 +646,8 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(label,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
                   const SizedBox(height: 2),
                   Text(value,
                       style: const TextStyle(
@@ -594,9 +700,10 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
                   style: TextStyle(fontSize: 12, color: Colors.grey)),
               const SizedBox(height: 4),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration:
-                    BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(20)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                    color: bgColor, borderRadius: BorderRadius.circular(20)),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

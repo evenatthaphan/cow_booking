@@ -14,21 +14,22 @@ class DataFarmers with ChangeNotifier {
   int _lastperiod = 0;
 
   Farmers _datauser = Farmers(
-      farmersId: 0,
-      farmersName: "" ,
-      // farmersHashpassword: "",
-      // farmersPassword : "",
-      farmersPhonenumber: "",
-      farmersEmail: "",
-      farmersProfileImage: "",
-      farmersAddress: "",
-      farmersProvince: "",
-      farmersDistrict: "",
-      farmersLocality: "",
-      farmersLocLat: null,
-      farmersLocLong: null,);
+    farmersId: 0,
+    farmersName: "",
+    // farmersHashpassword: "",
+    // farmersPassword : "",
+    farmersPhonenumber: "",
+    farmersEmail: "",
+    farmersProfileImage: "",
+    farmersAddress: "",
+    farmersProvince: "",
+    farmersDistrict: "",
+    farmersLocality: "",
+    farmersLocLat: null,
+    farmersLocLong: null,
+  );
 
-  Farmers get datauser => _datauser;  
+  Farmers get datauser => _datauser;
   int get period => _period;
   int get lastperiod => _lastperiod;
 
@@ -94,9 +95,7 @@ class DataFarmers with ChangeNotifier {
       debugPrint("fetchFarmerById error: $e");
     }
   }
-
 }
-
 
 // Vet ***
 class DataVetExpert with ChangeNotifier {
@@ -105,18 +104,20 @@ class DataVetExpert with ChangeNotifier {
 
   VetExpert _datauser = VetExpert(
     id: 0,
-    vetExpertName: "",
-    vetExpertPassword: "",
-    password: "",
-    phonenumber: "",
-    vetExpertEmail: "",
-    profileImage: "",
-    province: "",
-    district: "",
-    locality: "",
-    vetExpertAddress: "",
-    vetExpertPl: "",
+    vetExpertName: '',
+    vetExpertPassword: '',
+    password: '',
+    phonenumber: '',
+    vetExpertEmail: '',
+    profileImage: '',
+    province: '',
+    district: '',
+    locality: '',
+    vetExpertAddress: '',
+    vetExpertPl: '',
     totalSemenStock: 0,
+    locLat: null,
+    locLong: null,
   );
 
   VetExpert get datauser => _datauser;
@@ -129,25 +130,27 @@ class DataVetExpert with ChangeNotifier {
   }
 
   void setPeriod(int value) {
-  _period = value;
-  notifyListeners();
-}
+    _period = value;
+    notifyListeners();
+  }
 
   void clear() {
     _datauser = VetExpert(
       id: 0,
-      vetExpertName: "",
-      vetExpertPassword: "",
-      password: "",
-      phonenumber: "",
-      vetExpertEmail: "",
-      profileImage: "",
-      province: "",
-      district: "",
-      locality: "",
-      vetExpertAddress: "",
-      vetExpertPl: "",
+      vetExpertName: '',
+      vetExpertPassword: '',
+      password: '',
+      phonenumber: '',
+      vetExpertEmail: '',
+      profileImage: '',
+      province: '',
+      district: '',
+      locality: '',
+      vetExpertAddress: '',
+      vetExpertPl: '',
       totalSemenStock: 0,
+      locLat: null,
+      locLong: null,
     );
     _period = 0;
     _lastperiod = 0;
@@ -159,31 +162,45 @@ class DataVetExpert with ChangeNotifier {
     notifyListeners();
   }
 
-  /// ✅ fetch vet expert by id
+  // ── อัปเดต lat/lng โดยตรง (ใช้ใน VetEditAddressPage) ──
+  void updateLocation({
+    required double lat,
+    required double lng,
+    required String province,
+    required String district,
+    required String locality,
+    required String address,
+  }) {
+    _datauser.locLat = lat;
+    _datauser.locLong = lng;
+    _datauser.province = province;
+    _datauser.district = district;
+    _datauser.locality = locality;
+    _datauser.vetExpertAddress = address;
+    notifyListeners();
+  }
+
+  /// fetch vet expert by id
   Future<void> fetchVetById(int vetId) async {
     try {
       final res = await http.get(
-        Uri.parse("$apiEndpoint/vetexpert/$vetId"),
-        headers: {
-          "Content-Type": "application/json",
-        },
+        Uri.parse('$apiEndpoint/vetexpert/$vetId'),
+        headers: {'Content-Type': 'application/json'},
       );
 
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
-
         _datauser = VetExpert.fromJson(data);
         notifyListeners();
       } else {
-        throw Exception("Failed to load vet expert");
+        throw Exception('Failed to load vet expert');
       }
     } catch (e) {
-      debugPrint("fetchVetById error: $e");
+      debugPrint('fetchVetById error: $e');
       rethrow;
     }
   }
 }
-
 
 class DataBull with ChangeNotifier {
   FarmbullRequestResponse _selectedBull = FarmbullRequestResponse(
@@ -221,16 +238,16 @@ class DataBull with ChangeNotifier {
 
 class DataAdmin with ChangeNotifier {
   AdminResponse _datauser = AdminResponse(
-    adminsId:           0,
-    adminsName:         '',
-    adminsEmail:        '',
-    adminsPassword:     '',
-    adminsPhonenumber:  '',
-    adminsAddress:      '',
-    adminType:          0,
+    adminsId: 0,
+    adminsName: '',
+    adminsEmail: '',
+    adminsPassword: '',
+    adminsPhonenumber: '',
+    adminsAddress: '',
+    adminType: 0,
     mustChangePassword: 0,
-    createdAt:          DateTime.now(),
-    updatedAt:          DateTime.now(),
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
   );
 
   AdminResponse get datauser => _datauser;
@@ -242,20 +259,17 @@ class DataAdmin with ChangeNotifier {
 
   void clear() {
     _datauser = AdminResponse(
-      adminsId:           0,
-      adminsName:         '',
-      adminsEmail:        '',
-      adminsPassword:     '',
-      adminsPhonenumber:  '',
-      adminsAddress:      '',
-      adminType:          0,
+      adminsId: 0,
+      adminsName: '',
+      adminsEmail: '',
+      adminsPassword: '',
+      adminsPhonenumber: '',
+      adminsAddress: '',
+      adminType: 0,
       mustChangePassword: 0,
-      createdAt:          DateTime.now(),
-      updatedAt:          DateTime.now(),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
     notifyListeners();
   }
 }
-
-
-

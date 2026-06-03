@@ -6,7 +6,7 @@ import 'package:cow_booking/share/share_data.dart';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:cow_booking/model/response/Vet_response.dart';
@@ -28,7 +28,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
   bool _isLoading = true;
   CalendarFormat _calendarFormat = CalendarFormat.month;
 
-  // ── สีหลัก ──────────────────────────────────────────────────
   static const _darkGreen = Color(0xFF1B5E20);
   static const _green = Color(0xFF2E7D32);
   static const _midGreen = Color(0xFF43A047);
@@ -47,7 +46,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     _fetchSchedules();
   }
 
-  // ── helper: แปลง String? → double? ──────────────────────────
+  // แปลง String? → double? 
   double? _parseCoord(String? val) {
     if (val == null || val.trim().isEmpty) return null;
     return double.tryParse(val.trim());
@@ -75,8 +74,8 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
           vetExpertAddress: data['vetexperts_address'] ?? '',
           vetExpertPl: data['vetexperts_license'] ?? '',
           totalSemenStock: data['total_semen_stock'] ?? 0,
-          vetexperts_loc_lat: data['vetexperts_loc_lat']?.toString(),
-          vetexperts_loc_long: data['vetexperts_loc_long']?.toString(),
+          locLat: data['vetexperts_loc_lat'] ?? 0.0,
+          locLong: data['vetexperts_loc_long'] ?? 0.0,
         );
         dataVet.setDataUser(vet);
         dataVet.setPeriod(vet.totalSemenStock);
@@ -139,7 +138,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
   List<Map<String, dynamic>> _getEventsForDay(DateTime day) =>
       _scheduleData[DateTime(day.year, day.month, day.day)] ?? [];
 
-  // ── Profile header ───────────────────────────────────────────
   Widget _buildProfileHeader(VetExpert vet) {
     return Container(
       width: double.infinity,
@@ -241,7 +239,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
         ],
       );
 
-  // ── Tab: สต็อก ───────────────────────────────────────────────
   Widget _stockTab() {
     return FutureBuilder<List<BullStock>>(
       future: fetchVetBulls(widget.vetId),
@@ -352,7 +349,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     );
   }
 
-  // ── Tab: ตารางงาน ────────────────────────────────────────────
+// ตารางงาน (Tab 2)
   Widget _workSchedule() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator(color: _green));
@@ -571,35 +568,41 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
     );
   }
 
-  // ── Tab: ที่อยู่ + Mini map ───────────────────────────────────
+// แผนที่และที่อยู่ (Tab 3)
   Widget _mapAddress() {
+    
     return Consumer<DataVetExpert>(
       builder: (_, dataVet, __) {
         final vet = dataVet.datauser;
 
         // แปลง String? → double?
-        final double? lat = _parseCoord(vet.vetexperts_loc_lat);
-        final double? lng = _parseCoord(vet.vetexperts_loc_long);
+        final double? lat = vet.locLat;
+        final double? lng = vet.locLong;
         final bool hasCoords = lat != null && lng != null;
+        debugPrint('📍 lat: $lat, lng: $lng');
 
         return SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Mini map ────────────────────────────────────────
+              // Mini map 
               ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: SizedBox(
                   height: 220,
-                  child: hasCoords
-                      ? MiniMap(lat: lat, lng: lng) 
+                  child: hasCoords && (dotenv.env['GOOGLE_API_KEY'] ?? '').isNotEmpty
+                      ? MiniMap(
+                          lat: lat,
+                          lng: lng,
+                          apiKey: dotenv.env['GOOGLE_API_KEY']!,
+                        )
                       : _NoMapPlaceholder(),
                 ),
               ),
               const SizedBox(height: 16),
 
-              // ── ที่อยู่ card ─────────────────────────────────────
+              // ที่อยู่ card 
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -683,9 +686,9 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
         );
       },
     );
+    
   }
 
-  // ── helpers ──────────────────────────────────────────────────
   Widget _emptyBox(String text, IconData icon) => Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
@@ -721,7 +724,7 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
         ],
       );
 
-  // ── AppBar ───────────────────────────────────────────────────
+  // appbar
   PreferredSizeWidget _buildAppBar() => AppBar(
         elevation: 0,
         backgroundColor: _darkGreen,
@@ -824,67 +827,6 @@ class _SeedocprofilepageState extends State<Seedocprofilepage> {
   }
 }
 
-// ── Mini map (Mapbox) ─────────────────────────────────────────
-class _MiniMap extends StatefulWidget {
-  final double lat;
-  final double lng;
-  const _MiniMap({required this.lat, required this.lng});
-
-  @override
-  State<_MiniMap> createState() => _MiniMapState();
-}
-
-class _MiniMapState extends State<_MiniMap> {
-  MapboxMap? _controller;
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _onMapCreated(MapboxMap controller) async {
-    _controller = controller;
-
-    // ปิด gesture ทั้งหมด (mini map ไม่ให้เลื่อน)
-    await controller.gestures.updateSettings(GesturesSettings(
-      scrollEnabled: false,
-      rotateEnabled: false,
-      pinchToZoomEnabled: false,
-      doubleTapToZoomInEnabled: false,
-      quickZoomEnabled: false,
-      pitchEnabled: false,
-    ));
-
-    // ซ่อน UI controls
-    await controller.logo.updateSettings(LogoSettings(enabled: false));
-    await controller.attribution
-        .updateSettings(AttributionSettings(enabled: false));
-    await controller.compass.updateSettings(CompassSettings(enabled: false));
-    await controller.scaleBar.updateSettings(ScaleBarSettings(enabled: false));
-
-    // วาง marker
-    final manager = await controller.annotations.createPointAnnotationManager();
-    await manager.create(PointAnnotationOptions(
-      geometry: Point(coordinates: Position(widget.lng, widget.lat)),
-      iconImage: 'marker-15',
-      iconSize: 2.0,
-      iconColor: 0xFFE53935,
-    ));
-  }
-
-  @override
-  Widget build(BuildContext context) => MapWidget(
-        cameraOptions: CameraOptions(
-          center: Point(coordinates: Position(widget.lng, widget.lat)),
-          zoom: 14.0,
-        ),
-        styleUri: MapboxStyles.MAPBOX_STREETS,
-        onMapCreated: _onMapCreated,
-      );
-}
-
-// ── Placeholder เมื่อไม่มีพิกัด ───────────────────────────────
 class _NoMapPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(

@@ -285,13 +285,12 @@ class _AdminFormPageState extends State<AdminFormPage> {
                 label: 'ระดับสิทธิ์',
                 children: [
                   // Master (myType=1) เลือกได้ทุก type
-                  // Super  (myType=2) เลือกได้เฉพาะ type=3
                   ...[ 
                     if (myType == 1) ...[
                       _typeRadio(1, 'Master Admin', 'ควบคุมระบบทั้งหมด',   Colors.purple),
-                      _typeRadio(2, 'Super Admin',  'จัดการ admin และสมาชิก', Colors.orange),
+                      //_typeRadio(2, 'Super Admin',  'จัดการ admin และสมาชิก', Colors.orange),
                     ],
-                    _typeRadio(3, 'Admin',        'จัดการสมาชิกและข้อมูล', Colors.green),
+                    _typeRadio(2, 'Admin',        'จัดการสมาชิกและข้อมูล', Colors.green),
                   ],
                 ],
               ),

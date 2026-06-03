@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/pages/Home/map_picker_page.dart';
 import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,36 +18,62 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  late TextEditingController _provinceCtrl;
-  late TextEditingController _districtCtrl;
-  late TextEditingController _localityCtrl;
   late TextEditingController _addressCtrl;
+
+  // ── ข้อมูลพิกัด ──
+  double? selectedLat;
+  double? selectedLng;
+  String selectedProvince = '';
+  String selectedDistrict = '';
+  String selectedSubDistrict = '';
+
+  // ── สี (เหมือนหน้าสมัคร) ──
+  static const _green = Color(0xFF2E7D32);
+  static const _greenLight = Color(0xFFE8F5E9);
+  static const _border = Color(0xFFDDDDDD);
+  static const _labelColor = Color(0xFF757575);
+
+  static const _googleApiKey = 'YOUR_GOOGLE_API_KEY';
 
   @override
   void initState() {
     super.initState();
     final vet = Provider.of<DataVetExpert>(context, listen: false).datauser;
-    _provinceCtrl = TextEditingController(text: vet.province);
-    _districtCtrl = TextEditingController(text: vet.district);
-    _localityCtrl = TextEditingController(text: vet.locality);
-    _addressCtrl  = TextEditingController(text: vet.vetExpertAddress);
+
+    // โหลดข้อมูลเดิมจาก provider
+    selectedProvince = vet.province ?? '';
+    selectedDistrict = vet.district ?? '';
+    selectedSubDistrict = vet.locality ?? '';
+    selectedLat =
+        vet.locLat != null ? double.tryParse(vet.locLat.toString()) : null;
+    selectedLng =
+        vet.locLong != null ? double.tryParse(vet.locLong.toString()) : null;
+
+    _addressCtrl = TextEditingController(text: vet.vetExpertAddress);
   }
 
   @override
   void dispose() {
-    _provinceCtrl.dispose();
-    _districtCtrl.dispose();
-    _localityCtrl.dispose();
     _addressCtrl.dispose();
     super.dispose();
   }
 
+  // ─── AppBar ───────────────────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       elevation: 0,
-      backgroundColor: Colors.white,
+      backgroundColor: _green,
       automaticallyImplyLeading: true,
-      iconTheme: IconThemeData(color: Colors.green[900]),
+      iconTheme: const IconThemeData(color: Colors.white),
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
+          ),
+        ),
+      ),
       title: Row(
         children: [
           Container(
@@ -69,7 +96,7 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
                 style: GoogleFonts.notoSansThai(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Colors.green[900],
+                  color: Colors.white,
                   height: 1.1,
                 ),
               ),
@@ -77,7 +104,7 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
                 'แก้ไขที่อยู่',
                 style: GoogleFonts.notoSansThai(
                   fontSize: 11,
-                  color: Colors.green[900],
+                  color: Colors.white70,
                   height: 1.1,
                 ),
               ),
@@ -87,27 +114,88 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-            height: 1, color: Colors.white.withOpacity(0.1)),
+        child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
       ),
     );
   }
 
+  // ── เพิ่ม method นี้ ──
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text('แก้ไขที่อยู่สำเร็จ ✓',
+            style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
+        content: Text(message, style: GoogleFonts.notoSansThai()),
+        actions: [
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.pop(context), // ปิด dialog แล้วกลับหน้าเดิม
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _green,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('ตกลง',
+                style: GoogleFonts.notoSansThai(color: Colors.white)),
+          ),
+        ],
+      ),
+    ).then((_) => Navigator.pop(context)); // ปิด page หลัง dialog ปิด
+  }
+
+  // ─── เปิด MapPickerPage ───────────────────────────────────────────────────
+  Future<void> _openMapPicker() async {
+    final result = await Navigator.push<MapPickerResult>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapPickerPage(
+          googleApiKey: _googleApiKey,
+          initialLat: selectedLat,
+          initialLng: selectedLng,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        selectedLat = result.lat;
+        selectedLng = result.lng;
+        selectedProvince = result.province;
+        selectedDistrict = result.district;
+        selectedSubDistrict = result.subDistrict;
+        if (_addressCtrl.text.isEmpty && result.addressDetail.isNotEmpty) {
+          _addressCtrl.text = result.addressDetail;
+        }
+      });
+    }
+  }
+
+  // ─── Save ─────────────────────────────────────────────────────────────────
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
+    if (selectedLat == null) {
+      _showErrorDialog("กรุณาเลือกตำแหน่งที่อยู่บนแผนที่");
+      return;
+    }
     setState(() => _isLoading = true);
 
     try {
-      final vetId = Provider.of<DataVetExpert>(context, listen: false).datauser.id;
+      final vetId =
+          Provider.of<DataVetExpert>(context, listen: false).datauser.id;
 
       final response = await http.put(
         Uri.parse('$apiEndpoint/vet/vetexpert/update-address/$vetId'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'vetexperts_province': _provinceCtrl.text.trim(),
-          'vetexperts_district': _districtCtrl.text.trim(),
-          'vetexperts_locality': _localityCtrl.text.trim(),
-          'vetexperts_address':  _addressCtrl.text.trim(),
+          'vetexperts_province': selectedProvince,
+          'vetexperts_district': selectedDistrict,
+          'vetexperts_locality': selectedSubDistrict,
+          'vetexperts_address': _addressCtrl.text.trim(),
+          'lat': selectedLat,
+          'lng': selectedLng,
         }),
       );
 
@@ -116,7 +204,8 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
       if (response.statusCode == 200) {
         await Provider.of<DataVetExpert>(context, listen: false)
             .fetchVetById(vetId);
-        _showSnackbar('บันทึกที่อยู่สำเร็จ ✓', Colors.green);
+        //_showSnackbar('บันทึกที่อยู่สำเร็จ ✓', Colors.green);
+        _showSuccessDialog('ระบบได้อัปเดตที่อยู่ของคุณเรียบร้อยแล้ว');
         Navigator.pop(context);
       } else {
         final body = jsonDecode(response.body);
@@ -131,7 +220,7 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
 
   void _showSnackbar(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg, style: const TextStyle(color: Colors.white)),
+      content: Text(msg, style: GoogleFonts.notoSansThai(color: Colors.white)),
       backgroundColor: color,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -139,145 +228,281 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
     ));
   }
 
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text("เกิดข้อผิดพลาด",
+            style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
+        content: Text(message, style: GoogleFonts.notoSansThai()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text("ตกลง", style: GoogleFonts.notoSansThai(color: _green)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Widget helpers ───────────────────────────────────────────────────────
+  Widget _sectionHeader(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 28, bottom: 8, left: 20, right: 20),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: _green),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: GoogleFonts.notoSansThai(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: _green,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Expanded(child: Divider(color: _border, thickness: 1)),
+        ],
+      ),
+    );
+  }
+
+  /// ปุ่มเปิดแผนที่ + summary card (copy จากหน้าสมัคร)
+  Widget _buildLocationPicker() {
+    final hasPicked = selectedLat != null;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text("ตำแหน่งที่อยู่",
+                  style: GoogleFonts.notoSansThai(
+                      fontSize: 13, color: _labelColor)),
+              const Text(" *",
+                  style: TextStyle(color: Colors.red, fontSize: 13)),
+            ],
+          ),
+          const SizedBox(height: 6),
+
+          // ปุ่มเปิดแผนที่
+          GestureDetector(
+            onTap: _openMapPicker,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              decoration: BoxDecoration(
+                color: hasPicked ? _greenLight : Colors.white,
+                border: Border.all(
+                  color: hasPicked ? _green : _border,
+                  width: hasPicked ? 1.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    hasPicked ? Icons.location_on : Icons.location_on_outlined,
+                    color: hasPicked ? _green : _labelColor,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      hasPicked
+                          ? 'lat: ${selectedLat!.toStringAsFixed(5)},  lng: ${selectedLng!.toStringAsFixed(5)}'
+                          : 'แตะเพื่อค้นหาหรือเลือกตำแหน่งบนแผนที่',
+                      style: GoogleFonts.notoSansThai(
+                        fontSize: 13,
+                        color: hasPicked ? _green : _labelColor,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.chevron_right, color: _labelColor, size: 18),
+                ],
+              ),
+            ),
+          ),
+
+          // Address summary card
+          if (hasPicked) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _greenLight,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFA5D6A7)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _addressRow('จังหวัด', selectedProvince),
+                  _addressRow('อำเภอ', selectedDistrict),
+                  _addressRow('ตำบล', selectedSubDistrict),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _addressRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 56,
+            child: Text('$label:',
+                style:
+                    GoogleFonts.notoSansThai(fontSize: 12, color: _labelColor)),
+          ),
+          Expanded(
+            child: Text(
+              value.isNotEmpty ? value : '—',
+              style: GoogleFonts.notoSansThai(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: value.isNotEmpty ? Colors.black87 : Colors.grey,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("ที่อยู่เพิ่มเติม",
+              style:
+                  GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
+          const SizedBox(height: 6),
+          TextFormField(
+            controller: _addressCtrl,
+            maxLines: 2,
+            style: GoogleFonts.notoSansThai(fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'บ้านเลขที่, หมู่, ถนน',
+              hintStyle:
+                  GoogleFonts.notoSansThai(color: _labelColor, fontSize: 13),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _border),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _border),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: _green, width: 1.5),
+              ),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F2),
+      backgroundColor: const Color(0xFFF7F7F7),
       appBar: _buildAppBar(),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-
-              Center(
+              // ── Banner ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                 child: Container(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    shape: BoxShape.circle,
+                    color: _greenLight,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFA5D6A7)),
                   ),
-                  child: Icon(Icons.location_on_outlined, size: 48, color: Colors.blue[700]),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Center(
-                child: Text('ระบุที่อยู่ของคุณหมอ',
-                    style: TextStyle(fontSize: 13, color: Colors.grey)),
-              ),
-
-              const SizedBox(height: 24),
-              _sectionLabel('ที่อยู่'),
-              _infoCard([
-                _inputField(
-                  controller: _provinceCtrl,
-                  label: 'จังหวัด',
-                  icon: Icons.location_city_outlined,
-                  validator: (v) => v!.isEmpty ? 'กรุณากรอกจังหวัด' : null,
-                ),
-                _divider(),
-                _inputField(
-                  controller: _districtCtrl,
-                  label: 'อำเภอ',
-                  icon: Icons.map_outlined,
-                  validator: (v) => v!.isEmpty ? 'กรุณากรอกอำเภอ' : null,
-                ),
-                _divider(),
-                _inputField(
-                  controller: _localityCtrl,
-                  label: 'ตำบล',
-                  icon: Icons.place_outlined,
-                  validator: (v) => v!.isEmpty ? 'กรุณากรอกตำบล' : null,
-                ),
-                _divider(),
-                _inputField(
-                  controller: _addressCtrl,
-                  label: 'ที่อยู่ (บ้านเลขที่, หมู่, ถนน)',
-                  icon: Icons.home_outlined,
-                  maxLines: 2,
-                ),
-              ]),
-
-              const SizedBox(height: 32),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[700],
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 2,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline, size: 16, color: _green),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "เลือกตำแหน่งบนแผนที่เพื่ออัปเดตที่อยู่ของคุณให้แม่นยำ",
+                          style: GoogleFonts.notoSansThai(
+                              fontSize: 12, color: _green),
+                        ),
+                      ),
+                    ],
                   ),
-                  child: _isLoading
-                      ? const SizedBox(width: 20, height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('บันทึกที่อยู่',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ),
 
-              const SizedBox(height: 24),
+              // ── ที่อยู่ ──
+              _sectionHeader("ที่อยู่", Icons.home_outlined),
+              _buildLocationPicker(),
+              _buildAddressField(),
+
+              const SizedBox(height: 40),
+
+              // ── ปุ่มบันทึก ──
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 40),
+                child: SizedBox(
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _green,
+                      disabledBackgroundColor: Colors.grey[300],
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : Text(
+                            'บันทึกที่อยู่',
+                            style: GoogleFonts.notoSansThai(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
     );
   }
-
-  Widget _sectionLabel(String label) => Padding(
-        padding: const EdgeInsets.only(bottom: 8, left: 2),
-        child: Text(label,
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
-                color: Colors.green[800], letterSpacing: 0.5)),
-      );
-
-  Widget _infoCard(List<Widget> children) => Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2))],
-        ),
-        child: Column(children: children),
-      );
-
-  Widget _divider() => const Divider(height: 1, indent: 52, color: Color(0xFFEEEEEE));
-
-  Widget _inputField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    TextInputType keyboardType = TextInputType.text,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 14),
-              child: Icon(icon, size: 20, color: Colors.blue[600]),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextFormField(
-                controller: controller,
-                keyboardType: keyboardType,
-                maxLines: maxLines,
-                validator: validator,
-                decoration: InputDecoration(
-                  labelText: label,
-                  labelStyle: const TextStyle(fontSize: 13, color: Colors.grey),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
 }

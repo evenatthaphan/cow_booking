@@ -116,7 +116,10 @@ class _VetApprovalPageState extends State<VetApprovalPage>
           'Content-Type': 'application/json',
           'admin-type': auth.datauser.adminType.toString(),
         },
-        body: jsonEncode({'status': status}),
+        body: jsonEncode({
+          'status': status,
+          'admin_id': auth.datauser.adminsId,
+        }),
       );
       final body = jsonDecode(res.body);
       if (res.statusCode == 200) {
