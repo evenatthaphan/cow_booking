@@ -157,13 +157,9 @@ class _MapPickerPageState extends State<MapPickerPage> {
         addr.forEach((k, v) => print('  $k: $v'));
 
         setState(() {
-          _province    = _cleanThai(addr['province']     as String? ?? 
-                                    addr['state']         as String? ?? '');
-          _district    = _cleanThai(addr['county']        as String? ?? 
-                                    addr['city']           as String? ?? '');
-          _subDistrict = _cleanThai(addr['municipality']  as String? ?? 
-                                    addr['suburb']         as String? ?? 
-                                    addr['village']        as String? ?? '');
+          _province    = _parseProvince(addr);
+          _district    = _parseDistrict(addr);
+          _subDistrict = _parseSubDistrict(addr);
           _detail      = _parseDetail(addr);
         });
       }
@@ -174,9 +170,10 @@ class _MapPickerPageState extends State<MapPickerPage> {
     }
   }
 
-  /// จังหวัด — Nominatim ไทยใช้ 'state' เป็นหลัก
+  /// จังหวัด — Nominatim ไทยใช้ 'state' หรือ 'province' เป็นหลัก
   String _parseProvince(Map<String, dynamic> addr) {
-    final raw = (addr['state']        as String? ?? '').trim();
+    final raw = (addr['province']     as String? ??
+                 addr['state']        as String? ?? '').trim();
     return _cleanThai(raw);
   }
 

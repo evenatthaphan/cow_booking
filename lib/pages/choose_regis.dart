@@ -1,4 +1,5 @@
 import 'package:cow_booking/pages/Animal_husbandry/doctor_regis.dart';
+import 'package:cow_booking/pages/choose_login.dart';
 import 'package:cow_booking/pages/farmers/farmer_regis.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -148,18 +149,28 @@ class _ChooseregisState extends State<Chooseregis> {
                             )),
                         Column(
                           children: [
-                            Text('คลิก',
-                                style: GoogleFonts.notoSansThai(
-                                  textStyle:
-                                      Theme.of(context).textTheme.displayLarge,
-                                  fontSize: 16,
-                                  color: Colors.green,
-                                  fontWeight: FontWeight.bold,
-                                  decoration:
-                                      TextDecoration.underline, // ขีดเส้นใต้
-                                  decorationColor: Colors.green, // สีของเส้นใต้
-                                  decorationThickness: 2, // ความหนาของเส้นใต้
-                                )),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const ChooseLogin(),
+                                  ),
+                                );
+                              },
+                              child: Text('คลิก',
+                                  style: GoogleFonts.notoSansThai(
+                                    textStyle:
+                                        Theme.of(context).textTheme.displayLarge,
+                                    fontSize: 16,
+                                    color: Colors.green,
+                                    fontWeight: FontWeight.bold,
+                                    decoration:
+                                        TextDecoration.underline, // ขีดเส้นใต้
+                                    decorationColor: Colors.green, // สีของเส้นใต้
+                                    decorationThickness: 2, // ความหนาของเส้นใต้
+                                  )),
+                            ),
                           ],
                         )
                       ],

@@ -5,8 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
-import 'package:cow_booking/recaptcha_stub.dart'
-    if (dart.library.html) 'recaptcha_web.dart';
+import 'dart:math';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_booking/share/share_witget.dart';
 
 class FarmerRegister extends StatefulWidget {
   const FarmerRegister({super.key});
@@ -35,6 +36,11 @@ class _FarmerRegisterState extends State<FarmerRegister> {
   bool isLoading        = false;
   bool _obscurePassword = true;
   bool _obscureConfirm  = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   // ── สี ──
   static const _green      = Color(0xFF2E7D32);
@@ -142,158 +148,17 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     }
   }
 
-  // ─── register ─────────────────────────────────────────────────────────────
   Future<void> registerFarmer() async {
     if (!_formKey.currentState!.validate()) return;
     if (selectedLat == null) {
       _showErrorDialog("กรุณาเลือกตำแหน่งฟาร์มบนแผนที่");
       return;
     }
-    // ไม่ต้องเช็ครหัสผ่านซ้ำที่นี่ เพราะ validator จัดการแล้ว
-    await showCaptchaDialog();
-  }
 
-  Future<void> showCaptchaDialog() async {
-    String? dialogCaptchaId;
-    String? dialogCaptchaCode;
-    TextEditingController dialogCaptchaController = TextEditingController();
-    bool loading = true;
-
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => StatefulBuilder(builder: (context, setState) {
-        Future<void> fetchCaptcha() async {
-          setState(() => loading = true);
-          try {
-            final url = Uri.parse("$apiEndpoint/api/captcha");
-            final response = await http.get(url);
-            if (response.statusCode == 201) {
-              final data = jsonDecode(response.body);
-              setState(() {
-                dialogCaptchaId   = data['captchaId'];
-                dialogCaptchaCode = data['captcha'];
-              });
-            }
-          } catch (e) {
-            _showErrorDialog("เกิดข้อผิดพลาด: $e");
-          } finally {
-            setState(() => loading = false);
-          }
-        }
-
-        if (dialogCaptchaId == null) fetchCaptcha();
-
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text("ยืนยันตัวตน",
-              style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
-          content: loading
-              ? const SizedBox(
-                  height: 60,
-                  child: Center(child: CircularProgressIndicator()))
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("กรอกตัวอักษรในภาพให้ถูกต้อง",
-                        style: GoogleFonts.notoSansThai(
-                            fontSize: 13, color: _labelColor)),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _greenLight,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            dialogCaptchaCode ?? "",
-                            style: const TextStyle(
-                              fontSize: 22,
-                              letterSpacing: 6,
-                              fontWeight: FontWeight.bold,
-                              color: _green,
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: fetchCaptcha,
-                            icon: const Icon(Icons.refresh,
-                                color: _green, size: 20),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: dialogCaptchaController,
-                      decoration: InputDecoration(
-                        hintText: "กรอก CAPTCHA",
-                        hintStyle:
-                            GoogleFonts.notoSansThai(color: _labelColor),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
-                      ),
-                    ),
-                  ],
-                ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text("ยกเลิก",
-                  style: GoogleFonts.notoSansThai(color: _labelColor)),
-            ),
-            ElevatedButton(
-              onPressed: loading
-                  ? null
-                  : () async {
-                      if (dialogCaptchaController.text.isEmpty) return;
-                      final isValid = await verifyCaptcha(
-                          dialogCaptchaId!, dialogCaptchaController.text);
-                      if (isValid) {
-                        Navigator.of(context).pop();
-                        await submitForm();
-                      } else {
-                        await fetchCaptcha();
-                        dialogCaptchaController.clear();
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _green,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-              ),
-              child: Text("ยืนยัน",
-                  style: GoogleFonts.notoSansThai(color: Colors.white)),
-            ),
-          ],
-        );
-      }),
-    );
-  }
-
-  Future<bool> verifyCaptcha(String captchaId, String answer) async {
-    try {
-      final url = Uri.parse("$apiEndpoint/api/captcha/verify");
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"captchaId": captchaId, "answer": answer}),
-      );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && data['success'] == true) return true;
-      _showErrorDialog(data['message'] ?? "CAPTCHA ไม่ถูกต้อง");
-      return false;
-    } catch (e) {
-      _showErrorDialog("เกิดข้อผิดพลาด: $e");
-      return false;
+    // ตรวจสอบความปลอดภัยด้วย GeeTest v4 (ใน share_witget)
+    final String? token = await verifySecurity(context);
+    if (token != null) {
+      await submitForm();
     }
   }
 
@@ -312,9 +177,9 @@ class _FarmerRegisterState extends State<FarmerRegister> {
               : emailController.text.trim(),
           "farm_password": passwordController.text.trim(),
           "farm_address":  farmAddressController.text.trim(),
-          "province":      selectedProvince,
-          "district":      selectedDistrict,
-          "locality":      selectedSubDistrict,
+          "province":      selectedProvince.isEmpty ? "ไม่ระบุ" : selectedProvince,
+          "district":      selectedDistrict.isEmpty ? "ไม่ระบุ" : selectedDistrict,
+          "locality":      selectedSubDistrict.isEmpty ? "ไม่ระบุ" : selectedSubDistrict,
           "lat":           selectedLat,
           "lng":           selectedLng,
         }),
@@ -766,4 +631,4 @@ class _FarmerRegisterState extends State<FarmerRegister> {
       ),
     );
   }
-}
+}

@@ -17,11 +17,12 @@ import 'package:cow_booking/share/share_data.dart';
 import 'package:cow_booking/share/share_witget.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:math';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_booking/config/internal_config.dart';
-import 'package:cow_booking/recaptcha_stub.dart'
-    if (dart.library.html) 'recaptcha_web.dart';
 import 'dart:developer';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:recaptcha_enterprise_flutter/recaptcha_enterprise_flutter.dart';
 
 class ChooseLogin extends StatefulWidget {
   const ChooseLogin({super.key});
@@ -35,6 +36,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
   final TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false; // ตัวแปรสำหรับเปิด/ปิดรหัสผ่าน
   String url = "";
+  RecaptchaClient? _recaptchaClient; // reCAPTCHA Enterprise client
 
   final myWidget = MyWidget();
   final handleError = HandleError();
@@ -43,217 +45,73 @@ class _ChooseLoginState extends State<ChooseLogin> {
     super.initState();
     Configuration.getConfig().then(
       (value) {
-        // showCustomSnackbar("Message", 'Configuration loaded $value');
         url = value['apiEndpoint'].toString();
       },
     ).catchError((err) {
       // myWidget.showCustomSnackbar("Message", 'Error in initState: $err');
     });
+    _initRecaptcha();
   }
 
-  // CAPTCHA Dialog
-  Future<void> showCaptchaDialog() async {
-    String? dialogCaptchaId;
-    String? dialogCaptchaCode;
-    TextEditingController dialogCaptchaController = TextEditingController();
-    bool loading = true;
-
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) {
-        return StatefulBuilder(builder: (context, setState) {
-          Future<void> fetchCaptcha() async {
-            setState(() {
-              loading = true;
-            });
-            try {
-              final url = Uri.parse("$apiEndpoint/api/captcha");
-              final response = await http.get(url);
-              if (response.statusCode == 201) {
-                final data = jsonDecode(response.body);
-                setState(() {
-                  dialogCaptchaId = data['captchaId'];
-                  dialogCaptchaCode = data['captcha'];
-                });
-              } else {
-                _showErrorDialog(context, "ไม่สามารถโหลด CAPTCHA ได้");
-              }
-            } catch (e) {
-              _showErrorDialog(context, "เกิดข้อผิดพลาด: $e");
-            } finally {
-              setState(() {
-                loading = false;
-              });
-            }
-          }
-
-          if (dialogCaptchaId == null) fetchCaptcha();
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-            ),
-            title: const Text(
-              "ยืนยันตัวตน",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-              ),
-            ),
-            content: loading
-                ? const SizedBox(
-                    height: 80,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      /// CAPTCHA
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              dialogCaptchaCode ?? "",
-                              style: const TextStyle(
-                                fontSize: 24,
-                                letterSpacing: 4,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: fetchCaptcha,
-                              icon: const Icon(
-                                Icons.refresh,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      /// INPUT
-                      TextField(
-                        controller: dialogCaptchaController,
-                        decoration: InputDecoration(
-                          hintText: "กรอก CAPTCHA",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Colors.green,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-            actionsPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 10,
-            ),
-            actions: [
-              /// CANCEL
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text(
-                  "ยกเลิก",
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-
-              /// CONFIRM
-              ElevatedButton(
-                onPressed: loading
-                    ? null
-                    : () async {
-                        if (dialogCaptchaController.text.trim().isEmpty) {
-                          return;
-                        }
-
-                        final isValid = await verifyCaptcha(
-                          dialogCaptchaId!,
-                          dialogCaptchaController.text.trim(),
-                        );
-
-                        if (isValid) {
-                          Navigator.of(context).pop();
-
-                          await loginUser();
-                        } else {
-                          await fetchCaptcha();
-
-                          dialogCaptchaController.clear();
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green[700],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  "ยืนยัน",
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          );
-        });
-      },
-    );
-  }
-
-  Future<bool> verifyCaptcha(String captchaId, String answer) async {
+  // โหลด reCAPTCHA Enterprise client
+  Future<void> _initRecaptcha() async {
     try {
-      final url = Uri.parse("$apiEndpoint/api/captcha/verify");
-
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "captchaId": captchaId,
-          "answer": answer,
-        }),
-      );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && data['success'] == true) {
-        return true;
-      } else {
-        _showErrorDialog(
-          context,
-          data['message'] ?? "CAPTCHA ไม่ถูกต้อง",
-        );
-        return false;
+      final siteKey = dotenv.env['RECAPTCHA_ANDROID_KEY'] ?? '';
+      if (siteKey.isEmpty || siteKey == 'YOUR_RECAPTCHA_ANDROID_SITE_KEY_HERE') {
+        debugPrint('⚠️ RECAPTCHA_ANDROID_KEY ยังไม่ได้ตั้งค่าใน .env');
+        return;
       }
+      _recaptchaClient = await Recaptcha.fetchClient(siteKey);
+      debugPrint('✅ reCAPTCHA พร้อมใช้งาน');
     } catch (e) {
-      _showErrorDialog(context, "เกิดข้อผิดพลาด: $e");
-      return false;
+      debugPrint('❌ reCAPTCHA init error: $e');
     }
   }
+
+  // ฟังก์ชันหลักที่ปุ่มเรียก — ทำ reCAPTCHA ก่อน แล้วค่อย login
+  Future<void> _handleLoginSubmit() async {
+    if (loginIdController.text.trim().isEmpty ||
+        passwordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.white),
+              const SizedBox(width: 10),
+              Text(
+                'กรุณากรอกชื่อผู้ใช้หรือรหัสผ่าน',
+                style: GoogleFonts.notoSansThai(color: Colors.white),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange[800],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    // ถ้า reCAPTCHA พร้อม ให้ execute ก่อน
+    String? recaptchaToken;
+    if (_recaptchaClient != null) {
+      try {
+        recaptchaToken = await _recaptchaClient!.execute(RecaptchaAction.LOGIN());
+        debugPrint('✅ reCAPTCHA token: $recaptchaToken');
+      } catch (e) {
+        debugPrint('⚠️ reCAPTCHA execute error: $e');
+        // fail-open: ถ้า reCAPTCHA error ยังให้ login ได้
+      }
+    }
+
+    await loginUser(recaptchaToken: recaptchaToken);
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -427,7 +285,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
                   width: 250,
                   height: 50,
                   child: FilledButton(
-                      onPressed: showCaptchaDialog,
+                      onPressed: _handleLoginSubmit,
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
                             Colors.green[900]!),
@@ -450,7 +308,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
     );
   }
 
-  Future<void> loginUser() async {
+  Future<void> loginUser({String? recaptchaToken}) async {
     final loginId = loginIdController.text.trim();
     final password = passwordController.text.trim();
 
@@ -462,14 +320,22 @@ class _ChooseLoginState extends State<ChooseLogin> {
     final uri = Uri.parse('$apiEndpoint/together/login');
 
     try {
+      // สร้าง body พร้อม recaptcha_token (ถ้ามี)
+      final Map<String, dynamic> requestBody = {
+        'loginId': loginId,
+        'password': password,
+        if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
+      };
+
       final res = await http.post(
         uri,
         headers: {'Content-Type': 'application/json; charset=utf-8'},
-        body: jsonEncode({'loginId': loginId, 'password': password}),
+        body: jsonEncode(requestBody),
       );
       debugPrint('Login URL: ' + uri.toString());
       debugPrint('Status: ' + res.statusCode.toString());
       debugPrint('Body: ' + res.body.toString());
+      debugPrint('reCAPTCHA token sent: ${recaptchaToken != null ? 'yes' : 'no'}');
 
       if (res.statusCode == 200 && res.body.isNotEmpty) {
         final data = jsonDecode(res.body);
@@ -628,3 +494,4 @@ class _ChooseLoginState extends State<ChooseLogin> {
     );
   }
 }
+
