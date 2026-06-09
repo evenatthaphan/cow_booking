@@ -220,8 +220,7 @@ class _SeachpageState extends State<Seachpage> {
                         value: tempLocality,
                         items: tempSubs,
                         enabled: tempSubs.isNotEmpty,
-                        onChanged: (val) =>
-                            setModal(() => tempLocality = val),
+                        onChanged: (val) => setModal(() => tempLocality = val),
                       ),
                     ],
                   ),
@@ -250,8 +249,8 @@ class _SeachpageState extends State<Seachpage> {
                           padding: const EdgeInsets.symmetric(vertical: 13),
                         ),
                         child: Text('ล้าง',
-                            style: GoogleFonts.notoSansThai(
-                                color: _labelColor)),
+                            style:
+                                GoogleFonts.notoSansThai(color: _labelColor)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -301,8 +300,7 @@ class _SeachpageState extends State<Seachpage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: GoogleFonts.notoSansThai(
-                fontSize: 13, color: _labelColor)),
+            style: GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           value: value,
@@ -324,8 +322,8 @@ class _SeachpageState extends State<Seachpage> {
             fillColor: enabled ? Colors.white : const Color(0xFFF5F5F5),
           ),
           hint: Text('เลือก$label',
-              style: GoogleFonts.notoSansThai(
-                  fontSize: 14, color: _labelColor)),
+              style:
+                  GoogleFonts.notoSansThai(fontSize: 14, color: _labelColor)),
           items: items.map<DropdownMenuItem<String>>((item) {
             return DropdownMenuItem(
               value: item['name_th'],
@@ -354,8 +352,8 @@ class _SeachpageState extends State<Seachpage> {
       onTap: () {
         final dataBull = Provider.of<DataBull>(context, listen: false);
         dataBull.setSelectedBull(FarmbullRequestResponse.fromJson(bull));
-        Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const Cowdetailpage()));
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const Cowdetailpage()));
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -382,7 +380,8 @@ class _SeachpageState extends State<Seachpage> {
                 width: 120,
                 height: 148,
                 child: firstImage.isNotEmpty
-                    ? Image.network(firstImage, fit: BoxFit.cover,
+                    ? Image.network(firstImage,
+                        fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Image.asset(
                             'assets/images/supperman.jpg',
                             fit: BoxFit.cover))
@@ -454,6 +453,17 @@ class _SeachpageState extends State<Seachpage> {
                       ],
                     ),
 
+                    if (bull['vet_name'] != null) ...[
+                      const SizedBox(height: 3),
+                      _infoPill(
+                        icon: Icons.person_outline_rounded,
+                        label: bull['vet_name'],
+                        color:
+                            const Color(0xFF6A1B9A), // สีม่วง แยกจาก pill อื่น
+                        bg: const Color(0xFFF3E5F5),
+                      ),
+                    ],
+
                     // พื้นที่
                     if (farm['province'] != null) ...[
                       const SizedBox(height: 3),
@@ -468,9 +478,7 @@ class _SeachpageState extends State<Seachpage> {
                                 farm['locality'],
                                 farm['district'],
                                 farm['province']
-                              ]
-                                  .whereType<String>()
-                                  .join(', '),
+                              ].whereType<String>().join(', '),
                               style: GoogleFonts.notoSansThai(
                                   fontSize: 11, color: _labelColor),
                               maxLines: 1,
@@ -489,8 +497,7 @@ class _SeachpageState extends State<Seachpage> {
                         if (bull['price_per_dose'] != null)
                           _infoPill(
                             icon: Icons.monetization_on_outlined,
-                            label:
-                                '฿${bull['price_per_dose']}',
+                            label: '฿${bull['price_per_dose']}',
                             color: const Color(0xFF1565C0),
                             bg: const Color(0xFFE3F2FD),
                           ),
@@ -526,8 +533,7 @@ class _SeachpageState extends State<Seachpage> {
                                   ),
                                   child: Text(c,
                                       style: GoogleFonts.notoSansThai(
-                                          fontSize: 10,
-                                          color: _textSecondary)),
+                                          fontSize: 10, color: _textSecondary)),
                                 ))
                             .toList(),
                       ),
@@ -561,9 +567,7 @@ class _SeachpageState extends State<Seachpage> {
           const SizedBox(width: 3),
           Text(label,
               style: GoogleFonts.notoSansThai(
-                  fontSize: 11,
-                  color: color,
-                  fontWeight: FontWeight.w600)),
+                  fontSize: 11, color: color, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -579,8 +583,8 @@ class _SeachpageState extends State<Seachpage> {
             Icon(Icons.search_rounded, size: 64, color: _border),
             const SizedBox(height: 12),
             Text('พิมพ์ชื่อพ่อพันธุ์หรือฟาร์มที่ต้องการ',
-                style: GoogleFonts.notoSansThai(
-                    fontSize: 14, color: _labelColor)),
+                style:
+                    GoogleFonts.notoSansThai(fontSize: 14, color: _labelColor)),
           ],
         ),
       );
@@ -598,8 +602,8 @@ class _SeachpageState extends State<Seachpage> {
                   color: _textSecondary)),
           const SizedBox(height: 4),
           Text('ลองเปลี่ยนคำค้นหาหรือตัวกรอง',
-              style: GoogleFonts.notoSansThai(
-                  fontSize: 13, color: _labelColor)),
+              style:
+                  GoogleFonts.notoSansThai(fontSize: 13, color: _labelColor)),
         ],
       ),
     );
@@ -634,17 +638,16 @@ class _SeachpageState extends State<Seachpage> {
             focusNode: _searchFocus,
             onChanged: (v) => setState(() => _searchText = v),
             onSubmitted: (_) => searchBulls(),
-            style: GoogleFonts.notoSansThai(
-                color: Colors.white, fontSize: 14),
+            style: GoogleFonts.notoSansThai(color: Colors.white, fontSize: 14),
             cursorColor: Colors.white,
             decoration: InputDecoration(
               hintText: 'ค้นหาพ่อพันธุ์ ฟาร์ม...',
-              hintStyle: GoogleFonts.notoSansThai(
-                  color: Colors.white60, fontSize: 14),
+              hintStyle:
+                  GoogleFonts.notoSansThai(color: Colors.white60, fontSize: 14),
               border: InputBorder.none,
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 10),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               prefixIcon: const Icon(Icons.search_rounded,
                   color: Colors.white70, size: 20),
               suffixIcon: _searchText.isNotEmpty
@@ -670,8 +673,8 @@ class _SeachpageState extends State<Seachpage> {
                 backgroundColor: Colors.white.withOpacity(0.2),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8)),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               ),
               child: Text('ค้นหา',
                   style: GoogleFonts.notoSansThai(
@@ -695,8 +698,8 @@ class _SeachpageState extends State<Seachpage> {
                   onTap: _showLocationFilter,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 7),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
                       color: _hasActiveFilter ? _lightGreen : _pageBg,
                       borderRadius: BorderRadius.circular(8),
@@ -718,8 +721,7 @@ class _SeachpageState extends State<Seachpage> {
                               : 'กรองพื้นที่',
                           style: GoogleFonts.notoSansThai(
                             fontSize: 13,
-                            color:
-                                _hasActiveFilter ? _green : _labelColor,
+                            color: _hasActiveFilter ? _green : _labelColor,
                             fontWeight: _hasActiveFilter
                                 ? FontWeight.w600
                                 : FontWeight.normal,
@@ -752,8 +754,8 @@ class _SeachpageState extends State<Seachpage> {
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 7),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                     decoration: BoxDecoration(
                       color: _pageBg,
                       borderRadius: BorderRadius.circular(8),
@@ -786,8 +788,7 @@ class _SeachpageState extends State<Seachpage> {
           // ── Results ──
           Expanded(
             child: _loading
-                ? const Center(
-                    child: CircularProgressIndicator(color: _green))
+                ? const Center(child: CircularProgressIndicator(color: _green))
                 : _searchResults.isEmpty
                     ? _buildEmptyState()
                     : ListView.builder(

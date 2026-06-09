@@ -173,8 +173,8 @@ class _AdminListPageState extends State<AdminListPage> {
   @override
   Widget build(BuildContext context) {
     final adminType = context.watch<DataAdmin>().datauser.adminType;
-    final canCreate = adminType <= 2;
-    final canDelete = adminType <= 2;
+    final canCreate = adminType == 1; // เฉพาะ Master เท่านั้นที่เพิ่มได้
+    final canDelete = adminType == 1; // เฉพาะ Master เท่านั้นที่ลบได้
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F2),
@@ -311,9 +311,8 @@ class _AdminListPageState extends State<AdminListPage> {
     final phone   = admin['admins_phonenumber'] ?? '-';
     final initial = name.isNotEmpty ? name[0].toUpperCase() : 'A';
 
-    // Super ลบได้เฉพาะ type=3
-    final canDeleteThis =
-        canDelete && (myType == 1 || (myType == 2 && type == 3));
+
+    final canDeleteThis = canDelete && (myType == 1);
 
     return Container(
       decoration: BoxDecoration(
@@ -398,32 +397,29 @@ class _AdminListPageState extends State<AdminListPage> {
             ],
           ),
         ),
-        trailing: SizedBox(
-          width: 80, 
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              if (myType <= 2)
-                IconButton(
-                  icon: const Icon(Icons.edit_outlined,
-                      color: Colors.blue, size: 20),
-                  tooltip: 'แก้ไข',
-                  onPressed: () => _openForm(admin: admin),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              if (canDeleteThis)
-                IconButton(
-                  icon: const Icon(Icons.delete_outline,
-                      color: Colors.red, size: 20),
-                  tooltip: 'ลบ',
-                  onPressed: () => _deleteAdmin(admin),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-            ],
-          ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            if (myType == 1)
+              IconButton(
+                icon: const Icon(Icons.edit_outlined,
+                    color: Colors.blue, size: 20),
+                tooltip: 'แก้ไข',
+                onPressed: () => _openForm(admin: admin),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            if (canDeleteThis)
+              IconButton(
+                icon: const Icon(Icons.delete_outline,
+                    color: Colors.red, size: 20),
+                tooltip: 'ลบ',
+                onPressed: () => _deleteAdmin(admin),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+          ],
         ),
       ),
     );

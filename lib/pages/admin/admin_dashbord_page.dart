@@ -388,7 +388,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                     _sectionLabel('จัดการระบบ'),
                     _menuCard([
                       // แสดงเฉพาะ Master + Super
-                      if (adminType <= 2) ...[
+                      if (adminType == 1) ...[
                         _menuItem(
                           icon: Icons.admin_panel_settings_outlined,
                           iconColor: Colors.purple,
@@ -501,7 +501,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       case 1:
         return 'Master Admin';
       case 2:
-        return 'Super Admin';
+        return 'Admin';
       default:
         return 'Admin';
     }

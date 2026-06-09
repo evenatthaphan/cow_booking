@@ -370,7 +370,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
       case 1:
         return 'Master Admin';
       case 2:
-        return 'Super Admin';
+        return 'Admin';
       default:
         return 'Admin';
     }
