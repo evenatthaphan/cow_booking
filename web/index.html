@@ -22,21 +22,5 @@
 <body>
   <script src="flutter_bootstrap.js" async></script>
 
-  <!-- Google reCAPTCHA V3 -->
-  <script src="https://www.google.com/recaptcha/api.js?render=6Lelg9krAAAAADIZfYDXfmavg2UCidlOmZMRlrW3"></script>
-  <script>
-    function executeRecaptcha(action) {
-      return new Promise(function(resolve, reject) {
-        if (!window.grecaptcha) {
-          reject("reCAPTCHA not loaded");
-        }
-        grecaptcha.ready(function() {
-          grecaptcha.execute("YOUR_SITE_KEY", { action: action }).then(function(token) {
-            resolve(token);
-          });
-        });
-      });
-    }
-  </script>
 </body>
 </html>

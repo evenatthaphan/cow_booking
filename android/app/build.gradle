@@ -29,7 +29,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.cow_booking"
-        minSdk = 23
+        minSdkVersion = flutter.minSdkVersion
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName

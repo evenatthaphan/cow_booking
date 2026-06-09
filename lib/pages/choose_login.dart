@@ -17,9 +17,9 @@ import 'package:cow_booking/share/share_data.dart';
 import 'package:cow_booking/share/share_witget.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:math';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_booking/config/internal_config.dart';
-import 'package:cow_booking/recaptcha_stub.dart'
-    if (dart.library.html) 'recaptcha_web.dart';
 import 'dart:developer';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -51,208 +51,45 @@ class _ChooseLoginState extends State<ChooseLogin> {
     });
   }
 
-  // CAPTCHA Dialog
+  // CAPTCHA Dialog แบบ Jigsaw Slider
   Future<void> showCaptchaDialog() async {
-    String? dialogCaptchaId;
-    String? dialogCaptchaCode;
-    TextEditingController dialogCaptchaController = TextEditingController();
-    bool loading = true;
+    // ดึงคีย์จากไฟล์ .env มาใช่เพื่อความปลอดภัย
+    final String siteKey = dotenv.env['RECAPTCHA_ANDROID_KEY'] ?? '';
+    debugPrint('🔑 reCAPTCHA key loaded from .env: ${siteKey.isNotEmpty ? "✅" : "❌ missing"}');
 
     await showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) {
-        return StatefulBuilder(builder: (context, setState) {
-          Future<void> fetchCaptcha() async {
-            setState(() {
-              loading = true;
-            });
-            try {
-              final url = Uri.parse("$apiEndpoint/api/captcha");
-              final response = await http.get(url);
-              if (response.statusCode == 201) {
-                final data = jsonDecode(response.body);
-                setState(() {
-                  dialogCaptchaId = data['captchaId'];
-                  dialogCaptchaCode = data['captcha'];
-                });
-              } else {
-                _showErrorDialog(context, "ไม่สามารถโหลด CAPTCHA ได้");
-              }
-            } catch (e) {
-              _showErrorDialog(context, "เกิดข้อผิดพลาด: $e");
-            } finally {
-              setState(() {
-                loading = false;
-              });
-            }
-          }
-
-          if (dialogCaptchaId == null) fetchCaptcha();
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          title: Text(
+            "ยืนยันตัวตน",
+            style: GoogleFonts.notoSansThai(
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
             ),
-            title: const Text(
-              "ยืนยันตัวตน",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
+          ),
+          content: JigsawSliderCaptcha(
+            onSuccess: () async {
+              Navigator.of(context).pop();
+              await loginUser();
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                "ยกเลิก",
+                style: GoogleFonts.notoSansThai(color: Colors.grey),
               ),
             ),
-            content: loading
-                ? const SizedBox(
-                    height: 80,
-                    child: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                  )
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      /// CAPTCHA
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                          horizontal: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              dialogCaptchaCode ?? "",
-                              style: const TextStyle(
-                                fontSize: 24,
-                                letterSpacing: 4,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: fetchCaptcha,
-                              icon: const Icon(
-                                Icons.refresh,
-                                color: Colors.green,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 18),
-
-                      /// INPUT
-                      TextField(
-                        controller: dialogCaptchaController,
-                        decoration: InputDecoration(
-                          hintText: "กรอก CAPTCHA",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
-                              color: Colors.green,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-            actionsPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 10,
-            ),
-            actions: [
-              /// CANCEL
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text(
-                  "ยกเลิก",
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-
-              /// CONFIRM
-              ElevatedButton(
-                onPressed: loading
-                    ? null
-                    : () async {
-                        if (dialogCaptchaController.text.trim().isEmpty) {
-                          return;
-                        }
-
-                        final isValid = await verifyCaptcha(
-                          dialogCaptchaId!,
-                          dialogCaptchaController.text.trim(),
-                        );
-
-                        if (isValid) {
-                          Navigator.of(context).pop();
-
-                          await loginUser();
-                        } else {
-                          await fetchCaptcha();
-
-                          dialogCaptchaController.clear();
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green[700],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  "ยืนยัน",
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          );
-        });
+          ],
+        );
       },
     );
-  }
-
-  Future<bool> verifyCaptcha(String captchaId, String answer) async {
-    try {
-      final url = Uri.parse("$apiEndpoint/api/captcha/verify");
-
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "captchaId": captchaId,
-          "answer": answer,
-        }),
-      );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && data['success'] == true) {
-        return true;
-      } else {
-        _showErrorDialog(
-          context,
-          data['message'] ?? "CAPTCHA ไม่ถูกต้อง",
-        );
-        return false;
-      }
-    } catch (e) {
-      _showErrorDialog(context, "เกิดข้อผิดพลาด: $e");
-      return false;
-    }
   }
 
   @override
@@ -427,7 +264,36 @@ class _ChooseLoginState extends State<ChooseLogin> {
                   width: 250,
                   height: 50,
                   child: FilledButton(
-                      onPressed: showCaptchaDialog,
+                      onPressed: () {
+                        if (loginIdController.text.trim().isEmpty ||
+                            passwordController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(Icons.warning_amber_rounded,
+                                      color: Colors.white),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'กรุณากรอกชื่อผู้ใช้หรือรหัสผ่าน',
+                                    style: GoogleFonts.notoSansThai(
+                                        color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: Colors.orange[800],
+                              behavior: SnackBarBehavior.floating,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              margin: const EdgeInsets.all(16),
+                              duration: const Duration(seconds: 3),
+                            ),
+                          );
+                        } else {
+                          showCaptchaDialog();
+                        }
+                      },
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
                             Colors.green[900]!),
@@ -625,6 +491,163 @@ class _ChooseLoginState extends State<ChooseLogin> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class JigsawSliderCaptcha extends StatefulWidget {
+  final VoidCallback onSuccess;
+
+  const JigsawSliderCaptcha({
+    super.key,
+    required this.onSuccess,
+  });
+
+  @override
+  State<JigsawSliderCaptcha> createState() => _JigsawSliderCaptchaState();
+}
+
+class _JigsawSliderCaptchaState extends State<JigsawSliderCaptcha> {
+  double _sliderValue = 0.0;
+  late double _targetX;
+  final double _targetY = 60.0;
+  final double _imageWidth = 280.0;
+  final double _imageHeight = 160.0;
+  final double _pieceSize = 40.0;
+  bool _showError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _generateRandomTarget();
+  }
+
+  void _generateRandomTarget() {
+    final random = Random();
+    _targetX = 80.0 + random.nextDouble() * 120.0;
+    _sliderValue = 0.0;
+    _showError = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                'assets/images/imagecow.jpg',
+                width: _imageWidth,
+                height: _imageHeight,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              left: _targetX,
+              top: _targetY,
+              child: Container(
+                width: _pieceSize,
+                height: _pieceSize,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.extension,
+                    color: Colors.white54,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: _sliderValue,
+              top: _targetY,
+              child: Container(
+                width: _pieceSize,
+                height: _pieceSize,
+                decoration: BoxDecoration(
+                  color: Colors.green[800],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(2, 2),
+                    )
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.extension,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: _imageWidth,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: Colors.transparent,
+              inactiveTrackColor: Colors.transparent,
+              thumbColor: Colors.green[800],
+              trackHeight: 30,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 15),
+            ),
+            child: Slider(
+              value: _sliderValue,
+              min: 0.0,
+              max: _imageWidth - _pieceSize,
+              onChanged: (value) {
+                setState(() {
+                  _sliderValue = value;
+                });
+              },
+              onChangeEnd: (value) {
+                if ((value - _targetX).abs() < 10.0) {
+                  widget.onSuccess();
+                } else {
+                  setState(() {
+                    _showError = true;
+                    _sliderValue = 0.0;
+                  });
+                  Future.delayed(const Duration(seconds: 1), () {
+                    if (mounted) {
+                      setState(() {
+                        _showError = false;
+                      });
+                    }
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _showError ? "ลองอีกครั้ง!" : "เลื่อนเพื่อต่อจิ๊กซอว์ให้ตรงช่อง",
+          style: GoogleFonts.notoSansThai(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: _showError ? Colors.red : Colors.grey[600],
+          ),
+        ),
+      ],
     );
   }
 }

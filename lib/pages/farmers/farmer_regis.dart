@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
-import 'package:cow_booking/recaptcha_stub.dart'
-    if (dart.library.html) 'recaptcha_web.dart';
+import 'dart:math';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class FarmerRegister extends StatefulWidget {
   const FarmerRegister({super.key});
@@ -153,148 +153,44 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     await showCaptchaDialog();
   }
 
+  // CAPTCHA Dialog แบบ Jigsaw Slider
   Future<void> showCaptchaDialog() async {
-    String? dialogCaptchaId;
-    String? dialogCaptchaCode;
-    TextEditingController dialogCaptchaController = TextEditingController();
-    bool loading = true;
+    // ดึงคีย์จากไฟล์ .env มาใช่เพื่อความปลอดภัย
+    final String siteKey = dotenv.env['RECAPTCHA_ANDROID_KEY'] ?? '';
+    debugPrint('🔑 reCAPTCHA key loaded from .env: ${siteKey.isNotEmpty ? "✅" : "❌ missing"}');
 
     await showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => StatefulBuilder(builder: (context, setState) {
-        Future<void> fetchCaptcha() async {
-          setState(() => loading = true);
-          try {
-            final url = Uri.parse("$apiEndpoint/api/captcha");
-            final response = await http.get(url);
-            if (response.statusCode == 201) {
-              final data = jsonDecode(response.body);
-              setState(() {
-                dialogCaptchaId   = data['captchaId'];
-                dialogCaptchaCode = data['captcha'];
-              });
-            }
-          } catch (e) {
-            _showErrorDialog("เกิดข้อผิดพลาด: $e");
-          } finally {
-            setState(() => loading = false);
-          }
-        }
-
-        if (dialogCaptchaId == null) fetchCaptcha();
-
+      builder: (_) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text("ยืนยันตัวตน",
-              style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
-          content: loading
-              ? const SizedBox(
-                  height: 60,
-                  child: Center(child: CircularProgressIndicator()))
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("กรอกตัวอักษรในภาพให้ถูกต้อง",
-                        style: GoogleFonts.notoSansThai(
-                            fontSize: 13, color: _labelColor)),
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _greenLight,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          Text(
-                            dialogCaptchaCode ?? "",
-                            style: const TextStyle(
-                              fontSize: 22,
-                              letterSpacing: 6,
-                              fontWeight: FontWeight.bold,
-                              color: _green,
-                            ),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: fetchCaptcha,
-                            icon: const Icon(Icons.refresh,
-                                color: _green, size: 20),
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: dialogCaptchaController,
-                      decoration: InputDecoration(
-                        hintText: "กรอก CAPTCHA",
-                        hintStyle:
-                            GoogleFonts.notoSansThai(color: _labelColor),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 12),
-                      ),
-                    ),
-                  ],
-                ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text(
+            "ยืนยันตัวตน",
+            style: GoogleFonts.notoSansThai(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: JigsawSliderCaptcha(
+            onSuccess: () async {
+              Navigator.of(context).pop();
+              await submitForm();
+            },
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text("ยกเลิก",
-                  style: GoogleFonts.notoSansThai(color: _labelColor)),
-            ),
-            ElevatedButton(
-              onPressed: loading
-                  ? null
-                  : () async {
-                      if (dialogCaptchaController.text.isEmpty) return;
-                      final isValid = await verifyCaptcha(
-                          dialogCaptchaId!, dialogCaptchaController.text);
-                      if (isValid) {
-                        Navigator.of(context).pop();
-                        await submitForm();
-                      } else {
-                        await fetchCaptcha();
-                        dialogCaptchaController.clear();
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _green,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+              child: Text(
+                "ยกเลิก",
+                style: GoogleFonts.notoSansThai(color: _labelColor),
               ),
-              child: Text("ยืนยัน",
-                  style: GoogleFonts.notoSansThai(color: Colors.white)),
             ),
           ],
         );
-      }),
+      },
     );
-  }
-
-  Future<bool> verifyCaptcha(String captchaId, String answer) async {
-    try {
-      final url = Uri.parse("$apiEndpoint/api/captcha/verify");
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"captchaId": captchaId, "answer": answer}),
-      );
-      final data = jsonDecode(response.body);
-      if (response.statusCode == 200 && data['success'] == true) return true;
-      _showErrorDialog(data['message'] ?? "CAPTCHA ไม่ถูกต้อง");
-      return false;
-    } catch (e) {
-      _showErrorDialog("เกิดข้อผิดพลาด: $e");
-      return false;
-    }
   }
 
   Future<void> submitForm() async {
@@ -764,6 +660,163 @@ class _FarmerRegisterState extends State<FarmerRegister> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class JigsawSliderCaptcha extends StatefulWidget {
+  final VoidCallback onSuccess;
+
+  const JigsawSliderCaptcha({
+    super.key,
+    required this.onSuccess,
+  });
+
+  @override
+  State<JigsawSliderCaptcha> createState() => _JigsawSliderCaptchaState();
+}
+
+class _JigsawSliderCaptchaState extends State<JigsawSliderCaptcha> {
+  double _sliderValue = 0.0;
+  late double _targetX;
+  final double _targetY = 60.0;
+  final double _imageWidth = 280.0;
+  final double _imageHeight = 160.0;
+  final double _pieceSize = 40.0;
+  bool _showError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _generateRandomTarget();
+  }
+
+  void _generateRandomTarget() {
+    final random = Random();
+    _targetX = 80.0 + random.nextDouble() * 120.0;
+    _sliderValue = 0.0;
+    _showError = false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                'assets/images/imagecow.jpg',
+                width: _imageWidth,
+                height: _imageHeight,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              left: _targetX,
+              top: _targetY,
+              child: Container(
+                width: _pieceSize,
+                height: _pieceSize,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.4),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.extension,
+                    color: Colors.white54,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              left: _sliderValue,
+              top: _targetY,
+              child: Container(
+                width: _pieceSize,
+                height: _pieceSize,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2E7D32),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(2, 2),
+                    )
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.extension,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: _imageWidth,
+          decoration: BoxDecoration(
+            color: Colors.grey[200],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: Colors.transparent,
+              inactiveTrackColor: Colors.transparent,
+              thumbColor: const Color(0xFF2E7D32),
+              trackHeight: 30,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 15),
+            ),
+            child: Slider(
+              value: _sliderValue,
+              min: 0.0,
+              max: _imageWidth - _pieceSize,
+              onChanged: (value) {
+                setState(() {
+                  _sliderValue = value;
+                });
+              },
+              onChangeEnd: (value) {
+                if ((value - _targetX).abs() < 10.0) {
+                  widget.onSuccess();
+                } else {
+                  setState(() {
+                    _showError = true;
+                    _sliderValue = 0.0;
+                  });
+                  Future.delayed(const Duration(seconds: 1), () {
+                    if (mounted) {
+                      setState(() {
+                        _showError = false;
+                      });
+                    }
+                  });
+                }
+              },
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _showError ? "ลองอีกครั้ง!" : "เลื่อนเพื่อต่อจิ๊กซอว์ให้ตรงช่อง",
+          style: GoogleFonts.notoSansThai(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: _showError ? Colors.red : Colors.grey[600],
+          ),
+        ),
+      ],
     );
   }
 }
