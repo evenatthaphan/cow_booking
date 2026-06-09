@@ -1,5 +1,6 @@
-import 'package:cow_booking/pages/chooselogin.dart';
-import 'package:cow_booking/pages/chooseregis.dart';
+import 'package:cow_booking/pages/Home/homepage.dart';
+import 'package:cow_booking/pages/choose_login.dart';
+import 'package:cow_booking/pages/choose_regis.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -146,7 +147,7 @@ class _LoginpageState extends State<Loginpage> {
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const ChooseLogin(),
+          builder: (context) => Homepage(),
         ));
   }
 

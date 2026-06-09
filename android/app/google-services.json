@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "242287270653",
+    "project_id": "cow-booking",
+    "storage_bucket": "cow-booking.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:242287270653:android:fb6b08188bcdaa1ff9fc94",
+        "android_client_info": {
+          "package_name": "com.example.cow_booking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArgVfgXfmADRKcKTz6JVLaQXZBRakCxYE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

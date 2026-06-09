@@ -1,0 +1,677 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
+import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/share/share_data.dart';
+
+class InsertCowPage extends StatefulWidget {
+  const InsertCowPage({super.key});
+
+  @override
+  State<InsertCowPage> createState() => _InsertCowPageState();
+}
+
+class _InsertCowPageState extends State<InsertCowPage> {
+  // Farm Info Controllers 
+  final _farmNameCtrl = TextEditingController();
+  final _farmAddressCtrl = TextEditingController();
+  final _farmProvinceCtrl = TextEditingController();
+  final _farmDistrictCtrl = TextEditingController();
+  final _farmLocalityCtrl = TextEditingController();
+
+  // Cow Info Controllers 
+  final _cowNameCtrl = TextEditingController();
+  final _cowBreedCtrl = TextEditingController();
+  final _cowAgeCtrl = TextEditingController();
+  final _cowCharacteristicsCtrl = TextEditingController();
+  final _cowTagCtrl = TextEditingController();
+  final _cowContestRecordsCtrl = TextEditingController();
+  String _selectedHealthStatus = 'ปกติ';
+
+  // Images 
+  final List<File?> _images = List.filled(5, null); // max 5 images
+  static const int _maxImages = 5; // กำหนดให้เพิ่มได้สูงสุด 5 รูป
+  final _picker = ImagePicker();
+
+  Future<void> _pickImage(int index) async {
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
+    if (picked != null) {
+      setState(() => _images[index] = File(picked.path));
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() => _images[index] = null);
+  }
+
+  int get _filledImageCount => _images.where((e) => e != null).length;
+
+  // void _save() {
+  //   // TODO: ส่งข้อมูลไปยัง API
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text('บันทึกข้อมูลเรียบร้อยแล้ว',
+  //           style: GoogleFonts.notoSansThai()),
+  //       backgroundColor: Colors.lightGreen[700],
+  //       behavior: SnackBarBehavior.floating,
+  //     ),
+  //   );
+  // }
+
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.white,
+      automaticallyImplyLeading: true,
+      iconTheme: IconThemeData(color: Colors.green[900]),
+      title: Row(
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Center(
+              child: Text('🐄', style: TextStyle(fontSize: 16)),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Cow Booking',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.green[900],
+                  height: 1.1,
+                ),
+              ),
+              Text(
+                'เพิ่มข้อมูลวัว',
+                style: GoogleFonts.notoSansThai(
+                  fontSize: 11,
+                  color: Colors.green[900],
+                  height: 1.1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+            height: 1, color: Colors.white.withOpacity(0.1)),
+      ),
+    );
+  }
+
+  Future<void> _save() async {
+    try {
+      // loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // vet id
+      final vetId =
+          context.read<DataVetExpert>().datauser.id;
+
+      // api
+      final uri = Uri.parse(
+        '$apiEndpoint/vet/bulls/create',
+      );
+
+      final request = http.MultipartRequest(
+        'POST',
+        uri,
+      );
+
+
+      request.fields['frams_name'] = _farmNameCtrl.text;
+      request.fields['frams_province'] = _farmProvinceCtrl.text;
+      request.fields['frams_district'] = _farmDistrictCtrl.text;
+      request.fields['frams_locality'] = _farmLocalityCtrl.text;
+      request.fields['frams_address'] = _farmAddressCtrl.text;
+
+      request.fields['bulls_name'] = _cowNameCtrl.text;
+      request.fields['bulls_breed'] = _cowBreedCtrl.text;
+      request.fields['bulls_age'] = _cowAgeCtrl.text;
+      request.fields['bulls_characteristics'] = _cowCharacteristicsCtrl.text;
+      request.fields['bulls_contest_records'] = _cowContestRecordsCtrl.text;
+      request.fields['bulls_HealthStatus'] = _selectedHealthStatus;
+      request.fields['bulls_tag'] = _cowTagCtrl.text;
+
+      // vet id
+      request.fields['vet_id'] = vetId.toString();
+
+      // images
+
+      for (final image in _images) {
+        if (image != null) {
+          request.files.add(
+            await http.MultipartFile.fromPath(
+              'images',
+              image.path,
+            ),
+          );
+        }
+      }
+
+
+      // send
+      final response = await request.send();
+
+      Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+        final responseBody =
+            await response.stream.bytesToString();
+
+        final data = jsonDecode(responseBody);
+
+        debugPrint(data.toString());
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'บันทึกข้อมูลสำเร็จ',
+              style: GoogleFonts.notoSansThai(),
+            ),
+            backgroundColor:
+                Colors.lightGreen[700],
+          ),
+        );
+
+        Navigator.pop(context, true);
+      } else {
+        final error =
+            await response.stream.bytesToString();
+
+        debugPrint(error);
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'บันทึกข้อมูลไม่สำเร็จ',
+              style: GoogleFonts.notoSansThai(),
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+
+      debugPrint(e.toString());
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'เกิดข้อผิดพลาด: $e',
+            style: GoogleFonts.notoSansThai(),
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _farmNameCtrl.dispose();
+    _farmAddressCtrl.dispose();
+    _farmProvinceCtrl.dispose();
+    _farmDistrictCtrl.dispose();
+    _farmLocalityCtrl.dispose();
+    _cowNameCtrl.dispose();
+    _cowBreedCtrl.dispose();
+    _cowAgeCtrl.dispose();
+    _cowCharacteristicsCtrl.dispose();
+    _cowTagCtrl.dispose();
+    _cowContestRecordsCtrl.dispose();
+    super.dispose();
+  }
+
+
+  Widget _sectionHeader(String title, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.lightGreen[700],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: Colors.white, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            title,
+            style: GoogleFonts.notoSansThai(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionDivider() => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Divider(color: Colors.grey[300], thickness: 1.5),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              child: Icon(Icons.more_horiz, color: Colors.grey[400], size: 18),
+            ),
+            Expanded(
+              child: Divider(color: Colors.grey[300], thickness: 1.5),
+            ),
+          ],
+        ),
+      );
+
+  Widget _inputField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.notoSansThai(
+              color: Colors.grey[600], fontSize: 14),
+          prefixIcon: Icon(icon, color: Colors.lightGreen[700], size: 20),
+          filled: true,
+          fillColor: const Color(0xFFF4F9F0),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.lightGreen[700]!, width: 1.5),
+          ),
+        ),
+        style: GoogleFonts.notoSansThai(fontSize: 14),
+      ),
+    );
+  }
+
+  Widget _dropdownField<T>({
+    required String label,
+    required T value,
+    required List<T> items,
+    required void Function(T?) onChanged,
+    required IconData icon,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: DropdownButtonFormField<T>(
+        value: value,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.notoSansThai(
+              color: Colors.grey[600], fontSize: 14),
+          prefixIcon: Icon(icon, color: Colors.lightGreen[700], size: 20),
+          filled: true,
+          fillColor: const Color(0xFFF4F9F0),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: Colors.lightGreen[700]!, width: 1.5),
+          ),
+        ),
+        items: items
+            .map((e) => DropdownMenuItem<T>(
+                  value: e,
+                  child: Text(e.toString(),
+                      style: GoogleFonts.notoSansThai(fontSize: 14)),
+                ))
+            .toList(),
+        onChanged: onChanged,
+        style: GoogleFonts.notoSansThai(fontSize: 14, color: Colors.black87),
+        dropdownColor: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+      ),
+    );
+  }
+
+
+  Widget _buildFarmSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('ข้อมูลที่มาของฟาร์มวัว', Icons.house_outlined),
+        _inputField(
+          controller: _farmNameCtrl,
+          label: 'ชื่อฟาร์ม',
+          icon: Icons.store_outlined,
+        ),
+        _inputField(
+          controller: _farmProvinceCtrl,
+          label: 'เขต / จังหวัด',
+          icon: Icons.location_city_outlined,
+        ),
+        _inputField(
+          controller: _farmDistrictCtrl,
+          label: 'เขต / อำเภอ',
+          icon: Icons.location_city_outlined,
+        ),
+        _inputField(
+          controller: _farmLocalityCtrl,
+          label: 'เขต / ตำบล',
+          icon: Icons.location_city_outlined,
+        ),
+        _inputField(
+          controller: _farmAddressCtrl,
+          label: 'ที่อยู่ฟาร์ม',
+          icon: Icons.map_outlined,
+          maxLines: 2,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCowSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('ข้อมูลของวัว', Icons.pets_outlined),
+        _inputField(
+          controller: _cowTagCtrl,
+          label: 'หมายเลขประจำตัววัว (Tag)',
+          icon: Icons.tag_outlined,
+        ),
+        _inputField(
+          controller: _cowNameCtrl,
+          label: 'ชื่อวัว',
+          icon: Icons.label_outline,
+        ),
+        _inputField(
+          controller: _cowBreedCtrl,
+          label: 'สายพันธุ์',
+          icon: Icons.biotech_outlined,
+        ),
+        _inputField(
+          controller: _cowAgeCtrl,
+          label: 'อายุ (เดือน)',
+          icon: Icons.cake_outlined,
+          keyboardType: TextInputType.number,
+        ),
+        _inputField(
+          controller: _cowCharacteristicsCtrl,
+          label: 'ลักษณะเด่น',
+          icon: Icons.description_outlined,
+        ),
+        _inputField(
+          controller: _cowContestRecordsCtrl,
+          label: 'ผลงานการแข่งขัน',
+          icon: Icons.emoji_events_outlined,
+        ),
+        _dropdownField<String>(
+          label: 'สถานะสุขภาพ',
+          value: _selectedHealthStatus,
+          items: const ['ปกติ', 'ป่วย', 'พักฟื้น', 'ตั้งท้อง'],
+          onChanged: (v) => setState(() => _selectedHealthStatus = v!),
+          icon: Icons.health_and_safety_outlined,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionHeader('รูปภาพวัว', Icons.photo_library_outlined),
+        // Counter
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _filledImageCount >= _maxImages
+                      ? Colors.orange[100]
+                      : Colors.lightGreen[50],
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: _filledImageCount >= _maxImages
+                        ? Colors.orange
+                        : Colors.lightGreen[300]!,
+                  ),
+                ),
+                child: Text(
+                  '$_filledImageCount / $_maxImages รูป',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _filledImageCount >= _maxImages
+                        ? Colors.orange[800]
+                        : Colors.lightGreen[800],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'เพิ่มได้สูงสุด $_maxImages รูป',
+                style: GoogleFonts.notoSansThai(
+                    fontSize: 12, color: Colors.grey[500]),
+              ),
+            ],
+          ),
+        ),
+        // Grid
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _maxImages,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
+            childAspectRatio: 1,
+          ),
+          itemBuilder: (context, i) {
+            final hasImage = _images[i] != null;
+            return GestureDetector(
+              onTap: hasImage ? null : () => _pickImage(i),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                decoration: BoxDecoration(
+                  color: hasImage ? Colors.transparent : const Color(0xFFF4F9F0),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: hasImage
+                        ? Colors.lightGreen[400]!
+                        : Colors.grey[300]!,
+                    width: hasImage ? 2 : 1.5,
+                    strokeAlign: BorderSide.strokeAlignInside,
+                  ),
+                ),
+                child: hasImage
+                    ? Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(9),
+                            child: Image.file(_images[i]!,
+                                fit: BoxFit.cover),
+                          ),
+                          Positioned(
+                            top: 4,
+                            right: 4,
+                            child: GestureDetector(
+                              onTap: () => _removeImage(i),
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                padding: const EdgeInsets.all(3),
+                                child: const Icon(Icons.close,
+                                    size: 14, color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 4,
+                            left: 4,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.black54,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text('รูปที่ ${i + 1}',
+                                  style: GoogleFonts.notoSansThai(
+                                      fontSize: 9, color: Colors.white)),
+                            ),
+                          ),
+                        ],
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_photo_alternate_outlined,
+                              color: Colors.grey[400], size: 28),
+                          const SizedBox(height: 4),
+                          Text('รูปที่ ${i + 1}',
+                              style: GoogleFonts.notoSansThai(
+                                  fontSize: 11, color: Colors.grey[400])),
+                        ],
+                      ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  // Build 
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F7F2),
+      appBar: _buildAppBar(),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Farm Info
+            _buildCard(child: _buildFarmSection()),
+
+            _sectionDivider(),
+
+            // Cow Info 
+            _buildCard(child: _buildCowSection()),
+
+            _sectionDivider(),
+
+            // Images 
+            _buildCard(child: _buildImageSection()),
+
+            const SizedBox(height: 24),
+
+            // Save Button 
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _save,
+                icon: const Icon(Icons.save_outlined, color: Colors.white),
+                label: Text(
+                  'บันทึกข้อมูล',
+                  style: GoogleFonts.notoSansThai(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.lightGreen[700],
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+}

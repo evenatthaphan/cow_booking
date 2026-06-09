@@ -1,61 +1,98 @@
 // To parse this JSON data, do
 //
-//     final welcome = welcomeFromJson(jsonString);
+//     final farmers = farmersFromJson(jsonString);
 
 import 'dart:convert';
 
-Farmers welcomeFromJson(String str) => Farmers.fromJson(json.decode(str));
+List<Farmers> farmersFromJson(String str) => List<Farmers>.from(json.decode(str).map((x) => Farmers.fromJson(x)));
 
-String welcomeToJson(Farmers data) => json.encode(data.toJson());
+String farmersToJson(List<Farmers> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
 
 class Farmers {
-    int id;
-    String farmName;
-    String farmPassword;
-    String phonenumber;
-    String farmerEmail;
-    String profileImage;
-    String farmAddress;
-    String province;
-    String district;
-    String locality;
+  final int farmersId;
+  final String farmersName;
+  final String farmersPhonenumber;
+  final String farmersEmail;
+  String farmersProfileImage;
+  final String farmersAddress;
+  final String farmersProvince;
+  final String farmersDistrict;
+  final String farmersLocality;
+  final String? farmersLocLat;
+  final String? farmersLocLong;
 
-    Farmers({
-        required this.id,
-        required this.farmName,
-        required this.farmPassword,
-        required this.phonenumber,
-        required this.farmerEmail,
-        required this.profileImage,
-        required this.farmAddress,
-        required this.province,
-        required this.district,
-        required this.locality,
-    });
+  Farmers({
+    required this.farmersId,
+    required this.farmersName,
+    required this.farmersPhonenumber,
+    required this.farmersEmail,
+    required this.farmersProfileImage,
+    required this.farmersAddress,
+    required this.farmersProvince,
+    required this.farmersDistrict,
+    required this.farmersLocality,
+    this.farmersLocLat,
+    this.farmersLocLong,
+  });
 
-    factory Farmers.fromJson(Map<String, dynamic> json) => Farmers(
-        id: json["id"],
-        farmName: json["farm_name"],
-        farmPassword: json["farm_password"],
-        phonenumber: json["phonenumber"],
-        farmerEmail: json["farmer_email"],
-        profileImage: json["profile_image"],
-        farmAddress: json["farm_address"],
-        province: json["province"],
-        district: json["district"],
-        locality: json["locality"],
+  factory Farmers.fromJson(Map<String, dynamic> json) {
+    return Farmers(
+      farmersId: json["farmers_id"],
+      farmersName: json["farmers_name"],
+      farmersPhonenumber: json["farmers_phonenumber"],
+      farmersEmail: json["farmers_email"],
+      // farmersProfileImage: json["farmers_profile_image"],
+      farmersProfileImage: json["farmers_profile_image"] ?? '',
+      farmersAddress: json["farmers_address"],
+      farmersProvince: json["farmers_province"],
+      farmersDistrict: json["farmers_district"],
+      farmersLocality: json["farmers_locality"],
+      farmersLocLat: json["farmers_loc_lat"]?.toString(),
+      farmersLocLong: json["farmers_loc_long"]?.toString(),
     );
+  }
 
-    Map<String, dynamic> toJson() => {
-        "id": id,
-        "farm_name": farmName,
-        "farm_password": farmPassword,
-        "phonenumber": phonenumber,
-        "farmer_email": farmerEmail,
-        "profile_image": profileImage,
-        "farm_address": farmAddress,
-        "province": province,
-        "district": district,
-        "locality": locality,
-    };
+  Map<String, dynamic> toJson() => {
+    "farmers_id": farmersId,
+    "farmers_name": farmersName,
+    "farmers_phonenumber": farmersPhonenumber,
+    "farmers_email": farmersEmail,
+    "farmers_profile_image": farmersProfileImage,
+    "farmers_address": farmersAddress,
+    "farmers_province": farmersProvince,
+    "farmers_district": farmersDistrict,
+    "farmers_locality": farmersLocality,
+    "farmers_loc_lat": farmersLocLat,
+    "farmers_loc_long": farmersLocLong,
+  };
+
+  Farmers copyWith({
+    int? farmersId,
+    String? farmersName,
+    String? farmersPhonenumber,
+    String? farmersEmail,
+    String? farmersProfileImage,
+    String? farmersAddress,
+    String? farmersProvince,
+    String? farmersDistrict,
+    String? farmersLocality,
+    String? farmersLocLat,
+    String? farmersLocLong,
+  }) {
+    return Farmers(
+      farmersId: farmersId ?? this.farmersId,
+      farmersName: farmersName ?? this.farmersName,
+      farmersPhonenumber: farmersPhonenumber ?? this.farmersPhonenumber,
+      farmersEmail: farmersEmail ?? this.farmersEmail,
+      farmersProfileImage: farmersProfileImage ?? this.farmersProfileImage,
+      farmersAddress: farmersAddress ?? this.farmersAddress,
+      farmersProvince: farmersProvince ?? this.farmersProvince,
+      farmersDistrict: farmersDistrict ?? this.farmersDistrict,
+      farmersLocality: farmersLocality ?? this.farmersLocality,
+      farmersLocLat: farmersLocLat ?? this.farmersLocLat,
+      farmersLocLong: farmersLocLong ?? this.farmersLocLong,
+    );
+  }
 }
+

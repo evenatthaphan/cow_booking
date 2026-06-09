@@ -1,0 +1,630 @@
+import 'package:cow_booking/model/response/admin_response.dart';
+import 'package:cow_booking/pages/Home/homepage.dart';
+import 'package:cow_booking/pages/Animal_husbandry/home_page_doc.dart';
+import 'package:cow_booking/model/response/Farmers_response.dart';
+import 'package:cow_booking/model/response/Vet_response.dart';
+import 'package:cow_booking/pages/admin/admin_change_password.dart';
+import 'package:cow_booking/pages/admin/admin_dashbord_page.dart';
+import 'package:cow_booking/pages/farmers/farmer_profile.dart';
+import 'package:cow_booking/share/forgot_password_page.dart';
+
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:cow_booking/config/config.dart';
+import 'package:cow_booking/share/share_data.dart';
+import 'package:cow_booking/share/share_witget.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cow_booking/config/internal_config.dart';
+import 'package:cow_booking/recaptcha_stub.dart'
+    if (dart.library.html) 'recaptcha_web.dart';
+import 'dart:developer';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+class ChooseLogin extends StatefulWidget {
+  const ChooseLogin({super.key});
+
+  @override
+  State<ChooseLogin> createState() => _ChooseLoginState();
+}
+
+class _ChooseLoginState extends State<ChooseLogin> {
+  final TextEditingController loginIdController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isPasswordVisible = false; // ตัวแปรสำหรับเปิด/ปิดรหัสผ่าน
+  String url = "";
+
+  final myWidget = MyWidget();
+  final handleError = HandleError();
+
+  void initState() {
+    super.initState();
+    Configuration.getConfig().then(
+      (value) {
+        // showCustomSnackbar("Message", 'Configuration loaded $value');
+        url = value['apiEndpoint'].toString();
+      },
+    ).catchError((err) {
+      // myWidget.showCustomSnackbar("Message", 'Error in initState: $err');
+    });
+  }
+
+  // CAPTCHA Dialog
+  Future<void> showCaptchaDialog() async {
+    String? dialogCaptchaId;
+    String? dialogCaptchaCode;
+    TextEditingController dialogCaptchaController = TextEditingController();
+    bool loading = true;
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) {
+        return StatefulBuilder(builder: (context, setState) {
+          Future<void> fetchCaptcha() async {
+            setState(() {
+              loading = true;
+            });
+            try {
+              final url = Uri.parse("$apiEndpoint/api/captcha");
+              final response = await http.get(url);
+              if (response.statusCode == 201) {
+                final data = jsonDecode(response.body);
+                setState(() {
+                  dialogCaptchaId = data['captchaId'];
+                  dialogCaptchaCode = data['captcha'];
+                });
+              } else {
+                _showErrorDialog(context, "ไม่สามารถโหลด CAPTCHA ได้");
+              }
+            } catch (e) {
+              _showErrorDialog(context, "เกิดข้อผิดพลาด: $e");
+            } finally {
+              setState(() {
+                loading = false;
+              });
+            }
+          }
+
+          if (dialogCaptchaId == null) fetchCaptcha();
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            title: const Text(
+              "ยืนยันตัวตน",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+            content: loading
+                ? const SizedBox(
+                    height: 80,
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                : Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      /// CAPTCHA
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 16,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              dialogCaptchaCode ?? "",
+                              style: const TextStyle(
+                                fontSize: 24,
+                                letterSpacing: 4,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: fetchCaptcha,
+                              icon: const Icon(
+                                Icons.refresh,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      /// INPUT
+                      TextField(
+                        controller: dialogCaptchaController,
+                        decoration: InputDecoration(
+                          hintText: "กรอก CAPTCHA",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: const BorderSide(
+                              color: Colors.green,
+                              width: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+            actionsPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 10,
+            ),
+            actions: [
+              /// CANCEL
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text(
+                  "ยกเลิก",
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+
+              /// CONFIRM
+              ElevatedButton(
+                onPressed: loading
+                    ? null
+                    : () async {
+                        if (dialogCaptchaController.text.trim().isEmpty) {
+                          return;
+                        }
+
+                        final isValid = await verifyCaptcha(
+                          dialogCaptchaId!,
+                          dialogCaptchaController.text.trim(),
+                        );
+
+                        if (isValid) {
+                          Navigator.of(context).pop();
+
+                          await loginUser();
+                        } else {
+                          await fetchCaptcha();
+
+                          dialogCaptchaController.clear();
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green[700],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: const Text(
+                  "ยืนยัน",
+                  style: TextStyle(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
+
+  Future<bool> verifyCaptcha(String captchaId, String answer) async {
+    try {
+      final url = Uri.parse("$apiEndpoint/api/captcha/verify");
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "captchaId": captchaId,
+          "answer": answer,
+        }),
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        return true;
+      } else {
+        _showErrorDialog(
+          context,
+          data['message'] ?? "CAPTCHA ไม่ถูกต้อง",
+        );
+        return false;
+      }
+    } catch (e) {
+      _showErrorDialog(context, "เกิดข้อผิดพลาด: $e");
+      return false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          color: Colors.white,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 100, left: 30),
+                child: Row(
+                  children: [
+                    Text(
+                      'เข้าสู่ระบบ',
+                      style: GoogleFonts.notoSansThai(
+                          textStyle: Theme.of(context).textTheme.displayLarge,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[900]),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 5, left: 30),
+                child: Row(
+                  children: [
+                    Text('กรุณากรอกชื่อผู้ใช้ หรืออีเมลล์ หรือเบอร์โทรศัพท์',
+                        style: GoogleFonts.notoSansThai(
+                            textStyle: Theme.of(context).textTheme.displayLarge,
+                            fontSize: 14,
+                            color: Colors.black)),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 30),
+                child: Row(
+                  children: [
+                    Text('และรหัสผ่านเพื่อเข้าสู่ระบบ',
+                        style: GoogleFonts.notoSansThai(
+                            textStyle: Theme.of(context).textTheme.displayLarge,
+                            fontSize: 14,
+                            color: Colors.black)),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 50, left: 30),
+                child: Row(
+                  children: [
+                    Text('ชื่อผู้ใช้ หรืออีเมลล์ หรือเบอร์โทรศัพท์',
+                        style: GoogleFonts.notoSansThai(
+                            textStyle: Theme.of(context).textTheme.displayLarge,
+                            fontSize: 14,
+                            color: Colors.grey))
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                child: TextField(
+                  controller: loginIdController, // login ID
+                  keyboardType: TextInputType.text,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 1, color: Colors.grey), // สีกรอบปกติ
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          width: 2,
+                          color: Colors.green[900]!), // สีกรอบเมื่อโฟกัส
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 30, left: 30),
+                child: Row(
+                  children: [
+                    Text('รหัสผ่าน',
+                        style: GoogleFonts.notoSansThai(
+                            textStyle: Theme.of(context).textTheme.displayLarge,
+                            fontSize: 14,
+                            color: Colors.grey))
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 10, left: 30, right: 30),
+                child: TextField(
+                  controller: passwordController,
+                  obscureText: !isPasswordVisible, // ปิด/เปิดรหัสผ่าน
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(
+                      borderSide: BorderSide(width: 1, color: Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(width: 2, color: Colors.green[900]!),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isPasswordVisible = !isPasswordVisible;
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 30, left: 100, right: 100),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('คุณลืมรหัสผ่าน?',
+                        style: GoogleFonts.notoSansThai(
+                          textStyle: Theme.of(context).textTheme.displayLarge,
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        )),
+                    Column(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ForgotPasswordPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'คลิก',
+                            style: GoogleFonts.notoSansThai(
+                              textStyle:
+                                  Theme.of(context).textTheme.displayLarge,
+                              fontSize: 16,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.green,
+                              decorationThickness: 2,
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 30),
+                child: SizedBox(
+                  width: 250,
+                  height: 50,
+                  child: FilledButton(
+                      onPressed: showCaptchaDialog,
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            Colors.green[900]!),
+                      ),
+                      child: Text(
+                        'เข้าสู่ระบบ',
+                        style: GoogleFonts.notoSansThai(
+                          textStyle: Theme.of(context).textTheme.displayLarge,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      )),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> loginUser() async {
+    final loginId = loginIdController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (loginId.isEmpty || password.isEmpty) {
+      myWidget.showCustomSnackbar('Message', 'กรุณากรอกข้อมูลให้ครบ');
+      return;
+    }
+
+    final uri = Uri.parse('$apiEndpoint/together/login');
+
+    try {
+      final res = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json; charset=utf-8'},
+        body: jsonEncode({'loginId': loginId, 'password': password}),
+      );
+      debugPrint('Login URL: ' + uri.toString());
+      debugPrint('Status: ' + res.statusCode.toString());
+      debugPrint('Body: ' + res.body.toString());
+
+      if (res.statusCode == 200 && res.body.isNotEmpty) {
+        final data = jsonDecode(res.body);
+        final role = data['role'] as String?;
+        final user = data['user'] as Map<String, dynamic>?;
+
+        if (role == 'farmer' && user != null) {
+          final farmer = Farmers.fromJson(user);
+          context.read<DataFarmers>().setDataUser(farmer);
+
+          // SharedPreferences
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('isLoggedIn', true);
+          await prefs.setString('userType', 'farmer');
+          await prefs.setInt('userId', farmer.farmersId);
+
+          await _showSuccessDialogAndNavigate(
+            context,
+            Homepage(),
+          );
+          return;
+        }
+
+        if (role == 'vet' && user != null) {
+          print("VET USER DATA: $user");
+
+          final vet = VetExpert(
+            id: user['vetexperts_id'] ?? 0,
+            vetExpertName: user['vetexperts_name'] ?? '',
+            vetExpertPassword: user['vetexperts_hashpassword'] ?? '',
+            password: user['vetexperts_password'] ?? '',
+            phonenumber: user['vetexperts_phonenumber'] ?? '',
+            vetExpertEmail: user['vetexperts_email'] ?? '',
+            profileImage: user['vetexperts_profile_image'] ?? '',
+            province: user['vetexperts_province'] ?? '',
+            district: user['vetexperts_district'] ?? '',
+            locality: user['vetexperts_locality'] ?? '',
+            vetExpertAddress: user['vetexperts_address'] ?? '',
+            vetExpertPl: user['vetexperts_license'] ?? '',
+            totalSemenStock: user['total_semen_stock'] ?? 0,
+          );
+
+          print("VET ID: ${vet.id}");
+          print("VET NAME: ${vet.vetExpertName}");
+          print("VET IMAGE: ${vet.profileImage}");
+
+          context.read<DataVetExpert>().setDataUser(vet);
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('isLoggedIn', true);
+          await prefs.setString('userType', 'vet');
+          await prefs.setInt('userId', vet.id);
+          //await prefs.setInt('userId', vet.id);
+          try {
+            final fcmToken = await FirebaseMessaging.instance.getToken();
+            debugPrint('FCM Token: $fcmToken');
+            if (fcmToken != null) {
+              final fcmRes = await http.post(
+                Uri.parse('$apiEndpoint/vet/update-fcm-token'),
+                headers: {'Content-Type': 'application/json'},
+                body: jsonEncode({
+                  'vet_id': vet.id,
+                  'fcm_token': fcmToken,
+                }),
+              );
+              debugPrint('FCM update: ${fcmRes.statusCode} ${fcmRes.body}');
+            }
+          } catch (e) {
+            debugPrint('FCM error: $e');
+          }
+
+          await _showSuccessDialogAndNavigate(context, Homepagedoc());
+
+          return;
+        }
+
+        if (role == 'admin' && user != null) {
+          final admin = AdminResponse.fromJson(user);
+          context.read<DataAdmin>().setDataUser(admin);
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('isLoggedIn', true);
+          await prefs.setString('userType', 'admin');
+          await prefs.setInt('userId', admin.adminsId);
+
+          // บังคับเปลี่ยนรหัสถ้า must_change_password == 1
+          if (admin.mustChangePassword == 1) {
+            await _showSuccessDialogAndNavigate(
+                context, AdminChangePasswordPage());
+          } else {
+            await _showSuccessDialogAndNavigate(context, AdminDashboardPage());
+          }
+          return;
+        }
+
+        // not role/user
+        _showErrorDialog(context, "รูปแบบข้อมูลไม่ถูกต้อง");
+      } else if (res.statusCode == 401) {
+        // Username/Password wrong
+        _showErrorDialog(context, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+      } else {
+        // handleError.handleError(res);
+        String errorMessage = "เกิดข้อผิดพลาด";
+
+        try {
+          final data = jsonDecode(res.body);
+          errorMessage = data['error'] ?? data['message'] ?? errorMessage;
+        } catch (_) {}
+
+        _showErrorDialog(context, errorMessage);
+      }
+    } catch (e) {
+      debugPrint('Login error: ' + e.toString());
+      myWidget.showCustomSnackbar('Message', 'เกิดข้อผิดพลาดระหว่างล็อกอิน $e');
+    }
+  }
+
+  Future<void> _showSuccessDialogAndNavigate(
+    BuildContext context,
+    Widget nextPage,
+  ) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text("เข้าสู่ระบบสำเร็จ"),
+        content: const Text("กำลังเข้าสู่ระบบ กรุณารอสักครู่..."),
+      ),
+    );
+
+    await Future.delayed(const Duration(seconds: 5));
+
+    if (context.mounted) {
+      Navigator.of(context).pop(); // ปิด dialog
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => nextPage),
+        (route) => false,
+      );
+    }
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("เข้าสู่ระบบไม่สำเร็จ"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text("ตกลง"),
+          ),
+        ],
+      ),
+    );
+  }
+}
