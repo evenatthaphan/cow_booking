@@ -8,69 +8,6 @@ List<Farmers> farmersFromJson(String str) => List<Farmers>.from(json.decode(str)
 
 String farmersToJson(List<Farmers> data) => json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
 
-// class Farmers {
-//     int farmersId;
-//     String farmersName;
-//     String farmesHashpassword;
-//     String farmersPassword;
-//     String farmersPhonenumber;
-//     String farmersEmail;
-//     String farmersProfileImage;
-//     String farmersAddress;
-//     String farmersProvince;
-//     String farmersDistrict;
-//     String farnersLocality;
-//     dynamic farmersLocLat;
-//     dynamic farmersLocLong;
-
-//     Farmers({
-//         required this.farmersId,
-//         required this.farmersName,
-//         required this.farmesHashpassword,
-//         required this.farmersPassword,
-//         required this.farmersPhonenumber,
-//         required this.farmersEmail,
-//         required this.farmersProfileImage,
-//         required this.farmersAddress,
-//         required this.farmersProvince,
-//         required this.farmersDistrict,
-//         required this.farnersLocality,
-//         required this.farmersLocLat,
-//         required this.farmersLocLong,
-//     });
-
-//     factory Farmers.fromJson(Map<String, dynamic> json) => Farmers(
-//         farmersId: json["farmers_id"],
-//         farmersName: json["farmers_name"],
-//         farmesHashpassword: json["farmes_hashpassword"],
-//         farmersPassword: json["farmers_password"],
-//         farmersPhonenumber: json["farmers_phonenumber"],
-//         farmersEmail: json["farmers_email"],
-//         farmersProfileImage: json["farmers_profile_image"],
-//         farmersAddress: json["farmers_address"],
-//         farmersProvince: json["farmers_province"],
-//         farmersDistrict: json["farmers_district"],
-//         farnersLocality: json["farners_locality"],
-//         farmersLocLat: json["farmers_loc_lat"],
-//         farmersLocLong: json["farmers_loc_long"],
-//     );
-
-//     Map<String, dynamic> toJson() => {
-//         "farmers_id": farmersId,
-//         "farmers_name": farmersName,
-//         "farmes_hashpassword": farmesHashpassword,
-//         "farmers_password": farmersPassword,
-//         "farmers_phonenumber": farmersPhonenumber,
-//         "farmers_email": farmersEmail,
-//         "farmers_profile_image": farmersProfileImage,
-//         "farmers_address": farmersAddress,
-//         "farmers_province": farmersProvince,
-//         "farmers_district": farmersDistrict,
-//         "farners_locality": farnersLocality,
-//         "farmers_loc_lat": farmersLocLat,
-//         "farmers_loc_long": farmersLocLong,
-//     };
-// }
 
 class Farmers {
   final int farmersId;
@@ -129,5 +66,33 @@ class Farmers {
     "farmers_loc_lat": farmersLocLat,
     "farmers_loc_long": farmersLocLong,
   };
+
+  Farmers copyWith({
+    int? farmersId,
+    String? farmersName,
+    String? farmersPhonenumber,
+    String? farmersEmail,
+    String? farmersProfileImage,
+    String? farmersAddress,
+    String? farmersProvince,
+    String? farmersDistrict,
+    String? farmersLocality,
+    String? farmersLocLat,
+    String? farmersLocLong,
+  }) {
+    return Farmers(
+      farmersId: farmersId ?? this.farmersId,
+      farmersName: farmersName ?? this.farmersName,
+      farmersPhonenumber: farmersPhonenumber ?? this.farmersPhonenumber,
+      farmersEmail: farmersEmail ?? this.farmersEmail,
+      farmersProfileImage: farmersProfileImage ?? this.farmersProfileImage,
+      farmersAddress: farmersAddress ?? this.farmersAddress,
+      farmersProvince: farmersProvince ?? this.farmersProvince,
+      farmersDistrict: farmersDistrict ?? this.farmersDistrict,
+      farmersLocality: farmersLocality ?? this.farmersLocality,
+      farmersLocLat: farmersLocLat ?? this.farmersLocLat,
+      farmersLocLong: farmersLocLong ?? this.farmersLocLong,
+    );
+  }
 }
 

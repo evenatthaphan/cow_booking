@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
-class MiniMap extends StatelessWidget {
+class MiniMap extends StatefulWidget {
   final double lat;
   final double lng;
-  final String apiKey; // เก็บ parameter ไว้ไม่ให้ error แต่ไม่ได้ใช้
+  final String apiKey;
 
   const MiniMap({
     super.key,
@@ -15,21 +15,31 @@ class MiniMap extends StatelessWidget {
   });
 
   @override
+  State<MiniMap> createState() => _MiniMapState();
+}
+
+class _MiniMapState extends State<MiniMap> {
+  @override
   Widget build(BuildContext context) {
     return FlutterMap(
       options: MapOptions(
-        initialCenter: LatLng(lat, lng),
+        initialCenter: LatLng(widget.lat, widget.lng),
         initialZoom: 15,
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.none,
+        ),
       ),
       children: [
         TileLayer(
-          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          urlTemplate:
+              'https://mt0.google.com/vt/lyrs=m&hl=th&x={x}&y={y}&z={z}',
           userAgentPackageName: 'com.example.cow_booking',
+          tileDisplay: const TileDisplay.instantaneous(opacity: 1.0),
         ),
         MarkerLayer(
           markers: [
             Marker(
-              point: LatLng(lat, lng),
+              point: LatLng(widget.lat, widget.lng),
               width: 40,
               height: 40,
               child: const Icon(

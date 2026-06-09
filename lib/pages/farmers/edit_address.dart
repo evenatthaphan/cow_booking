@@ -142,6 +142,10 @@ class _EditaddressPageState extends State<EditaddressPage> {
       ),
     );
 
+    debugPrint('result: $result');
+    debugPrint('lat: ${result?.lat}, lng: ${result?.lng}');
+    debugPrint('province: ${result?.province}');
+
     if (result != null) {
       setState(() {
         selectedLat = result.lat;
@@ -154,6 +158,8 @@ class _EditaddressPageState extends State<EditaddressPage> {
         }
       });
     }
+    debugPrint(
+        'after setState → lat: $selectedLat, province: $selectedProvince');
   }
 
   // ── บันทึก ────────────────────────────────────────────────────────────────
@@ -166,8 +172,8 @@ class _EditaddressPageState extends State<EditaddressPage> {
 
     setState(() => _isSaving = true);
     try {
-      final farmerId =
-          Provider.of<DataFarmers>(context, listen: false).datauser.farmersId;
+      final dataFarmers = Provider.of<DataFarmers>(context, listen: false);
+      final farmerId = dataFarmers.datauser.farmersId;
 
       final res = await http.put(
         Uri.parse('$apiEndpoint/farmer/update-address/$farmerId'),
@@ -185,11 +191,18 @@ class _EditaddressPageState extends State<EditaddressPage> {
       if (!mounted) return;
 
       if (res.statusCode == 200) {
-        await Provider.of<DataFarmers>(context, listen: false)
-            .fetchFarmerById(farmerId);
-        //_showSnackbar('บันทึกที่อยู่สำเร็จ ✓', Colors.green);
+        // ← อัปเดต provider ด้วยตัวเอง ไม่ต้อง fetch ใหม่
+        final updated = dataFarmers.datauser.copyWith(
+          farmersProvince: selectedProvince,
+          farmersDistrict: selectedDistrict,
+          farmersLocality: selectedSubDistrict,
+          farmersAddress: _addressCtrl.text.trim(),
+          farmersLocLat: selectedLat?.toString(),
+          farmersLocLong: selectedLng?.toString(),
+        );
+        dataFarmers.setDataUser(updated);
+
         _showSuccessDialog('ระบบได้อัปเดตที่อยู่ของคุณเรียบร้อยแล้ว');
-        Navigator.pop(context);
       } else {
         final body = jsonDecode(res.body);
         _showSnackbar(body['error'] ?? 'เกิดข้อผิดพลาด', Colors.red);
@@ -199,6 +212,35 @@ class _EditaddressPageState extends State<EditaddressPage> {
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
+  }
+
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text('แก้ไขที่อยู่สำเร็จ ✓',
+            style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
+        content: Text(message, style: GoogleFonts.notoSansThai()),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // ปิด dialog
+              Navigator.pop(context); // กลับหน้าก่อนหน้า
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _green,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8)),
+            ),
+            child: Text('ตกลง',
+                style: GoogleFonts.notoSansThai(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    // ← ลบ .then((_) => Navigator.pop(context)) ออก
   }
 
   // ── Snackbar / Dialog ─────────────────────────────────────────────────────
@@ -330,33 +372,6 @@ class _EditaddressPageState extends State<EditaddressPage> {
         ],
       ),
     );
-  }
-
-  // ── เพิ่ม method นี้ ──
-  void _showSuccessDialog(String message) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text('แก้ไขที่อยู่สำเร็จ ✓',
-            style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
-        content: Text(message, style: GoogleFonts.notoSansThai()),
-        actions: [
-          ElevatedButton(
-            onPressed: () =>
-                Navigator.pop(context), // ปิด dialog แล้วกลับหน้าเดิม
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _green,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8)),
-            ),
-            child: Text('ตกลง',
-                style: GoogleFonts.notoSansThai(color: Colors.white)),
-          ),
-        ],
-      ),
-    ).then((_) => Navigator.pop(context)); // ปิด page หลัง dialog ปิด
   }
 
   Widget _addressRow(String label, String value) => Padding(

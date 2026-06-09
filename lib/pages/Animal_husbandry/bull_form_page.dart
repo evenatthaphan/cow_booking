@@ -59,8 +59,7 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
   // ── โหลดฟาร์ม ─────────────────────────────────────────────────────────────
   Future<void> _fetchFarms() async {
     try {
-      final res =
-          await http.get(Uri.parse('$apiEndpoint/vet/vet-bulls/farms'));
+      final res = await http.get(Uri.parse('$apiEndpoint/vet/vet-bulls/farms'));
       if (res.statusCode == 200) {
         setState(() {
           _farms = List<Map<String, dynamic>>.from(jsonDecode(res.body));
@@ -80,8 +79,8 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
       _selectedBull = null;
     });
     try {
-      final res = await http.get(
-          Uri.parse('$apiEndpoint/vet/vet-bulls/bulls-in-farm/$farmId'));
+      final res = await http
+          .get(Uri.parse('$apiEndpoint/vet/vet-bulls/bulls-in-farm/$farmId'));
       if (res.statusCode == 200) {
         setState(() {
           _bullsInFarm = List<Map<String, dynamic>>.from(jsonDecode(res.body));
@@ -387,32 +386,26 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
     );
   }
 
-  // ── บันทึก ────────────────────────────────────────────────────────────────
+  // บันทึก 
   Future<void> _save() async {
     if (_selectedBull == null) {
       _showSnack('กรุณาเลือกวัว', isError: true);
-      return;
-    }
-    if (_imageFiles.isEmpty) {
-      _showSnack('กรุณาอัพโหลดรูปภาพอย่างน้อย 1 รูป', isError: true);
       return;
     }
 
     setState(() => _isSaving = true);
 
     try {
-      // Upload รูปไป Cloudinary
-      setState(() => _isUploading = true);
       final urls = <String>[];
-      for (final file in _imageFiles) {
-        final url = await _uploadToCloudinary(file);
-        if (url != null) urls.add(url);
-      }
-      setState(() => _isUploading = false);
 
-      if (urls.isEmpty) {
-        _showSnack('อัพโหลดรูปภาพไม่สำเร็จ', isError: true);
-        return;
+      // Upload รูปเฉพาะเมื่อมีรูป
+      if (_imageFiles.isNotEmpty) {
+        setState(() => _isUploading = true);
+        for (final file in _imageFiles) {
+          final url = await _uploadToCloudinary(file);
+          if (url != null) urls.add(url);
+        }
+        setState(() => _isUploading = false);
       }
 
       final vetId = context.read<DataVetExpert>().datauser.id;
@@ -424,7 +417,7 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
           'bulls_id': _selectedBull!['bulls_id'],
           'bulls_semen_stock': int.tryParse(_stockCtrl.text) ?? 0,
           'bulls_price_per_dose': double.tryParse(_priceCtrl.text) ?? 0,
-          'images': urls,
+          'images': urls, // ส่ง [] ถ้าไม่มีรูป
         }),
       );
 
@@ -619,7 +612,7 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
             const SizedBox(height: 16),
 
             // ── Step 3: รูปภาพ ────────────────────────────────────────
-            _sectionLabel('3. รูปภาพวัว (บังคับอย่างน้อย 1 รูป, สูงสุด 5 รูป)'),
+            _sectionLabel('3. รูปภาพวัว (ไม่บังคับ, สูงสุด 5 รูป)'),
             _card([
               Padding(
                 padding: const EdgeInsets.all(14),

@@ -132,8 +132,10 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
         content: Text(message, style: GoogleFonts.notoSansThai()),
         actions: [
           ElevatedButton(
-            onPressed: () =>
-                Navigator.pop(context), // ปิด dialog แล้วกลับหน้าเดิม
+            onPressed: () {
+              Navigator.pop(context); // ปิด dialog
+              Navigator.pop(context); // กลับหน้าก่อนหน้า
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: _green,
               shape: RoundedRectangleBorder(
@@ -144,7 +146,7 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
           ),
         ],
       ),
-    ).then((_) => Navigator.pop(context)); // ปิด page หลัง dialog ปิด
+    );
   }
 
   // ─── เปิด MapPickerPage ───────────────────────────────────────────────────
@@ -184,8 +186,8 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
     setState(() => _isLoading = true);
 
     try {
-      final vetId =
-          Provider.of<DataVetExpert>(context, listen: false).datauser.id;
+      final dataVet = Provider.of<DataVetExpert>(context, listen: false);
+      final vetId = dataVet.datauser.id;
 
       final response = await http.put(
         Uri.parse('$apiEndpoint/vet/vetexpert/update-address/$vetId'),
@@ -203,11 +205,19 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
       if (!mounted) return;
 
       if (response.statusCode == 200) {
-        await Provider.of<DataVetExpert>(context, listen: false)
-            .fetchVetById(vetId);
-        //_showSnackbar('บันทึกที่อยู่สำเร็จ ✓', Colors.green);
+       
+        final updated = dataVet.datauser.copyWith(
+          province: selectedProvince,
+          district: selectedDistrict,
+          locality: selectedSubDistrict,
+          vetExpertAddress: _addressCtrl.text.trim(),
+          locLat: selectedLat,
+          locLong: selectedLng,
+        );
+        dataVet.setDataUser(updated);
+
         _showSuccessDialog('ระบบได้อัปเดตที่อยู่ของคุณเรียบร้อยแล้ว');
-        Navigator.pop(context);
+
       } else {
         final body = jsonDecode(response.body);
         _showSnackbar('เกิดข้อผิดพลาด: ${body['error']}', Colors.red);

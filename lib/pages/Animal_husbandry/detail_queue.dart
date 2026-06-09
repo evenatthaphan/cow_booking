@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/booking_response.dart';
 import 'package:cow_booking/pages/Animal_husbandry/doc_profile.dart';
+import 'package:cow_booking/share/minimap_widget.dart';
 import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -10,6 +11,7 @@ import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps;
 
 class DetailqueuePage extends StatefulWidget {
   final BookingResponse booking;
@@ -26,11 +28,14 @@ class DetailqueuePage extends StatefulWidget {
 class _DetailqueuePageState extends State<DetailqueuePage> {
   bool _isLoading = false;
   String _currentStatus = '';
+  Future<Map<String, double?>?>? _coordsFuture;
 
   @override
   void initState() {
     super.initState();
+    debugPrint('🚀 initState called, farmerId: ${widget.booking.refFarmersId}');
     _currentStatus = widget.booking.bookingsStatus;
+    _coordsFuture = _fetchFarmerCoords(widget.booking.refFarmersId);
   }
 
   // API อัพเดตสถานะ
@@ -492,12 +497,15 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
   }
 
   Future<Map<String, double?>?> _fetchFarmerCoords(int farmerId) async {
+    debugPrint('🔍 fetching coords for farmerId: $farmerId');
     try {
       final res = await http.get(
-        Uri.parse('$apiEndpoint/farmer/getFarmer/$farmerId'),
+        Uri.parse('$apiEndpoint/farmer/getfarmer/$farmerId'),
       );
+      debugPrint('🌐 status: ${res.statusCode}, body: ${res.body}');
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
+        debugPrint('📦 response data: $data');
         // แก้จาก double.tryParse → toDouble() ตรงๆ เพราะ API ส่งมาเป็น number
         final lat = (data['farmers_loc_lat'] as num?)?.toDouble();
         final lng = (data['farmers_loc_long'] as num?)?.toDouble();
@@ -513,98 +521,85 @@ class _DetailqueuePageState extends State<DetailqueuePage> {
   // แผนที่ placeholder
   Widget _buildMapSection(BookingResponse booking) {
     return FutureBuilder<Map<String, double?>?>(
-      future: _fetchFarmerCoords(booking.refFarmersId),
+      future: _coordsFuture,
       builder: (context, snapshot) {
         final lat = snapshot.data?['lat'];
         final lng = snapshot.data?['lng'];
         final hasCoords = lat != null && lng != null;
+        debugPrint('🗺️ lat: $lat, lng: $lng, hasCoords: $hasCoords');
 
-        return Stack(
-          children: [
-            Container(
-              width: double.infinity,
-              height: 220,
-              clipBehavior: Clip.antiAlias,
-              decoration: const BoxDecoration(color: Color(0xFFD6EAD4)),
-              child: snapshot.connectionState == ConnectionState.waiting
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const CircularProgressIndicator(color: Colors.green),
-                        const SizedBox(height: 8),
-                        Text("กำลังโหลดแผนที่...",
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.green[600])),
-                      ],
-                    )
-                  : hasCoords
-                      ? FlutterMap(
-                          options: MapOptions(
-                            initialCenter: LatLng(lat, lng),
-                            initialZoom: 15,
-                            interactionOptions: const InteractionOptions(
-                              flags: InteractiveFlag.none,
-                            ),
+        return Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionLabel("ตำแหน่งเกษตรกร"),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(14),
+                child: SizedBox(
+                  height: 220,
+                  child: snapshot.connectionState == ConnectionState.waiting
+                      ? Container(
+                          color: const Color(0xFFD6EAD4),
+                          child: const Center(
+                            child:
+                                CircularProgressIndicator(color: Colors.green),
                           ),
-                          children: [
-                            TileLayer(
-                              urlTemplate:
-                                  'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                              userAgentPackageName: 'com.example.cow_booking',
-                            ),
-                            MarkerLayer(
-                              markers: [
-                                Marker(
-                                  point: LatLng(lat, lng),
-                                  width: 40,
-                                  height: 40,
-                                  child: const Icon(Icons.location_on,
-                                      color: Colors.red, size: 40),
+                        )
+                      : snapshot.connectionState == ConnectionState.done &&
+                              hasCoords
+                          ? Stack(
+                              children: [
+                                MiniMap(lat: lat!, lng: lng!, apiKey: ''),
+                                Positioned(
+                                  bottom: 12,
+                                  left: 12,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.92),
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 4)
+                                      ],
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.location_on,
+                                            size: 16, color: Colors.red),
+                                        const SizedBox(width: 4),
+                                        Text(booking.farmersName,
+                                            style: const TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ],
+                            )
+                          : Container(
+                              color: const Color(0xFFD6EAD4),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.map_outlined,
+                                      size: 64, color: Colors.green[700]),
+                                  Text('ไม่มีข้อมูลพิกัด',
+                                      style: TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.green[800])),
+                                ],
+                              ),
                             ),
-                          ],
-                        )
-                      : Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.map_outlined,
-                                size: 64, color: Colors.green[700]),
-                            const SizedBox(height: 8),
-                            Text("ไม่มีข้อมูลพิกัด",
-                                style: TextStyle(
-                                    fontSize: 15, color: Colors.green[800])),
-                          ],
-                        ),
-            ),
-
-            // label ชื่อเกษตรกร
-            Positioned(
-              bottom: 12,
-              left: 12,
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.92),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 4)
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.location_on, size: 16, color: Colors.red),
-                    const SizedBox(width: 4),
-                    Text(booking.farmersName,
-                        style: const TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.w600)),
-                  ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         );
       },
     );

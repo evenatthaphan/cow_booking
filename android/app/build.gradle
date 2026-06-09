@@ -29,7 +29,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.cow_booking"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -51,3 +51,5 @@ android {
 flutter {
     source = "../.."
 }
+
+apply plugin: 'com.google.gms.google-services'

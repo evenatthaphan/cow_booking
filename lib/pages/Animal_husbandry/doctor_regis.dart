@@ -1,6 +1,7 @@
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/pages/Home/map_picker_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
@@ -44,7 +45,6 @@ class _DoctorRegisState extends State<DoctorRegis> {
   static const _border     = Color(0xFFDDDDDD);
   static const _labelColor = Color(0xFF757575);
 
-  // ── ใส่ Google API Key ตรงนี้ ──
   static const _googleApiKey = 'YOUR_GOOGLE_API_KEY';
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -147,7 +147,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
     }
   }
 
-  // ─── register ────────────────────────────────────────────────────────────────
+  // ─── register ─────────────────────────────────────────────────────────────
   Future<void> registerVetExpert() async {
     if (!_formKey.currentState!.validate()) return;
     if (_imageFile == null) {
@@ -158,6 +158,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
       _showErrorDialog("กรุณาเลือกตำแหน่งที่อยู่บนแผนที่");
       return;
     }
+    // ไม่ต้องเช็ครหัสผ่านซ้ำที่นี่ เพราะ validator จัดการแล้ว
     await showCaptchaDialog();
   }
 
@@ -410,8 +411,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
             ),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: _green),
-              title:
-                  Text('ถ่ายภาพใหม่', style: GoogleFonts.notoSansThai()),
+              title: Text('ถ่ายภาพใหม่', style: GoogleFonts.notoSansThai()),
               onTap: () async {
                 Navigator.pop(context);
                 await _pickImage(ImageSource.camera);
@@ -492,6 +492,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
     bool obscure = false,
     bool? showObscureToggle,
     VoidCallback? onToggleObscure,
+    List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
   }) {
     return Padding(
@@ -514,6 +515,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
             controller: controller,
             keyboardType: keyboardType,
             obscureText: obscure,
+            inputFormatters: inputFormatters,
             style: GoogleFonts.notoSansThai(fontSize: 14),
             decoration: InputDecoration(
               contentPadding:
@@ -534,6 +536,10 @@ class _DoctorRegisState extends State<DoctorRegis> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: Colors.red),
               ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Colors.red, width: 1.5),
+              ),
               filled: true,
               fillColor: Colors.white,
               suffixIcon: showObscureToggle == true
@@ -552,7 +558,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
             validator: validator ??
                 (value) {
                   if (!required) return null;
-                  if (value == null || value.isEmpty) return "กรุณากรอก$label";
+                  if (value == null || value.trim().isEmpty) return "กรุณากรอก$label";
                   return null;
                 },
           ),
@@ -561,7 +567,6 @@ class _DoctorRegisState extends State<DoctorRegis> {
     );
   }
 
-  /// ปุ่มเปิดแผนที่ + summary card
   Widget _buildLocationPicker() {
     final hasPicked = selectedLat != null;
 
@@ -581,7 +586,6 @@ class _DoctorRegisState extends State<DoctorRegis> {
           ),
           const SizedBox(height: 6),
 
-          // ปุ่มเปิดแผนที่
           GestureDetector(
             onTap: _openMapPicker,
             child: Container(
@@ -622,7 +626,6 @@ class _DoctorRegisState extends State<DoctorRegis> {
             ),
           ),
 
-          // Address summary card
           if (hasPicked) ...[
             const SizedBox(height: 8),
             Container(
@@ -673,7 +676,6 @@ class _DoctorRegisState extends State<DoctorRegis> {
     );
   }
 
-  /// ช่องอัพโหลดใบประกอบวิชาชีพ
   Widget _buildLicenseUploader() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
@@ -797,8 +799,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.eco_outlined,
-                          size: 16, color: _green),
+                      const Icon(Icons.eco_outlined, size: 16, color: _green),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -814,33 +815,60 @@ class _DoctorRegisState extends State<DoctorRegis> {
 
               // ── ข้อมูลบัญชี ──
               _sectionHeader("ข้อมูลบัญชี", Icons.person_outline),
+
+              // ชื่อผู้ใช้
               _buildField(
-                  label: "ชื่อผู้ใช้",
-                  controller: nameController,
-                  required: true),
+                label: "ชื่อผู้ใช้",
+                controller: nameController,
+                required: true,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'กรุณากรอกชื่อผู้ใช้';
+                  return null;
+                },
+              ),
+
+              // เบอร์โทรศัพท์ — ตัวเลขเท่านั้น, 9-10 หลัก
               _buildField(
-                  label: "เบอร์โทรศัพท์",
-                  controller: phoneController,
-                  required: true,
-                  keyboardType: TextInputType.phone),
+                label: "เบอร์โทรศัพท์",
+                controller: phoneController,
+                required: true,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'กรุณากรอกเบอร์โทรศัพท์';
+                  if (v.length < 9) return 'เบอร์โทรต้องมี 9-10 หลัก';
+                  return null;
+                },
+              ),
+
+              // อีเมล — บังคับกรอก + ตรวจรูปแบบ
               _buildField(
-                  label: "อีเมล",
-                  controller: emailController,
-                  required: true,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (v) {
-                    if (v == null || v.isEmpty) return "กรุณากรอกอีเมล";
-                    if (!v.contains('@')) return "รูปแบบอีเมลไม่ถูกต้อง";
-                    return null;
-                  }),
+                label: "อีเมล",
+                controller: emailController,
+                required: true,
+                keyboardType: TextInputType.emailAddress,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'กรุณากรอกอีเมล';
+                  final emailRegex =
+                      RegExp(r'^[\w\.\-]+@[\w\-]+\.[a-zA-Z]{2,}$');
+                  if (!emailRegex.hasMatch(v.trim())) {
+                    return 'รูปแบบอีเมลไม่ถูกต้อง';
+                  }
+                  return null;
+                },
+              ),
 
               // ── ที่อยู่ ──
               _sectionHeader("ที่อยู่", Icons.home_outlined),
               _buildLocationPicker(),
               _buildField(
-                  label: "ที่อยู่เพิ่มเติม",
-                  controller: addressController,
-                  required: true),
+                label: "ที่อยู่เพิ่มเติม",
+                controller: addressController,
+                required: true,
+              ),
 
               // ── เอกสาร ──
               _sectionHeader("เอกสารประกอบ", Icons.badge_outlined),
@@ -848,6 +876,8 @@ class _DoctorRegisState extends State<DoctorRegis> {
 
               // ── รหัสผ่าน ──
               _sectionHeader("รหัสผ่าน", Icons.lock_outline),
+
+              // รหัสผ่าน — อย่างน้อย 8 ตัว
               _buildField(
                 label: "รหัสผ่าน",
                 controller: passwordController,
@@ -856,7 +886,14 @@ class _DoctorRegisState extends State<DoctorRegis> {
                 showObscureToggle: true,
                 onToggleObscure: () =>
                     setState(() => _obscurePassword = !_obscurePassword),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'กรุณากรอกรหัสผ่าน';
+                  if (v.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+                  return null;
+                },
               ),
+
+              // ยืนยันรหัสผ่าน
               _buildField(
                 label: "ยืนยันรหัสผ่าน",
                 controller: confirmPasswordController,
@@ -866,8 +903,8 @@ class _DoctorRegisState extends State<DoctorRegis> {
                 onToggleObscure: () =>
                     setState(() => _obscureConfirm = !_obscureConfirm),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return "กรุณายืนยันรหัสผ่าน";
-                  if (v != passwordController.text) return "รหัสผ่านไม่ตรงกัน";
+                  if (v == null || v.isEmpty) return 'กรุณายืนยันรหัสผ่าน';
+                  if (v != passwordController.text) return 'รหัสผ่านไม่ตรงกัน';
                   return null;
                 },
               ),

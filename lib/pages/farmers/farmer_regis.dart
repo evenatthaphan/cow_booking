@@ -1,5 +1,6 @@
 import 'package:cow_booking/pages/Home/map_picker_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -41,7 +42,6 @@ class _FarmerRegisterState extends State<FarmerRegister> {
   static const _border     = Color(0xFFDDDDDD);
   static const _labelColor = Color(0xFF757575);
 
-  // ── ใส่ Google API Key ตรงนี้ ──
   static const _googleApiKey = 'YOUR_GOOGLE_API_KEY';
 
   PreferredSizeWidget _buildAppBar() {
@@ -99,8 +99,7 @@ class _FarmerRegisterState extends State<FarmerRegister> {
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-            height: 1, color: Colors.white.withOpacity(0.1)),
+        child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
       ),
     );
   }
@@ -136,7 +135,6 @@ class _FarmerRegisterState extends State<FarmerRegister> {
         selectedProvince    = result.province;
         selectedDistrict    = result.district;
         selectedSubDistrict = result.subDistrict;
-        // ถ้าจาก map มีรายละเอียดที่อยู่และ field ว่างอยู่ ให้ pre-fill
         if (farmAddressController.text.isEmpty && result.addressDetail.isNotEmpty) {
           farmAddressController.text = result.addressDetail;
         }
@@ -144,17 +142,14 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     }
   }
 
-  // ─── register ────────────────────────────────────────────────────────────────
+  // ─── register ─────────────────────────────────────────────────────────────
   Future<void> registerFarmer() async {
     if (!_formKey.currentState!.validate()) return;
     if (selectedLat == null) {
       _showErrorDialog("กรุณาเลือกตำแหน่งฟาร์มบนแผนที่");
       return;
     }
-    if (passwordController.text != confirmPasswordController.text) {
-      _showErrorDialog("รหัสผ่านไม่ตรงกัน");
-      return;
-    }
+    // ไม่ต้องเช็ครหัสผ่านซ้ำที่นี่ เพราะ validator จัดการแล้ว
     await showCaptchaDialog();
   }
 
@@ -385,7 +380,7 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     );
   }
 
-  // ── Widget helpers ───────────────────────────────────────────────────────────
+  // ── Widget helpers ────────────────────────────────────────────────────────
 
   Widget _sectionHeader(String title, IconData icon) {
     return Padding(
@@ -418,6 +413,7 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     bool obscure = false,
     bool? showObscureToggle,
     VoidCallback? onToggleObscure,
+    List<TextInputFormatter>? inputFormatters,
     String? Function(String?)? validator,
   }) {
     return Padding(
@@ -440,6 +436,7 @@ class _FarmerRegisterState extends State<FarmerRegister> {
             controller: controller,
             keyboardType: keyboardType,
             obscureText: obscure,
+            inputFormatters: inputFormatters,
             style: GoogleFonts.notoSansThai(fontSize: 14),
             decoration: InputDecoration(
               contentPadding:
@@ -460,6 +457,10 @@ class _FarmerRegisterState extends State<FarmerRegister> {
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(color: Colors.red),
               ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Colors.red, width: 1.5),
+              ),
               filled: true,
               fillColor: Colors.white,
               suffixIcon: showObscureToggle == true
@@ -478,7 +479,7 @@ class _FarmerRegisterState extends State<FarmerRegister> {
             validator: validator ??
                 (value) {
                   if (!required) return null;
-                  if (value == null || value.isEmpty) return "กรุณากรอก$label";
+                  if (value == null || value.trim().isEmpty) return "กรุณากรอก$label";
                   return null;
                 },
           ),
@@ -487,7 +488,6 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     );
   }
 
-  /// แสดงปุ่มเปิดแผนที่ + summary ที่อยู่ที่เลือกไว้
   Widget _buildLocationPicker() {
     final hasPicked = selectedLat != null;
 
@@ -507,7 +507,6 @@ class _FarmerRegisterState extends State<FarmerRegister> {
           ),
           const SizedBox(height: 6),
 
-          // ── ปุ่มเปิดแผนที่ ──
           GestureDetector(
             onTap: _openMapPicker,
             child: Container(
@@ -548,7 +547,6 @@ class _FarmerRegisterState extends State<FarmerRegister> {
             ),
           ),
 
-          // ── Address summary card (แสดงหลังเลือกแล้ว) ──
           if (hasPicked) ...[
             const SizedBox(height: 8),
             Container(
@@ -622,8 +620,7 @@ class _FarmerRegisterState extends State<FarmerRegister> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.eco_outlined,
-                          size: 16, color: _green),
+                      const Icon(Icons.eco_outlined, size: 16, color: _green),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -639,29 +636,54 @@ class _FarmerRegisterState extends State<FarmerRegister> {
 
               // ── ข้อมูลบัญชี ──
               _sectionHeader("ข้อมูลบัญชี", Icons.person_outline),
+
+              // ชื่อผู้ใช้
               _buildField(
                 label: "ชื่อผู้ใช้",
                 controller: farmNameController,
                 required: true,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'กรุณากรอกชื่อผู้ใช้';
+                  return null;
+                },
               ),
+
+              // เบอร์โทรศัพท์ — ตัวเลขเท่านั้น, 9-10 หลัก
               _buildField(
                 label: "เบอร์โทรศัพท์",
                 controller: phoneNumberController,
                 required: true,
                 keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'กรุณากรอกเบอร์โทรศัพท์';
+                  if (v.length < 9) return 'เบอร์โทรต้องมี 9-10 หลัก';
+                  return null;
+                },
               ),
+
+              // อีเมล — ไม่บังคับ แต่ถ้ากรอกต้องถูกรูปแบบ
               _buildField(
                 label: "อีเมล",
                 controller: emailController,
                 keyboardType: TextInputType.emailAddress,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return null;
+                  final emailRegex =
+                      RegExp(r'^[\w\.\-]+@[\w\-]+\.[a-zA-Z]{2,}$');
+                  if (!emailRegex.hasMatch(v.trim())) {
+                    return 'รูปแบบอีเมลไม่ถูกต้อง';
+                  }
+                  return null;
+                },
               ),
 
               // ── ที่อยู่ฟาร์ม ──
               _sectionHeader("ที่อยู่ฟาร์ม", Icons.home_outlined),
-
-              // location picker (แทน dropdown 3 ชั้น)
               _buildLocationPicker(),
-
               _buildField(
                 label: "ที่อยู่เพิ่มเติม",
                 controller: farmAddressController,
@@ -670,6 +692,8 @@ class _FarmerRegisterState extends State<FarmerRegister> {
 
               // ── รหัสผ่าน ──
               _sectionHeader("รหัสผ่าน", Icons.lock_outline),
+
+              // รหัสผ่าน — อย่างน้อย 8 ตัว
               _buildField(
                 label: "รหัสผ่าน",
                 controller: passwordController,
@@ -678,7 +702,14 @@ class _FarmerRegisterState extends State<FarmerRegister> {
                 showObscureToggle: true,
                 onToggleObscure: () =>
                     setState(() => _obscurePassword = !_obscurePassword),
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'กรุณากรอกรหัสผ่าน';
+                  if (v.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+                  return null;
+                },
               ),
+
+              // ยืนยันรหัสผ่าน
               _buildField(
                 label: "ยืนยันรหัสผ่าน",
                 controller: confirmPasswordController,
@@ -688,8 +719,8 @@ class _FarmerRegisterState extends State<FarmerRegister> {
                 onToggleObscure: () =>
                     setState(() => _obscureConfirm = !_obscureConfirm),
                 validator: (v) {
-                  if (v == null || v.isEmpty) return "กรุณายืนยันรหัสผ่าน";
-                  if (v != passwordController.text) return "รหัสผ่านไม่ตรงกัน";
+                  if (v == null || v.isEmpty) return 'กรุณายืนยันรหัสผ่าน';
+                  if (v != passwordController.text) return 'รหัสผ่านไม่ตรงกัน';
                   return null;
                 },
               ),

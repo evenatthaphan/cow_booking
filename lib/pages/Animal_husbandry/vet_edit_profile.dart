@@ -31,7 +31,7 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
   void initState() {
     super.initState();
     final vet = Provider.of<DataVetExpert>(context, listen: false).datauser;
-    _nameCtrl  = TextEditingController(text: vet.vetExpertName);
+    _nameCtrl = TextEditingController(text: vet.vetExpertName);
     _phoneCtrl = TextEditingController(text: vet.phonenumber);
     _emailCtrl = TextEditingController(text: vet.vetExpertEmail);
   }
@@ -90,13 +90,12 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-            height: 1, color: Colors.white.withOpacity(0.1)),
+        child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
       ),
     );
   }
 
-  // เลือกรูป 
+  // เลือกรูป
   Future<void> _pickImage(ImageSource source, bool isProfile) async {
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: source, imageQuality: 80);
@@ -120,17 +119,28 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 8),
-            Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
+            Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 16),
             ListTile(
               leading: const Icon(Icons.camera_alt, color: Colors.green),
               title: const Text('ถ่ายภาพ'),
-              onTap: () { Navigator.pop(context); _pickImage(ImageSource.camera, isProfile); },
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera, isProfile);
+              },
             ),
             ListTile(
               leading: const Icon(Icons.photo_library, color: Colors.green),
               title: const Text('เลือกจากคลัง'),
-              onTap: () { Navigator.pop(context); _pickImage(ImageSource.gallery, isProfile); },
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery, isProfile);
+              },
             ),
             const SizedBox(height: 8),
           ],
@@ -139,13 +149,7 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
     );
   }
 
-  // Upload รูป → Base64 string 
-  Future<String?> _uploadImage(File file) async {
-    final bytes = await file.readAsBytes();
-    return base64Encode(bytes); // หรือเปลี่ยนเป็น multipart upload ตาม backend
-  }
-
-  // บันทึก 
+  // บันทึก
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
@@ -153,35 +157,49 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
     try {
       final vet = Provider.of<DataVetExpert>(context, listen: false).datauser;
 
-      String profileImageUrl = vet.profileImage;
-      String licenseUrl      = vet.vetExpertPl;
+      // เปลี่ยนจาก http.put เป็น multipart
+      final request = http.MultipartRequest(
+        'PUT',
+        Uri.parse('$apiEndpoint/vet/vetexpert/update-profile/${vet.id}'),
+      );
 
-      // upload ถ้ามีรูปใหม่
+      request.fields['vetexperts_name'] = _nameCtrl.text.trim();
+      request.fields['vetexperts_phonenumber'] = _phoneCtrl.text.trim();
+      request.fields['vetexperts_email'] = _emailCtrl.text.trim();
+
+      // แนบไฟล์เฉพาะเมื่อมีรูปใหม่
       if (_profileImageFile != null) {
-        profileImageUrl = await _uploadImage(_profileImageFile!) ?? profileImageUrl;
+        request.files.add(await http.MultipartFile.fromPath(
+          'profile_image',
+          _profileImageFile!.path,
+        ));
       }
       if (_licenseImageFile != null) {
-        licenseUrl = await _uploadImage(_licenseImageFile!) ?? licenseUrl;
+        request.files.add(await http.MultipartFile.fromPath(
+          'license_image',
+          _licenseImageFile!.path,
+        ));
       }
 
-      final response = await http.put(
-        Uri.parse('$apiEndpoint/vet/vetexpert/update-profile/${vet.id}'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'vetexperts_name':          _nameCtrl.text.trim(),
-          'vetexperts_phonenumber':   _phoneCtrl.text.trim(),
-          'vetexperts_email':         _emailCtrl.text.trim(),
-          'vetexperts_profile_image': profileImageUrl,
-          'vetexperts_license':       licenseUrl,
-        }),
-      );
+      final streamedRes = await request.send();
+      final response = await http.Response.fromStream(streamedRes);
 
       if (!mounted) return;
 
       if (response.statusCode == 200) {
-        // อัพเดต Provider
-        await Provider.of<DataVetExpert>(context, listen: false)
-            .fetchVetById(vet.id);
+        final body = jsonDecode(response.body);
+        final updatedVet = body['vet'];
+
+        final dataVet = Provider.of<DataVetExpert>(context, listen: false);
+        final updated = dataVet.datauser.copyWith(
+          vetExpertName: updatedVet['vetexperts_name'],
+          phonenumber: updatedVet['vetexperts_phonenumber'],
+          vetExpertEmail: updatedVet['vetexperts_email'],
+          profileImage: updatedVet['vetexperts_profile_image'],
+          vetExpertPl: updatedVet['vetexperts_license'],
+        );
+        dataVet.setDataUser(updated);
+
         _showSnackbar('บันทึกข้อมูลสำเร็จ ✓', Colors.green);
         Navigator.pop(context);
       } else {
@@ -219,8 +237,7 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              // รูปโปรไฟล์ 
+              // รูปโปรไฟล์
               _sectionLabel('รูปโปรไฟล์'),
               Center(
                 child: Stack(
@@ -243,7 +260,8 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
                           padding: const EdgeInsets.all(8),
                           decoration: const BoxDecoration(
                               color: Colors.green, shape: BoxShape.circle),
-                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+                          child: const Icon(Icons.camera_alt,
+                              color: Colors.white, size: 18),
                         ),
                       ),
                     ),
@@ -296,8 +314,10 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
                           image: _licenseImageFile != null
                               ? FileImage(_licenseImageFile!) as ImageProvider
                               : (vet.vetExpertPl.isNotEmpty
-                                  ? NetworkImage(vet.vetExpertPl) as ImageProvider
-                                  : const AssetImage('assets/images/placeholder.png')),
+                                  ? NetworkImage(vet.vetExpertPl)
+                                      as ImageProvider
+                                  : const AssetImage(
+                                      'assets/images/placeholder.png')),
                           width: double.infinity,
                           height: 180,
                           fit: BoxFit.cover,
@@ -309,24 +329,32 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
                         children: [
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed: () => _pickImage(ImageSource.camera, false),
-                              icon: const Icon(Icons.camera_alt, size: 16, color: Colors.green),
-                              label: const Text('ถ่ายภาพ', style: TextStyle(color: Colors.green)),
+                              onPressed: () =>
+                                  _pickImage(ImageSource.camera, false),
+                              icon: const Icon(Icons.camera_alt,
+                                  size: 16, color: Colors.green),
+                              label: const Text('ถ่ายภาพ',
+                                  style: TextStyle(color: Colors.green)),
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: Colors.green),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed: () => _pickImage(ImageSource.gallery, false),
-                              icon: const Icon(Icons.photo_library, size: 16, color: Colors.green),
-                              label: const Text('เลือกรูป', style: TextStyle(color: Colors.green)),
+                              onPressed: () =>
+                                  _pickImage(ImageSource.gallery, false),
+                              icon: const Icon(Icons.photo_library,
+                                  size: 16, color: Colors.green),
+                              label: const Text('เลือกรูป',
+                                  style: TextStyle(color: Colors.green)),
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(color: Colors.green),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
                           ),
@@ -335,7 +363,6 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
                     ],
                   ),
                 ),
-              
               ]),
 
               const SizedBox(height: 32),
@@ -348,15 +375,21 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     elevation: 2,
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                          width: 20, height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
                       : const Text('บันทึกข้อมูล',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
                 ),
               ),
 
@@ -390,20 +423,28 @@ class _VetEditProfilePageState extends State<VetEditProfilePage> {
         padding: const EdgeInsets.only(bottom: 8, left: 2),
         child: Text(label,
             style: TextStyle(
-                fontSize: 13, fontWeight: FontWeight.bold,
-                color: Colors.green[800], letterSpacing: 0.5)),
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[800],
+                letterSpacing: 0.5)),
       );
 
   Widget _infoCard(List<Widget> children) => Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2))
+          ],
         ),
         child: Column(children: children),
       );
 
-  Widget _divider() => const Divider(height: 1, indent: 52, color: Color(0xFFEEEEEE));
+  Widget _divider() =>
+      const Divider(height: 1, indent: 52, color: Color(0xFFEEEEEE));
 
   Widget _inputField({
     required TextEditingController controller,

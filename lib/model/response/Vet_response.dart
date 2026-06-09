@@ -81,5 +81,41 @@ class VetExpert {
         "vetexperts_loc_lat": locLat,
         "vetexperts_loc_long": locLong,
     };
+
+  VetExpert copyWith({
+    int? id,
+    String? vetExpertName,
+    String? vetExpertPassword,
+    String? password,
+    String? phonenumber,
+    String? vetExpertEmail,
+    String? profileImage,
+    String? province,
+    String? district,
+    String? locality,
+    String? vetExpertAddress,
+    String? vetExpertPl,
+    int? totalSemenStock,
+    double? locLat,
+    double? locLong,
+  }) {
+    return VetExpert(
+      id: id ?? this.id,
+      vetExpertName: vetExpertName ?? this.vetExpertName,
+      vetExpertPassword: vetExpertPassword ?? this.vetExpertPassword,
+      password: password ?? this.password,
+      phonenumber: phonenumber ?? this.phonenumber,
+      vetExpertEmail: vetExpertEmail ?? this.vetExpertEmail,
+      profileImage: profileImage ?? this.profileImage,
+      province: province ?? this.province,
+      district: district ?? this.district,
+      locality: locality ?? this.locality,
+      vetExpertAddress: vetExpertAddress ?? this.vetExpertAddress,
+      vetExpertPl: vetExpertPl ?? this.vetExpertPl,
+      totalSemenStock: totalSemenStock ?? this.totalSemenStock,
+      locLat: locLat ?? this.locLat,
+      locLong: locLong ?? this.locLong,
+    );
+  }
 }
 

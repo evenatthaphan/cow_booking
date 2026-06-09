@@ -22,10 +22,27 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
 
-  final allSlots = [
-    "08:00", "09:00", "10:00", "11:00", "12:00",
-    "13:00", "14:00", "15:00", "16:00", "17:00"
-  ];
+
+  static const _startHour = 8;
+  static const _endHour   = 17; // slot สุดท้ายคือ 17:00
+
+  List<String> get allSlots => List.generate(
+        _endHour - _startHour + 1,
+        (i) {
+          final h = _startHour + i;
+          return '${h.toString().padLeft(2, '0')}:00';
+        },
+      );
+
+  // วันปัจจุบัน 
+  DateTime get _today => DateTime(
+        DateTime.now().year,
+        DateTime.now().month,
+        DateTime.now().day,
+      );
+
+  bool _isPastDay(DateTime day) =>
+      DateTime(day.year, day.month, day.day).isBefore(_today);
 
   @override
   void initState() {
@@ -79,8 +96,7 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-            height: 1, color: Colors.white.withOpacity(0.1)),
+        child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
       ),
     );
   }
@@ -109,10 +125,15 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
               "is_booked":  item['schedules_is_booked'] ?? 0,
               "created_at": item['schedules_created_at']?.toString() ?? '-',
             });
-          } catch (_) { continue; }
+          } catch (_) {
+            continue;
+          }
         }
 
-        setState(() { _scheduleData = grouped; _isLoading = false; });
+        setState(() {
+          _scheduleData = grouped;
+          _isLoading    = false;
+        });
       } else {
         setState(() => _isLoading = false);
       }
@@ -125,10 +146,16 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
       _scheduleData[DateTime(day.year, day.month, day.day)] ?? [];
 
   Future<void> _showSelectTimeDialog(DateTime day) async {
-    final events    = _getEventsForDay(day);
-    final existing  = events.map((e) => e["time"]).toSet();
+    // ── ดักวันที่ผ่านมา ──────────────────────────────────────────────────────
+    if (_isPastDay(day)) {
+      _showPastDaySnackbar();
+      return;
+    }
+
+    final events     = _getEventsForDay(day);
+    final existing   = events.map((e) => e["time"]).toSet();
     final selectable = allSlots.where((t) => !existing.contains(t)).toList();
-    final selected  = <String>[];
+    final selected   = <String>[];
 
     await showDialog(
       context: context,
@@ -140,7 +167,8 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
             decoration: BoxDecoration(
               color: Colors.green[50],
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius:
+                  const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Row(
               children: [
@@ -150,17 +178,22 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                     color: Colors.green[100],
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(Icons.add_alarm, color: Colors.green[700], size: 20),
+                  child: Icon(Icons.add_alarm,
+                      color: Colors.green[700], size: 20),
                 ),
                 const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text('เพิ่มเวลาว่าง',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
                     Text(
                       '${day.day}/${day.month}/${day.year}',
-                      style: TextStyle(fontSize: 12, color: Colors.green[700], fontWeight: FontWeight.normal),
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.green[700],
+                          fontWeight: FontWeight.normal),
                     ),
                   ],
                 ),
@@ -185,15 +218,21 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                       final isSelected = selected.contains(time);
                       return GestureDetector(
                         onTap: () => setS(() {
-                          isSelected ? selected.remove(time) : selected.add(time);
+                          isSelected
+                              ? selected.remove(time)
+                              : selected.add(time);
                         }),
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 150),
                           decoration: BoxDecoration(
-                            color: isSelected ? Colors.green : Colors.grey[100],
+                            color: isSelected
+                                ? Colors.green
+                                : Colors.grey[100],
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: isSelected ? Colors.green : Colors.grey[300]!,
+                              color: isSelected
+                                  ? Colors.green
+                                  : Colors.grey[300]!,
                             ),
                           ),
                           alignment: Alignment.center,
@@ -202,7 +241,9 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: isSelected ? Colors.white : Colors.grey[700],
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.grey[700],
                             ),
                           ),
                         ),
@@ -218,11 +259,13 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(ctx),
                     style: OutlinedButton.styleFrom(
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                       side: const BorderSide(color: Colors.grey),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('ยกเลิก', style: TextStyle(color: Colors.grey)),
+                    child: const Text('ยกเลิก',
+                        style: TextStyle(color: Colors.grey)),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -236,12 +279,16 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                           },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
-                      selected.isEmpty ? 'บันทึก' : 'บันทึก (${selected.length})',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      selected.isEmpty
+                          ? 'บันทึก'
+                          : 'บันทึก (${selected.length})',
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -253,11 +300,33 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
     );
   }
 
+  void _showPastDaySnackbar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.block, color: Colors.white, size: 18),
+            const SizedBox(width: 8),
+            Text(
+              'ไม่สามารถเพิ่มเวลาสำหรับวันที่ผ่านมาแล้ว',
+              style: GoogleFonts.notoSansThai(color: Colors.white),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.red[700],
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(12),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Future<void> _addAvailableTimes(DateTime day, List<String> times) async {
     final vet = context.read<DataVetExpert>().datauser;
     final uri = Uri.parse('$apiEndpoint/vet/vet/schedule');
     final body = {
-      "vet_expert_id": vet.id,
+      "vet_expert_id":  vet.id,
       "available_date": day.toIso8601String().split("T")[0],
       "available_time": times,
     };
@@ -291,10 +360,11 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
           ? const Center(child: CircularProgressIndicator(color: Colors.green))
           : Column(
               children: [
-                // Legend 
+                // Legend
                 Container(
                   color: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 10),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -307,7 +377,7 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                   ),
                 ),
 
-                // Calendar 
+                // Calendar
                 Container(
                   margin: const EdgeInsets.fromLTRB(12, 12, 12, 0),
                   decoration: BoxDecoration(
@@ -324,31 +394,45 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                   child: TableCalendar(
                     locale: 'th_TH',
                     focusedDay: _focusedDay,
-                    firstDay: DateTime(2020),
+                    firstDay: _today, // ← ย้อนหลังไม่ได้
                     lastDay: DateTime(2030),
                     calendarFormat: _calendarFormat,
-                    selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                    selectedDayPredicate: (day) =>
+                        isSameDay(_selectedDay, day),
                     onDaySelected: (selectedDay, focusedDay) async {
+                      // ── ดักวันที่ผ่านมา ──────────────────────────────────
+                      if (_isPastDay(selectedDay)) {
+                        _showPastDaySnackbar();
+                        return;
+                      }
+
                       setState(() {
                         _selectedDay = selectedDay;
                         _focusedDay  = focusedDay;
                       });
+
                       if (_getEventsForDay(selectedDay).isEmpty) {
                         await _showSelectTimeDialog(selectedDay);
                       }
                     },
-                    onFormatChanged: (f) => setState(() => _calendarFormat = f),
+                    onFormatChanged: (f) =>
+                        setState(() => _calendarFormat = f),
                     onPageChanged: (fd) => _focusedDay = fd,
                     headerStyle: HeaderStyle(
                       formatButtonDecoration: BoxDecoration(
                         color: Colors.green[50],
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green[200]!),
+                        border:
+                            Border.all(color: Colors.green[200]!),
                       ),
-                      formatButtonTextStyle: TextStyle(color: Colors.green[800], fontSize: 12),
-                      titleTextStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                      leftChevronIcon: Icon(Icons.chevron_left, color: Colors.green[700]),
-                      rightChevronIcon: Icon(Icons.chevron_right, color: Colors.green[700]),
+                      formatButtonTextStyle: TextStyle(
+                          color: Colors.green[800], fontSize: 12),
+                      titleTextStyle: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 16),
+                      leftChevronIcon: Icon(Icons.chevron_left,
+                          color: Colors.green[700]),
+                      rightChevronIcon: Icon(Icons.chevron_right,
+                          color: Colors.green[700]),
                     ),
                     calendarStyle: CalendarStyle(
                       todayDecoration: BoxDecoration(
@@ -359,27 +443,35 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                         color: Colors.green[700],
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      weekendTextStyle: TextStyle(color: Colors.red[400]),
+                      weekendTextStyle:
+                          TextStyle(color: Colors.red[400]),
+                      // ── วันในอดีตแสดงเป็นสีเทาจาง ──
+                      disabledTextStyle:
+                          const TextStyle(color: Color(0xFFCFCFCF)),
                     ),
                     calendarBuilders: CalendarBuilders(
                       defaultBuilder: (ctx, day, focusedDay) {
                         final events = _getEventsForDay(day);
                         if (events.isEmpty) return null;
-                        final color = _dayColor(events);
+                        final color      = _dayColor(events);
                         final isSelected = isSameDay(_selectedDay, day);
                         return Container(
                           margin: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: isSelected ? color : color.withOpacity(0.85),
+                            color: isSelected
+                                ? color
+                                : color.withOpacity(0.85),
                             borderRadius: BorderRadius.circular(8),
                             border: isSelected
-                                ? Border.all(color: Colors.white, width: 2)
+                                ? Border.all(
+                                    color: Colors.white, width: 2)
                                 : null,
                           ),
                           alignment: Alignment.center,
                           child: Text('${day.day}',
                               style: const TextStyle(
-                                  color: Colors.white, fontWeight: FontWeight.bold)),
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold)),
                         );
                       },
                     ),
@@ -388,17 +480,19 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
 
                 const SizedBox(height: 12),
 
-                // รายการ slot 
+                // รายการ slot
                 if (_selectedDay != null)
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 4),
                           child: Row(
                             children: [
-                              Icon(Icons.calendar_today, size: 16, color: Colors.green[700]),
+                              Icon(Icons.calendar_today,
+                                  size: 16, color: Colors.green[700]),
                               const SizedBox(width: 6),
                               Text(
                                 'วันที่ ${_selectedDay!.day}/${_selectedDay!.month}/${_selectedDay!.year}',
@@ -416,78 +510,111 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.event_available, size: 48, color: Colors.grey[300]),
+                                      Icon(Icons.event_available,
+                                          size: 48,
+                                          color: Colors.grey[300]),
                                       const SizedBox(height: 8),
-                                      Text('ยังไม่มีเวลาว่างในวันนี้',
-                                          style: TextStyle(color: Colors.grey[500])),
+                                      Text(
+                                        'ยังไม่มีเวลาว่างในวันนี้',
+                                        style: TextStyle(
+                                            color: Colors.grey[500]),
+                                      ),
                                       const SizedBox(height: 12),
                                       ElevatedButton.icon(
-                                        onPressed: () => _showSelectTimeDialog(_selectedDay!),
-                                        icon: const Icon(Icons.add, color: Colors.white, size: 16),
+                                        onPressed: () =>
+                                            _showSelectTimeDialog(
+                                                _selectedDay!),
+                                        icon: const Icon(Icons.add,
+                                            color: Colors.white,
+                                            size: 16),
                                         label: const Text('เพิ่มเวลาว่าง',
-                                            style: TextStyle(color: Colors.white)),
+                                            style: TextStyle(
+                                                color: Colors.white)),
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.green,
                                           shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10)),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      10)),
                                         ),
                                       ),
                                     ],
                                   ),
                                 )
                               : ListView(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
                                   children: [
-                                    ..._getEventsForDay(_selectedDay!).map((event) {
-                                      final isBooked = event["is_booked"] == 1;
+                                    ..._getEventsForDay(_selectedDay!)
+                                        .map((event) {
+                                      final isBooked =
+                                          event["is_booked"] == 1;
                                       return Container(
-                                        margin: const EdgeInsets.only(bottom: 8),
+                                        margin: const EdgeInsets.only(
+                                            bottom: 8),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
-                                          borderRadius: BorderRadius.circular(12),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black.withOpacity(0.04),
+                                              color: Colors.black
+                                                  .withOpacity(0.04),
                                               blurRadius: 4,
                                               offset: const Offset(0, 2),
                                             ),
                                           ],
                                         ),
                                         child: ListTile(
-                                          contentPadding: const EdgeInsets.symmetric(
-                                              horizontal: 16, vertical: 4),
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                  vertical: 4),
                                           leading: Container(
-                                            padding: const EdgeInsets.all(8),
+                                            padding:
+                                                const EdgeInsets.all(8),
                                             decoration: BoxDecoration(
                                               color: isBooked
                                                   ? Colors.red[50]
                                                   : Colors.green[50],
-                                              borderRadius: BorderRadius.circular(10),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      10),
                                             ),
                                             child: Icon(
                                               isBooked
                                                   ? Icons.event_busy
                                                   : Icons.event_available,
-                                              color: isBooked ? Colors.red : Colors.green,
+                                              color: isBooked
+                                                  ? Colors.red
+                                                  : Colors.green,
                                               size: 22,
                                             ),
                                           ),
                                           title: Text(
                                             'เวลา ${event["time"]} น.',
                                             style: const TextStyle(
-                                                fontSize: 15, fontWeight: FontWeight.w600),
+                                                fontSize: 15,
+                                                fontWeight:
+                                                    FontWeight.w600),
                                           ),
                                           trailing: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 10, vertical: 4),
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 4),
                                             decoration: BoxDecoration(
                                               color: isBooked
                                                   ? Colors.red[50]
                                                   : Colors.green[50],
-                                              borderRadius: BorderRadius.circular(20),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      20),
                                             ),
                                             child: Text(
-                                              isBooked ? 'ถูกจองแล้ว' : 'ว่าง',
+                                              isBooked
+                                                  ? 'ถูกจองแล้ว'
+                                                  : 'ว่าง',
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.bold,
@@ -500,21 +627,30 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
                                         ),
                                       );
                                     }),
-                                    // ปุ่มเพิ่มเวลา 
+                                    // ปุ่มเพิ่มเวลา
                                     Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8),
                                       child: OutlinedButton.icon(
                                         onPressed: () =>
-                                            _showSelectTimeDialog(_selectedDay!),
-                                        icon: Icon(Icons.add, color: Colors.green[700], size: 18),
+                                            _showSelectTimeDialog(
+                                                _selectedDay!),
+                                        icon: Icon(Icons.add,
+                                            color: Colors.green[700],
+                                            size: 18),
                                         label: Text('เพิ่มเวลาว่าง',
-                                            style: TextStyle(color: Colors.green[700])),
+                                            style: TextStyle(
+                                                color: Colors.green[700])),
                                         style: OutlinedButton.styleFrom(
-                                          side: BorderSide(color: Colors.green[400]!),
+                                          side: BorderSide(
+                                              color: Colors.green[400]!),
                                           shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(12)),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      12)),
                                           padding:
-                                              const EdgeInsets.symmetric(vertical: 12),
+                                              const EdgeInsets.symmetric(
+                                                  vertical: 12),
                                         ),
                                       ),
                                     ),
@@ -534,10 +670,12 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
           Container(
             width: 12,
             height: 12,
-            decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(3)),
+            decoration: BoxDecoration(
+                color: color, borderRadius: BorderRadius.circular(3)),
           ),
           const SizedBox(width: 4),
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(label,
+              style: const TextStyle(fontSize: 12, color: Colors.grey)),
         ],
       );
 }

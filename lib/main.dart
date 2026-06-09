@@ -9,21 +9,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get/get.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+// Background handler ต้องอยู่นอก class
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+}
 
 void main(List<String> arguments) async {
   WidgetsFlutterBinding.ensureInitialized(); // async ก่อน runApp
   // await fetchSomething();
- 
-  await dotenv.load(fileName: ".env");  // โหลด .env
+  await Firebase.initializeApp();
+
+  await dotenv.load(fileName: ".env"); // โหลด .env
+  // Background handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // ขอ permission
+  await FirebaseMessaging.instance.requestPermission();
   // set mapbox token
   MapboxOptions.setAccessToken(
     dotenv.env['MAPBOX_ACCESS_TOKEN']!,
   );
-  
 
   runApp(
     MultiProvider(
@@ -38,11 +51,9 @@ void main(List<String> arguments) async {
   );
 }
 
-
 Future<void> testAsync() {
   return Future.delayed(const Duration(seconds: 2), () => print("BBB"));
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -68,16 +79,15 @@ class MyApp extends StatelessWidget {
         // เพิ่มเช็กของ Admin เข้าไปด้วยเพื่อไม่ให้หลุดหน้าล็อกอิน
         if (userType == 'admin') {
           // สมมติว่าใน DataAdmin มีฟังก์ชันดึงข้อมูลตาม ID เช่นกัน
-          // await context.read<DataAdmin>().fetchAdminById(userId); 
+          // await context.read<DataAdmin>().fetchAdminById(userId);
           return const AdminDashboardPage(); // หรือหน้า Dashboard ของคุณ
         }
-
       } catch (e) {
-        print("เกิดข้อผิดพลาดในการดึงข้อมูล (อาจเพราะเซิร์ฟเวอร์ Render กำลังตื่น): $e");
-        
+        print(
+            "เกิดข้อผิดพลาดในการดึงข้อมูล (อาจเพราะเซิร์ฟเวอร์ Render กำลังตื่น): $e");
 
         // เพื่อป้องกันไม่ให้ข้อมูลล็อกอินหายเวลาเซิร์ฟเวอร์ Render ตอบกลับช้า
-        // ทางเลือก: หากดึงข้อมูลไม่สำเร็จเนื่องจากเซิร์ฟเวอร์หลับ แต่เครื่องมีข้อมูลอยู่แล้ว 
+        // ทางเลือก: หากดึงข้อมูลไม่สำเร็จเนื่องจากเซิร์ฟเวอร์หลับ แต่เครื่องมีข้อมูลอยู่แล้ว
         // ก็ปล่อยให้เข้าหน้า Home ไปก่อนได้เลย
         if (userType == 'farmer') return Homepage();
         if (userType == 'vet') return Homepagedoc();
@@ -85,10 +95,9 @@ class MyApp extends StatelessWidget {
       }
     }
 
-    return  Homepage(); //
+    return Homepage(); //
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Widget>(
@@ -98,7 +107,7 @@ class MyApp extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return GetMaterialApp(
             debugShowCheckedModeBanner: false,
-             localizationsDelegates: const [
+            localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
             ],

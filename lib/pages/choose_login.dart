@@ -6,6 +6,7 @@ import 'package:cow_booking/model/response/Vet_response.dart';
 import 'package:cow_booking/pages/admin/admin_change_password.dart';
 import 'package:cow_booking/pages/admin/admin_dashbord_page.dart';
 import 'package:cow_booking/pages/farmers/farmer_profile.dart';
+import 'package:cow_booking/share/forgot_password_page.dart';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,6 +21,7 @@ import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/recaptcha_stub.dart'
     if (dart.library.html) 'recaptcha_web.dart';
 import 'dart:developer';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class ChooseLogin extends StatefulWidget {
   const ChooseLogin({super.key});
@@ -49,7 +51,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
     });
   }
 
-   // CAPTCHA Dialog
+  // CAPTCHA Dialog
   Future<void> showCaptchaDialog() async {
     String? dialogCaptchaId;
     String? dialogCaptchaCode;
@@ -88,10 +90,13 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
           if (dialogCaptchaId == null) fetchCaptcha();
           return AlertDialog(
-            shape: RoundedRectangleBorder( borderRadius: BorderRadius.circular(18),),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
             title: const Text(
               "ยืนยันตัวตน",
-              style: TextStyle(fontWeight: FontWeight.bold,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
             ),
@@ -116,8 +121,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
                               dialogCaptchaCode ?? "",
@@ -127,7 +131,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-
                             IconButton(
                               onPressed: fetchCaptcha,
                               icon: const Icon(
@@ -147,12 +150,10 @@ class _ChooseLoginState extends State<ChooseLogin> {
                         decoration: InputDecoration(
                           hintText: "กรอก CAPTCHA",
                           border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
                               color: Colors.green,
                               width: 2,
@@ -167,7 +168,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
               vertical: 10,
             ),
             actions: [
-
               /// CANCEL
               TextButton(
                 onPressed: () {
@@ -186,18 +186,13 @@ class _ChooseLoginState extends State<ChooseLogin> {
                 onPressed: loading
                     ? null
                     : () async {
-
-                        if (dialogCaptchaController.text
-                            .trim()
-                            .isEmpty) {
+                        if (dialogCaptchaController.text.trim().isEmpty) {
                           return;
                         }
 
-                        final isValid =
-                            await verifyCaptcha(
+                        final isValid = await verifyCaptcha(
                           dialogCaptchaId!,
-                          dialogCaptchaController.text
-                              .trim(),
+                          dialogCaptchaController.text.trim(),
                         );
 
                         if (isValid) {
@@ -213,8 +208,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green[700],
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: const Text(
@@ -260,7 +254,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
       return false;
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -400,18 +393,29 @@ class _ChooseLoginState extends State<ChooseLogin> {
                         )),
                     Column(
                       children: [
-                        Text('คลิก',
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const ForgotPasswordPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'คลิก',
                             style: GoogleFonts.notoSansThai(
                               textStyle:
                                   Theme.of(context).textTheme.displayLarge,
                               fontSize: 16,
                               color: Colors.green,
                               fontWeight: FontWeight.bold,
-                              decoration:
-                                  TextDecoration.underline, // ขีดเส้นใต้
-                              decorationColor: Colors.green, // สีของเส้นใต้
-                              decorationThickness: 2, // ความหนาของเส้นใต้
-                            )),
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.green,
+                              decorationThickness: 2,
+                            ),
+                          ),
+                        )
                       ],
                     )
                   ],
@@ -472,7 +476,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
         final role = data['role'] as String?;
         final user = data['user'] as Map<String, dynamic>?;
 
-
         if (role == 'farmer' && user != null) {
           final farmer = Farmers.fromJson(user);
           context.read<DataFarmers>().setDataUser(farmer);
@@ -488,26 +491,25 @@ class _ChooseLoginState extends State<ChooseLogin> {
             Homepage(),
           );
           return;
-
         }
 
         if (role == 'vet' && user != null) {
           print("VET USER DATA: $user");
 
           final vet = VetExpert(
-            id:               user['vetexperts_id']            ?? 0,
-            vetExpertName:    user['vetexperts_name']          ?? '',
+            id: user['vetexperts_id'] ?? 0,
+            vetExpertName: user['vetexperts_name'] ?? '',
             vetExpertPassword: user['vetexperts_hashpassword'] ?? '',
-            password:         user['vetexperts_password']      ?? '',
-            phonenumber:      user['vetexperts_phonenumber']   ?? '',
-            vetExpertEmail:   user['vetexperts_email']         ?? '',
-            profileImage:     user['vetexperts_profile_image'] ?? '',
-            province:         user['vetexperts_province']      ?? '',
-            district:         user['vetexperts_district']      ?? '',
-            locality:         user['vetexperts_locality']      ?? '',
-            vetExpertAddress: user['vetexperts_address']       ?? '',
-            vetExpertPl:      user['vetexperts_license']       ?? '',
-            totalSemenStock:  user['total_semen_stock']        ?? 0,
+            password: user['vetexperts_password'] ?? '',
+            phonenumber: user['vetexperts_phonenumber'] ?? '',
+            vetExpertEmail: user['vetexperts_email'] ?? '',
+            profileImage: user['vetexperts_profile_image'] ?? '',
+            province: user['vetexperts_province'] ?? '',
+            district: user['vetexperts_district'] ?? '',
+            locality: user['vetexperts_locality'] ?? '',
+            vetExpertAddress: user['vetexperts_address'] ?? '',
+            vetExpertPl: user['vetexperts_license'] ?? '',
+            totalSemenStock: user['total_semen_stock'] ?? 0,
           );
 
           print("VET ID: ${vet.id}");
@@ -520,8 +522,27 @@ class _ChooseLoginState extends State<ChooseLogin> {
           await prefs.setBool('isLoggedIn', true);
           await prefs.setString('userType', 'vet');
           await prefs.setInt('userId', vet.id);
+          //await prefs.setInt('userId', vet.id);
+          try {
+            final fcmToken = await FirebaseMessaging.instance.getToken();
+            debugPrint('FCM Token: $fcmToken');
+            if (fcmToken != null) {
+              final fcmRes = await http.post(
+                Uri.parse('$apiEndpoint/vet/update-fcm-token'),
+                headers: {'Content-Type': 'application/json'},
+                body: jsonEncode({
+                  'vet_id': vet.id,
+                  'fcm_token': fcmToken,
+                }),
+              );
+              debugPrint('FCM update: ${fcmRes.statusCode} ${fcmRes.body}');
+            }
+          } catch (e) {
+            debugPrint('FCM error: $e');
+          }
 
           await _showSuccessDialogAndNavigate(context, Homepagedoc());
+
           return;
         }
 
@@ -536,13 +557,14 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
           // บังคับเปลี่ยนรหัสถ้า must_change_password == 1
           if (admin.mustChangePassword == 1) {
-            await _showSuccessDialogAndNavigate(context, AdminChangePasswordPage());
+            await _showSuccessDialogAndNavigate(
+                context, AdminChangePasswordPage());
           } else {
             await _showSuccessDialogAndNavigate(context, AdminDashboardPage());
           }
           return;
         }
-       
+
         // not role/user
         _showErrorDialog(context, "รูปแบบข้อมูลไม่ถูกต้อง");
       } else if (res.statusCode == 401) {
@@ -554,19 +576,16 @@ class _ChooseLoginState extends State<ChooseLogin> {
 
         try {
           final data = jsonDecode(res.body);
-          errorMessage =
-              data['error'] ?? data['message'] ?? errorMessage;
+          errorMessage = data['error'] ?? data['message'] ?? errorMessage;
         } catch (_) {}
 
         _showErrorDialog(context, errorMessage);
-        
       }
     } catch (e) {
       debugPrint('Login error: ' + e.toString());
       myWidget.showCustomSnackbar('Message', 'เกิดข้อผิดพลาดระหว่างล็อกอิน $e');
     }
   }
-
 
   Future<void> _showSuccessDialogAndNavigate(
     BuildContext context,
@@ -592,7 +611,6 @@ class _ChooseLoginState extends State<ChooseLogin> {
       );
     }
   }
-
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(

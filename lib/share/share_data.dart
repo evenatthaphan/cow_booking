@@ -184,7 +184,7 @@ class DataVetExpert with ChangeNotifier {
   Future<void> fetchVetById(int vetId) async {
     try {
       final res = await http.get(
-        Uri.parse('$apiEndpoint/vetexpert/$vetId'),
+        Uri.parse('$apiEndpoint/vet/vetexpert/$vetId'),
         headers: {'Content-Type': 'application/json'},
       );
 
