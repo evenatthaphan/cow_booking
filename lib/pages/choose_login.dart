@@ -22,6 +22,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:cow_booking/config/internal_config.dart';
 import 'dart:developer';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:recaptcha_enterprise_flutter/recaptcha_enterprise_flutter.dart';
 
 class ChooseLogin extends StatefulWidget {
   const ChooseLogin({super.key});
@@ -35,6 +36,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
   final TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false; // ตัวแปรสำหรับเปิด/ปิดรหัสผ่าน
   String url = "";
+  RecaptchaClient? _recaptchaClient; // reCAPTCHA Enterprise client
 
   final myWidget = MyWidget();
   final handleError = HandleError();
@@ -43,54 +45,73 @@ class _ChooseLoginState extends State<ChooseLogin> {
     super.initState();
     Configuration.getConfig().then(
       (value) {
-        // showCustomSnackbar("Message", 'Configuration loaded $value');
         url = value['apiEndpoint'].toString();
       },
     ).catchError((err) {
       // myWidget.showCustomSnackbar("Message", 'Error in initState: $err');
     });
+    _initRecaptcha();
   }
 
-  // CAPTCHA Dialog แบบ Jigsaw Slider
-  Future<void> showCaptchaDialog() async {
-    // ดึงคีย์จากไฟล์ .env มาใช่เพื่อความปลอดภัย
-    final String siteKey = dotenv.env['RECAPTCHA_ANDROID_KEY'] ?? '';
-    debugPrint('🔑 reCAPTCHA key loaded from .env: ${siteKey.isNotEmpty ? "✅" : "❌ missing"}');
+  // โหลด reCAPTCHA Enterprise client
+  Future<void> _initRecaptcha() async {
+    try {
+      final siteKey = dotenv.env['RECAPTCHA_ANDROID_KEY'] ?? '';
+      if (siteKey.isEmpty || siteKey == 'YOUR_RECAPTCHA_ANDROID_SITE_KEY_HERE') {
+        debugPrint('⚠️ RECAPTCHA_ANDROID_KEY ยังไม่ได้ตั้งค่าใน .env');
+        return;
+      }
+      _recaptchaClient = await Recaptcha.fetchClient(siteKey);
+      debugPrint('✅ reCAPTCHA พร้อมใช้งาน');
+    } catch (e) {
+      debugPrint('❌ reCAPTCHA init error: $e');
+    }
+  }
 
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          title: Text(
-            "ยืนยันตัวตน",
-            style: GoogleFonts.notoSansThai(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-          content: JigsawSliderCaptcha(
-            onSuccess: () async {
-              Navigator.of(context).pop();
-              await loginUser();
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                "ยกเลิก",
-                style: GoogleFonts.notoSansThai(color: Colors.grey),
+  // ฟังก์ชันหลักที่ปุ่มเรียก — ทำ reCAPTCHA ก่อน แล้วค่อย login
+  Future<void> _handleLoginSubmit() async {
+    if (loginIdController.text.trim().isEmpty ||
+        passwordController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.warning_amber_rounded, color: Colors.white),
+              const SizedBox(width: 10),
+              Text(
+                'กรุณากรอกชื่อผู้ใช้หรือรหัสผ่าน',
+                style: GoogleFonts.notoSansThai(color: Colors.white),
               ),
-            ),
-          ],
-        );
-      },
-    );
+            ],
+          ),
+          backgroundColor: Colors.orange[800],
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          margin: const EdgeInsets.all(16),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
+    // ถ้า reCAPTCHA พร้อม ให้ execute ก่อน
+    String? recaptchaToken;
+    if (_recaptchaClient != null) {
+      try {
+        recaptchaToken = await _recaptchaClient!.execute(RecaptchaAction.LOGIN());
+        debugPrint('✅ reCAPTCHA token: $recaptchaToken');
+      } catch (e) {
+        debugPrint('⚠️ reCAPTCHA execute error: $e');
+        // fail-open: ถ้า reCAPTCHA error ยังให้ login ได้
+      }
+    }
+
+    await loginUser(recaptchaToken: recaptchaToken);
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -264,36 +285,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
                   width: 250,
                   height: 50,
                   child: FilledButton(
-                      onPressed: () {
-                        if (loginIdController.text.trim().isEmpty ||
-                            passwordController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Row(
-                                children: [
-                                  const Icon(Icons.warning_amber_rounded,
-                                      color: Colors.white),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    'กรุณากรอกชื่อผู้ใช้หรือรหัสผ่าน',
-                                    style: GoogleFonts.notoSansThai(
-                                        color: Colors.white),
-                                  ),
-                                ],
-                              ),
-                              backgroundColor: Colors.orange[800],
-                              behavior: SnackBarBehavior.floating,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              margin: const EdgeInsets.all(16),
-                              duration: const Duration(seconds: 3),
-                            ),
-                          );
-                        } else {
-                          showCaptchaDialog();
-                        }
-                      },
+                      onPressed: _handleLoginSubmit,
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.all<Color>(
                             Colors.green[900]!),
@@ -316,7 +308,7 @@ class _ChooseLoginState extends State<ChooseLogin> {
     );
   }
 
-  Future<void> loginUser() async {
+  Future<void> loginUser({String? recaptchaToken}) async {
     final loginId = loginIdController.text.trim();
     final password = passwordController.text.trim();
 
@@ -328,14 +320,22 @@ class _ChooseLoginState extends State<ChooseLogin> {
     final uri = Uri.parse('$apiEndpoint/together/login');
 
     try {
+      // สร้าง body พร้อม recaptcha_token (ถ้ามี)
+      final Map<String, dynamic> requestBody = {
+        'loginId': loginId,
+        'password': password,
+        if (recaptchaToken != null) 'recaptcha_token': recaptchaToken,
+      };
+
       final res = await http.post(
         uri,
         headers: {'Content-Type': 'application/json; charset=utf-8'},
-        body: jsonEncode({'loginId': loginId, 'password': password}),
+        body: jsonEncode(requestBody),
       );
       debugPrint('Login URL: ' + uri.toString());
       debugPrint('Status: ' + res.statusCode.toString());
       debugPrint('Body: ' + res.body.toString());
+      debugPrint('reCAPTCHA token sent: ${recaptchaToken != null ? 'yes' : 'no'}');
 
       if (res.statusCode == 200 && res.body.isNotEmpty) {
         final data = jsonDecode(res.body);
@@ -495,159 +495,3 @@ class _ChooseLoginState extends State<ChooseLogin> {
   }
 }
 
-class JigsawSliderCaptcha extends StatefulWidget {
-  final VoidCallback onSuccess;
-
-  const JigsawSliderCaptcha({
-    super.key,
-    required this.onSuccess,
-  });
-
-  @override
-  State<JigsawSliderCaptcha> createState() => _JigsawSliderCaptchaState();
-}
-
-class _JigsawSliderCaptchaState extends State<JigsawSliderCaptcha> {
-  double _sliderValue = 0.0;
-  late double _targetX;
-  final double _targetY = 60.0;
-  final double _imageWidth = 280.0;
-  final double _imageHeight = 160.0;
-  final double _pieceSize = 40.0;
-  bool _showError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _generateRandomTarget();
-  }
-
-  void _generateRandomTarget() {
-    final random = Random();
-    _targetX = 80.0 + random.nextDouble() * 120.0;
-    _sliderValue = 0.0;
-    _showError = false;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/images/imagecow.jpg',
-                width: _imageWidth,
-                height: _imageHeight,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned(
-              left: _targetX,
-              top: _targetY,
-              child: Container(
-                width: _pieceSize,
-                height: _pieceSize,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.extension,
-                    color: Colors.white54,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: _sliderValue,
-              top: _targetY,
-              child: Container(
-                width: _pieceSize,
-                height: _pieceSize,
-                decoration: BoxDecoration(
-                  color: Colors.green[800],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white, width: 2),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(2, 2),
-                    )
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.extension,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Container(
-          width: _imageWidth,
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: Colors.transparent,
-              inactiveTrackColor: Colors.transparent,
-              thumbColor: Colors.green[800],
-              trackHeight: 30,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 15),
-            ),
-            child: Slider(
-              value: _sliderValue,
-              min: 0.0,
-              max: _imageWidth - _pieceSize,
-              onChanged: (value) {
-                setState(() {
-                  _sliderValue = value;
-                });
-              },
-              onChangeEnd: (value) {
-                if ((value - _targetX).abs() < 10.0) {
-                  widget.onSuccess();
-                } else {
-                  setState(() {
-                    _showError = true;
-                    _sliderValue = 0.0;
-                  });
-                  Future.delayed(const Duration(seconds: 1), () {
-                    if (mounted) {
-                      setState(() {
-                        _showError = false;
-                      });
-                    }
-                  });
-                }
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          _showError ? "ลองอีกครั้ง!" : "เลื่อนเพื่อต่อจิ๊กซอว์ให้ตรงช่อง",
-          style: GoogleFonts.notoSansThai(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: _showError ? Colors.red : Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
-}

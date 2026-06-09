@@ -319,18 +319,6 @@ class _MapPickerPageState extends State<MapPickerPage> {
   }
 
   void _confirm() {
-    if (_province.isEmpty || _district.isEmpty || _subDistrict.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'กรุณารอโหลดข้อมูลที่อยู่สักครู่ หรือหมุดตำแหน่งใหม่ให้ชัดเจน',
-            style: GoogleFonts.notoSansThai(color: Colors.white),
-          ),
-          backgroundColor: Colors.orange[800],
-        ),
-      );
-      return;
-    }
     Navigator.pop(
       context,
       MapPickerResult(

@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:cow_booking/config/internal_config.dart';
 import 'dart:math';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:cow_booking/share/share_witget.dart';
 
 class FarmerRegister extends StatefulWidget {
   const FarmerRegister({super.key});
@@ -35,6 +36,11 @@ class _FarmerRegisterState extends State<FarmerRegister> {
   bool isLoading        = false;
   bool _obscurePassword = true;
   bool _obscureConfirm  = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   // ── สี ──
   static const _green      = Color(0xFF2E7D32);
@@ -142,55 +148,18 @@ class _FarmerRegisterState extends State<FarmerRegister> {
     }
   }
 
-  // ─── register ─────────────────────────────────────────────────────────────
   Future<void> registerFarmer() async {
     if (!_formKey.currentState!.validate()) return;
     if (selectedLat == null) {
       _showErrorDialog("กรุณาเลือกตำแหน่งฟาร์มบนแผนที่");
       return;
     }
-    // ไม่ต้องเช็ครหัสผ่านซ้ำที่นี่ เพราะ validator จัดการแล้ว
-    await showCaptchaDialog();
-  }
 
-  // CAPTCHA Dialog แบบ Jigsaw Slider
-  Future<void> showCaptchaDialog() async {
-    // ดึงคีย์จากไฟล์ .env มาใช่เพื่อความปลอดภัย
-    final String siteKey = dotenv.env['RECAPTCHA_ANDROID_KEY'] ?? '';
-    debugPrint('🔑 reCAPTCHA key loaded from .env: ${siteKey.isNotEmpty ? "✅" : "❌ missing"}');
-
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: Text(
-            "ยืนยันตัวตน",
-            style: GoogleFonts.notoSansThai(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          content: JigsawSliderCaptcha(
-            onSuccess: () async {
-              Navigator.of(context).pop();
-              await submitForm();
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                "ยกเลิก",
-                style: GoogleFonts.notoSansThai(color: _labelColor),
-              ),
-            ),
-          ],
-        );
-      },
-    );
+    // ตรวจสอบความปลอดภัยด้วย GeeTest v4 (ใน share_witget)
+    final String? token = await verifySecurity(context);
+    if (token != null) {
+      await submitForm();
+    }
   }
 
   Future<void> submitForm() async {
@@ -208,9 +177,9 @@ class _FarmerRegisterState extends State<FarmerRegister> {
               : emailController.text.trim(),
           "farm_password": passwordController.text.trim(),
           "farm_address":  farmAddressController.text.trim(),
-          "province":      selectedProvince,
-          "district":      selectedDistrict,
-          "locality":      selectedSubDistrict,
+          "province":      selectedProvince.isEmpty ? "ไม่ระบุ" : selectedProvince,
+          "district":      selectedDistrict.isEmpty ? "ไม่ระบุ" : selectedDistrict,
+          "locality":      selectedSubDistrict.isEmpty ? "ไม่ระบุ" : selectedSubDistrict,
           "lat":           selectedLat,
           "lng":           selectedLng,
         }),
@@ -662,161 +631,4 @@ class _FarmerRegisterState extends State<FarmerRegister> {
       ),
     );
   }
-}
-
-class JigsawSliderCaptcha extends StatefulWidget {
-  final VoidCallback onSuccess;
-
-  const JigsawSliderCaptcha({
-    super.key,
-    required this.onSuccess,
-  });
-
-  @override
-  State<JigsawSliderCaptcha> createState() => _JigsawSliderCaptchaState();
-}
-
-class _JigsawSliderCaptchaState extends State<JigsawSliderCaptcha> {
-  double _sliderValue = 0.0;
-  late double _targetX;
-  final double _targetY = 60.0;
-  final double _imageWidth = 280.0;
-  final double _imageHeight = 160.0;
-  final double _pieceSize = 40.0;
-  bool _showError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _generateRandomTarget();
-  }
-
-  void _generateRandomTarget() {
-    final random = Random();
-    _targetX = 80.0 + random.nextDouble() * 120.0;
-    _sliderValue = 0.0;
-    _showError = false;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/images/imagecow.jpg',
-                width: _imageWidth,
-                height: _imageHeight,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned(
-              left: _targetX,
-              top: _targetY,
-              child: Container(
-                width: _pieceSize,
-                height: _pieceSize,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white, width: 2),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.extension,
-                    color: Colors.white54,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: _sliderValue,
-              top: _targetY,
-              child: Container(
-                width: _pieceSize,
-                height: _pieceSize,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2E7D32),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.white, width: 2),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(2, 2),
-                    )
-                  ],
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.extension,
-                    color: Colors.white,
-                    size: 24,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Container(
-          width: _imageWidth,
-          decoration: BoxDecoration(
-            color: Colors.grey[200],
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              activeTrackColor: Colors.transparent,
-              inactiveTrackColor: Colors.transparent,
-              thumbColor: const Color(0xFF2E7D32),
-              trackHeight: 30,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 15),
-            ),
-            child: Slider(
-              value: _sliderValue,
-              min: 0.0,
-              max: _imageWidth - _pieceSize,
-              onChanged: (value) {
-                setState(() {
-                  _sliderValue = value;
-                });
-              },
-              onChangeEnd: (value) {
-                if ((value - _targetX).abs() < 10.0) {
-                  widget.onSuccess();
-                } else {
-                  setState(() {
-                    _showError = true;
-                    _sliderValue = 0.0;
-                  });
-                  Future.delayed(const Duration(seconds: 1), () {
-                    if (mounted) {
-                      setState(() {
-                        _showError = false;
-                      });
-                    }
-                  });
-                }
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          _showError ? "ลองอีกครั้ง!" : "เลื่อนเพื่อต่อจิ๊กซอว์ให้ตรงช่อง",
-          style: GoogleFonts.notoSansThai(
-            fontSize: 14,
-            fontWeight: FontWeight.bold,
-            color: _showError ? Colors.red : Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
-}
+}
