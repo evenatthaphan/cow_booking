@@ -157,13 +157,9 @@ class _MapPickerPageState extends State<MapPickerPage> {
         addr.forEach((k, v) => print('  $k: $v'));
 
         setState(() {
-          _province    = _cleanThai(addr['province']     as String? ?? 
-                                    addr['state']         as String? ?? '');
-          _district    = _cleanThai(addr['county']        as String? ?? 
-                                    addr['city']           as String? ?? '');
-          _subDistrict = _cleanThai(addr['municipality']  as String? ?? 
-                                    addr['suburb']         as String? ?? 
-                                    addr['village']        as String? ?? '');
+          _province    = _parseProvince(addr);
+          _district    = _parseDistrict(addr);
+          _subDistrict = _parseSubDistrict(addr);
           _detail      = _parseDetail(addr);
         });
       }
@@ -174,9 +170,10 @@ class _MapPickerPageState extends State<MapPickerPage> {
     }
   }
 
-  /// จังหวัด — Nominatim ไทยใช้ 'state' เป็นหลัก
+  /// จังหวัด — Nominatim ไทยใช้ 'state' หรือ 'province' เป็นหลัก
   String _parseProvince(Map<String, dynamic> addr) {
-    final raw = (addr['state']        as String? ?? '').trim();
+    final raw = (addr['province']     as String? ??
+                 addr['state']        as String? ?? '').trim();
     return _cleanThai(raw);
   }
 
@@ -322,6 +319,18 @@ class _MapPickerPageState extends State<MapPickerPage> {
   }
 
   void _confirm() {
+    if (_province.isEmpty || _district.isEmpty || _subDistrict.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'กรุณารอโหลดข้อมูลที่อยู่สักครู่ หรือหมุดตำแหน่งใหม่ให้ชัดเจน',
+            style: GoogleFonts.notoSansThai(color: Colors.white),
+          ),
+          backgroundColor: Colors.orange[800],
+        ),
+      );
+      return;
+    }
     Navigator.pop(
       context,
       MapPickerResult(
