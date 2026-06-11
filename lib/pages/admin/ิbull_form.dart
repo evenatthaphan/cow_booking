@@ -35,11 +35,10 @@ class _BullFormPageState extends State<BullFormPage>
 
   bool get isEdit => widget.bull != null;
 
-  String get _adminType =>
-      Provider.of<DataAdmin>(context, listen: false)
-          .datauser
-          .adminType
-          .toString();
+  String get _adminType => Provider.of<DataAdmin>(context, listen: false)
+      .datauser
+      .adminType
+      .toString();
 
   @override
   void initState() {
@@ -53,12 +52,18 @@ class _BullFormPageState extends State<BullFormPage>
     _animCtrl.forward();
 
     final bull = widget.bull;
-    _nameCtrl      = TextEditingController(text: bull?['bulls_name']?.toString() ?? '');
-    _breedCtrl     = TextEditingController(text: bull?['bulls_breed']?.toString() ?? '');
-    _ageCtrl       = TextEditingController(text: bull?['bulls_age']?.toString() ?? '');
-    _characterCtrl = TextEditingController(text: bull?['bulls_characteristics']?.toString() ?? '');
-    _contestCtrl   = TextEditingController(text: bull?['bulls_contest_records']?.toString() ?? '');
-    _healthCtrl    = TextEditingController(text: bull?['bulls_HealthStatus']?.toString() ?? '');
+    _nameCtrl =
+        TextEditingController(text: bull?['bulls_name']?.toString() ?? '');
+    _breedCtrl =
+        TextEditingController(text: bull?['bulls_breed']?.toString() ?? '');
+    _ageCtrl =
+        TextEditingController(text: bull?['bulls_age']?.toString() ?? '');
+    _characterCtrl = TextEditingController(
+        text: bull?['bulls_characteristics']?.toString() ?? '');
+    _contestCtrl = TextEditingController(
+        text: bull?['bulls_contest_records']?.toString() ?? '');
+    _healthCtrl = TextEditingController(
+        text: bull?['bulls_HealthStatus']?.toString() ?? '');
 
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetchFarms());
   }
@@ -75,9 +80,8 @@ class _BullFormPageState extends State<BullFormPage>
     super.dispose();
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
   // API
-  // ══════════════════════════════════════════════════════════════════════════
+  
 
   Future<void> _fetchFarms() async {
     setState(() => _isFarmLoading = true);
@@ -120,14 +124,15 @@ class _BullFormPageState extends State<BullFormPage>
     setState(() => _isLoading = true);
 
     try {
+      final ageText = _ageCtrl.text.trim();
       final body = {
-        "bulls_name":            _nameCtrl.text.trim(),
-        "bulls_breed":           _breedCtrl.text.trim(),
-        "bulls_age":             int.tryParse(_ageCtrl.text.trim()),
+        "bulls_name": _nameCtrl.text.trim(),
+        "bulls_breed": _breedCtrl.text.trim(),
+        if (ageText.isNotEmpty) "bulls_age": int.tryParse(ageText),
         "bulls_characteristics": _characterCtrl.text.trim(),
         "bulls_contest_records": _contestCtrl.text.trim(),
-        "bulls_HealthStatus":    _healthCtrl.text.trim(),
-        "ref_farm_id":           _selectedFarmId,
+        "bulls_HealthStatus": _healthCtrl.text.trim(),
+        "ref_farm_id": _selectedFarmId,
       };
 
       http.Response res;
@@ -136,13 +141,19 @@ class _BullFormPageState extends State<BullFormPage>
         final bullId = widget.bull!['bulls_id'];
         res = await http.put(
           Uri.parse('$apiEndpoint/admin/bulls/update/$bullId'),
-          headers: {'Content-Type': 'application/json', 'admin-type': _adminType},
+          headers: {
+            'Content-Type': 'application/json',
+            'admin-type': _adminType
+          },
           body: jsonEncode(body),
         );
       } else {
         res = await http.post(
           Uri.parse('$apiEndpoint/admin/bulls/create'),
-          headers: {'Content-Type': 'application/json', 'admin-type': _adminType},
+          headers: {
+            'Content-Type': 'application/json',
+            'admin-type': _adminType
+          },
           body: jsonEncode(body),
         );
       }
@@ -180,7 +191,8 @@ class _BullFormPageState extends State<BullFormPage>
               decoration: BoxDecoration(
                   color: Colors.red[50],
                   borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.delete_outline, color: Colors.red, size: 22),
+              child:
+                  const Icon(Icons.delete_outline, color: Colors.red, size: 22),
             ),
             const SizedBox(width: 10),
             const Text('ลบพ่อพันธุ์',
@@ -298,6 +310,7 @@ class _BullFormPageState extends State<BullFormPage>
     int maxLines = 1,
     bool required = true,
     String? hint,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
@@ -305,8 +318,15 @@ class _BullFormPageState extends State<BullFormPage>
         controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
-        validator: (v) =>
-            required && (v == null || v.trim().isEmpty) ? 'กรุณากรอก $label' : null,
+        validator: (v) {
+          if (required && (v == null || v.trim().isEmpty)) {
+            return 'กรุณากรอก $label';
+          }
+          if (validator != null) {
+            return validator(v);
+          }
+          return null;
+        },
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
@@ -391,7 +411,7 @@ class _BullFormPageState extends State<BullFormPage>
             ? const SizedBox.shrink()
             : Icon(Icons.keyboard_arrow_down_rounded, color: Colors.grey[500]),
         items: _farms.map((farm) {
-          final id   = int.tryParse(farm['frams_id'].toString()) ?? 0;
+          final id = int.tryParse(farm['frams_id'].toString()) ?? 0;
           final name = farm['frams_name']?.toString() ?? '-';
           return DropdownMenuItem<int>(
             value: id,
@@ -508,7 +528,8 @@ class _BullFormPageState extends State<BullFormPage>
                       ),
                       child: Text(
                         '🐂',
-                        style: TextStyle(fontSize: 18, color: Colors.brown[700]),
+                        style:
+                            TextStyle(fontSize: 18, color: Colors.brown[700]),
                       ),
                     ),
                     const SizedBox(width: 14),
@@ -517,7 +538,9 @@ class _BullFormPageState extends State<BullFormPage>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            isEdit ? 'แก้ไขข้อมูลพ่อพันธุ์' : 'ข้อมูลพ่อพันธุ์ใหม่',
+                            isEdit
+                                ? 'แก้ไขข้อมูลพ่อพันธุ์'
+                                : 'ข้อมูลพ่อพันธุ์ใหม่',
                             style: const TextStyle(
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           ),
@@ -526,7 +549,8 @@ class _BullFormPageState extends State<BullFormPage>
                             isEdit
                                 ? 'แก้ไขและบันทึกข้อมูลที่ต้องการเปลี่ยน'
                                 : 'กรอกข้อมูลให้ครบถ้วนเพื่อเพิ่มพ่อพันธุ์',
-                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.grey[500]),
                           ),
                         ],
                       ),
@@ -556,6 +580,13 @@ class _BullFormPageState extends State<BullFormPage>
                 keyboardType: TextInputType.number,
                 required: false,
                 hint: 'เช่น 3',
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return null;
+                  final age = int.tryParse(value.trim());
+                  if (age == null) return 'โปรดกรอกตัวเลขในช่องอายุ';
+                  if (age <= 0) return 'อายุต้องมากกว่า 0';
+                  return null;
+                },
               ),
 
               // ── Section: ฟาร์ม ─────────────────────────────────────────

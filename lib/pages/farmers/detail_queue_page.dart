@@ -4,6 +4,7 @@ import 'package:cow_booking/model/response/booking_response.dart';
 import 'package:cow_booking/pages/Animal_husbandry/doc_profile.dart';
 import 'package:cow_booking/pages/farmers/farmer_navbar.dart';
 import 'package:cow_booking/pages/farmers/farmer_profile.dart';
+import 'package:cow_booking/share/minimap_widget.dart';
 import 'package:cow_booking/share/share_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -26,6 +27,7 @@ class DetailqueueFarmerPage extends StatefulWidget {
 class _DetailqueueFarmerPageState extends State<DetailqueueFarmerPage> {
   bool _isLoading = false;
   String _currentStatus = '';
+  Future<Map<String, double?>?>? _coordsFuture;
 
   @override
   void initState() {
@@ -132,7 +134,7 @@ class _DetailqueueFarmerPageState extends State<DetailqueueFarmerPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMapSection(booking),
+                  //_buildMapSection(booking),
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -209,51 +211,91 @@ class _DetailqueueFarmerPageState extends State<DetailqueueFarmerPage> {
   }
 
   // แผนที่ placeholder 
-  Widget _buildMapSection(BookingResponse booking) {
-    return Stack(
-      children: [
-        Container(
-          width: double.infinity,
-          height: 220,
-          color: const Color(0xFFD6EAD4),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.map_outlined, size: 64, color: Colors.green[700]),
-              const SizedBox(height: 8),
-              Text("แผนที่บ้านเกษตรกร",
-                  style: TextStyle(
-                      fontSize: 15, color: Colors.green[800], fontWeight: FontWeight.w500)),
-              const SizedBox(height: 4),
-              Text("กำลังโหลดแผนที่...",
-                  style: TextStyle(fontSize: 12, color: Colors.green[600])),
-            ],
-          ),
-        ),
-        Positioned(
-          bottom: 12,
-          left: 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.92),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.location_on, size: 16, color: Colors.red),
-                const SizedBox(width: 4),
-                Text(booking.farmersName,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  // Widget _buildMapSection(BookingResponse booking) {
+  //   return FutureBuilder<Map<String, double?>?>(
+  //     future: _coordsFuture,
+  //     builder: (context, snapshot) {
+  //       final lat = snapshot.data?['lat'];
+  //       final lng = snapshot.data?['lng'];
+  //       final hasCoords = lat != null && lng != null;
+  //       debugPrint('🗺️ lat: $lat, lng: $lng, hasCoords: $hasCoords');
+
+  //       return Padding(
+  //         padding: const EdgeInsets.all(16),
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             _sectionLabel("ตำแหน่งเกษตรกร"),
+  //             ClipRRect(
+  //               borderRadius: BorderRadius.circular(14),
+  //               child: SizedBox(
+  //                 height: 220,
+  //                 child: snapshot.connectionState == ConnectionState.waiting
+  //                     ? Container(
+  //                         color: const Color(0xFFD6EAD4),
+  //                         child: const Center(
+  //                           child:
+  //                               CircularProgressIndicator(color: Colors.green),
+  //                         ),
+  //                       )
+  //                     : snapshot.connectionState == ConnectionState.done &&
+  //                             hasCoords
+  //                         ? Stack(
+  //                             children: [
+  //                               MiniMap(lat: lat!, lng: lng!, apiKey: ''),
+  //                               Positioned(
+  //                                 bottom: 12,
+  //                                 left: 12,
+  //                                 child: Container(
+  //                                   padding: const EdgeInsets.symmetric(
+  //                                       horizontal: 12, vertical: 6),
+  //                                   decoration: BoxDecoration(
+  //                                     color: Colors.white.withOpacity(0.92),
+  //                                     borderRadius: BorderRadius.circular(20),
+  //                                     boxShadow: const [
+  //                                       BoxShadow(
+  //                                           color: Colors.black12,
+  //                                           blurRadius: 4)
+  //                                     ],
+  //                                   ),
+  //                                   child: Row(
+  //                                     mainAxisSize: MainAxisSize.min,
+  //                                     children: [
+  //                                       const Icon(Icons.location_on,
+  //                                           size: 16, color: Colors.red),
+  //                                       const SizedBox(width: 4),
+  //                                       Text(booking.farmersName,
+  //                                           style: const TextStyle(
+  //                                               fontSize: 13,
+  //                                               fontWeight: FontWeight.bold)),
+  //                                     ],
+  //                                   ),
+  //                                 ),
+  //                               ),
+  //                             ],
+  //                           )
+  //                         : Container(
+  //                             color: const Color(0xFFD6EAD4),
+  //                             child: Column(
+  //                               mainAxisAlignment: MainAxisAlignment.center,
+  //                               children: [
+  //                                 Icon(Icons.map_outlined,
+  //                                     size: 64, color: Colors.green[700]),
+  //                                 Text('ไม่มีข้อมูลพิกัด',
+  //                                     style: TextStyle(
+  //                                         fontSize: 15,
+  //                                         color: Colors.green[800])),
+  //                               ],
+  //                             ),
+  //                           ),
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
 
   Widget _sectionLabel(String label) => Padding(
         padding: const EdgeInsets.only(bottom: 6),

@@ -14,15 +14,15 @@ class Editpasswoedpage extends StatefulWidget {
 }
 
 class _EditpasswoedpageState extends State<Editpasswoedpage> {
-  final _formKey    = GlobalKey<FormState>();
-  bool _isLoading   = false;
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
-  final _oldPassCtrl  = TextEditingController();
-  final _newPassCtrl  = TextEditingController();
+  final _oldPassCtrl = TextEditingController();
+  final _newPassCtrl = TextEditingController();
   final _confPassCtrl = TextEditingController();
 
-  bool _showOld  = false;
-  bool _showNew  = false;
+  bool _showOld = false;
+  bool _showNew = false;
   bool _showConf = false;
 
   @override
@@ -90,8 +90,7 @@ class _EditpasswoedpageState extends State<Editpasswoedpage> {
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-            height: 1, color: Colors.white.withOpacity(0.1)),
+        child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
       ),
     );
   }
@@ -151,7 +150,6 @@ class _EditpasswoedpageState extends State<Editpasswoedpage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               // ── Icon ─────────────────────────────────────────────────
               Center(
                 child: Container(
@@ -166,8 +164,10 @@ class _EditpasswoedpageState extends State<Editpasswoedpage> {
               ),
               const SizedBox(height: 8),
               const Center(
-                child: Text('กรอกรหัสผ่านเดิมและรหัสผ่านใหม่',
-                    style: TextStyle(fontSize: 13, color: Colors.grey)),
+                child: Text(
+                    'รหัสผ่านต้องมีอย่างน้อย 8 ตัว ตัวอักษร ตัวเลข และอักขระพิเศษ',
+                    style: TextStyle(fontSize: 13, color: Colors.grey),
+                    textAlign: TextAlign.center),
               ),
 
               const SizedBox(height: 24),
@@ -180,8 +180,7 @@ class _EditpasswoedpageState extends State<Editpasswoedpage> {
                   label: 'รหัสผ่านเดิม',
                   show: _showOld,
                   onToggle: () => setState(() => _showOld = !_showOld),
-                  validator: (v) =>
-                      v!.isEmpty ? 'กรุณากรอกรหัสผ่านเดิม' : null,
+                  validator: (v) => v!.isEmpty ? 'กรุณากรอกรหัสผ่านเดิม' : null,
                 ),
                 _divider(),
                 _passField(
@@ -191,8 +190,18 @@ class _EditpasswoedpageState extends State<Editpasswoedpage> {
                   onToggle: () => setState(() => _showNew = !_showNew),
                   validator: (v) {
                     if (v!.isEmpty) return 'กรุณากรอกรหัสผ่านใหม่';
-                    if (v.length < 6) return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
-                    if (v == _oldPassCtrl.text) return 'รหัสผ่านใหม่ต้องไม่เหมือนเดิม';
+                    if (v.length < 8)
+                      return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+                    if (!RegExp(r'[a-zA-Z]').hasMatch(v))
+                      return 'ต้องมีตัวอักษรภาษาอังกฤษอย่างน้อย 1 ตัว';
+                    if (!RegExp(r'[0-9]').hasMatch(v))
+                      return 'ต้องมีตัวเลขอย่างน้อย 1 ตัว';
+                    if (!RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-+=\[\]\\\/`~;]')
+                        .hasMatch(v)) {
+                      return 'ต้องมีอักขระพิเศษอย่างน้อย 1 ตัว เช่น !@#\$%';
+                    }
+                    if (v == _oldPassCtrl.text)
+                      return 'รหัสผ่านใหม่ต้องไม่เหมือนเดิม';
                     return null;
                   },
                 ),
@@ -225,7 +234,10 @@ class _EditpasswoedpageState extends State<Editpasswoedpage> {
                               fontWeight: FontWeight.bold,
                               color: Colors.green[800])),
                       const SizedBox(height: 8),
-                      _requirement('อย่างน้อย 6 ตัวอักษร'),
+                      _requirement('อย่างน้อย 8 ตัวอักษร'),
+                      _requirement('มีตัวอักษรภาษาอังกฤษอย่างน้อย 1 ตัว'),
+                      _requirement('มีตัวเลขอย่างน้อย 1 ตัว'),
+                      _requirement('มีอักขระพิเศษอย่างน้อย 1 ตัว เช่น !@#\$%'),
                       _requirement('ต้องไม่เหมือนรหัสผ่านเดิม'),
                     ],
                   ),
@@ -248,7 +260,8 @@ class _EditpasswoedpageState extends State<Editpasswoedpage> {
                   ),
                   child: _isLoading
                       ? const SizedBox(
-                          width: 20, height: 20,
+                          width: 20,
+                          height: 20,
                           child: CircularProgressIndicator(
                               color: Colors.white, strokeWidth: 2))
                       : const Text('เปลี่ยนรหัสผ่าน',
@@ -315,14 +328,11 @@ class _EditpasswoedpageState extends State<Editpasswoedpage> {
                 validator: validator,
                 decoration: InputDecoration(
                   labelText: label,
-                  labelStyle:
-                      const TextStyle(fontSize: 13, color: Colors.grey),
+                  labelStyle: const TextStyle(fontSize: 13, color: Colors.grey),
                   border: InputBorder.none,
                   suffixIcon: IconButton(
-                    icon: Icon(
-                        show ? Icons.visibility_off : Icons.visibility,
-                        size: 18,
-                        color: Colors.grey),
+                    icon: Icon(show ? Icons.visibility_off : Icons.visibility,
+                        size: 18, color: Colors.grey),
                     onPressed: onToggle,
                   ),
                 ),
@@ -340,8 +350,7 @@ class _EditpasswoedpageState extends State<Editpasswoedpage> {
                 size: 14, color: Colors.green[600]),
             const SizedBox(width: 6),
             Text(text,
-                style:
-                    const TextStyle(fontSize: 12, color: Colors.grey)),
+                style: const TextStyle(fontSize: 12, color: Colors.grey)),
           ],
         ),
       );

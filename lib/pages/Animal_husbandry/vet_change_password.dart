@@ -17,12 +17,12 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  final _oldPassCtrl  = TextEditingController();
-  final _newPassCtrl  = TextEditingController();
+  final _oldPassCtrl = TextEditingController();
+  final _newPassCtrl = TextEditingController();
   final _confPassCtrl = TextEditingController();
 
-  bool _showOld  = false;
-  bool _showNew  = false;
+  bool _showOld = false;
+  bool _showNew = false;
   bool _showConf = false;
 
   @override
@@ -79,8 +79,7 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-            height: 1, color: Colors.white.withOpacity(0.1)),
+        child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
       ),
     );
   }
@@ -90,7 +89,8 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
     setState(() => _isLoading = true);
 
     try {
-      final vetId = Provider.of<DataVetExpert>(context, listen: false).datauser.id;
+      final vetId =
+          Provider.of<DataVetExpert>(context, listen: false).datauser.id;
 
       final response = await http.put(
         Uri.parse('$apiEndpoint/vet/vetexpert/change-password/$vetId'),
@@ -149,7 +149,8 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
                     color: Colors.orange[50],
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(Icons.lock_outline, size: 48, color: Colors.orange[700]),
+                  child: Icon(Icons.lock_outline,
+                      size: 48, color: Colors.orange[700]),
                 ),
               ),
               const SizedBox(height: 8),
@@ -176,7 +177,8 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
                   onToggle: () => setState(() => _showNew = !_showNew),
                   validator: (v) {
                     if (v!.isEmpty) return 'กรุณากรอกรหัสผ่านใหม่';
-                    if (v.length < 6) return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+                    if (v.length < 6)
+                      return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
                     return null;
                   },
                 ),
@@ -187,8 +189,19 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
                   show: _showConf,
                   onToggle: () => setState(() => _showConf = !_showConf),
                   validator: (v) {
-                    if (v!.isEmpty) return 'กรุณายืนยันรหัสผ่าน';
-                    if (v != _newPassCtrl.text) return 'รหัสผ่านไม่ตรงกัน';
+                    if (v!.isEmpty) return 'กรุณากรอกรหัสผ่านใหม่';
+                    if (v.length < 8)
+                      return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+                    if (!RegExp(r'[a-zA-Z]').hasMatch(v))
+                      return 'ต้องมีตัวอักษรภาษาอังกฤษอย่างน้อย 1 ตัว';
+                    if (!RegExp(r'[0-9]').hasMatch(v))
+                      return 'ต้องมีตัวเลขอย่างน้อย 1 ตัว';
+                    if (!RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-+=\[\]\\\/`~;]')
+                        .hasMatch(v)) {
+                      return 'ต้องมีอักขระพิเศษอย่างน้อย 1 ตัว เช่น !@#\$%';
+                    }
+                    if (v == _oldPassCtrl.text)
+                      return 'รหัสผ่านใหม่ต้องไม่เหมือนเดิม';
                     return null;
                   },
                 ),
@@ -203,14 +216,21 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange[700],
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                     elevation: 2,
                   ),
                   child: _isLoading
-                      ? const SizedBox(width: 20, height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
                       : const Text('เปลี่ยนรหัสผ่าน',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                          style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
                 ),
               ),
             ],
@@ -223,20 +243,29 @@ class _VetChangePasswordPageState extends State<VetChangePasswordPage> {
   Widget _sectionLabel(String label) => Padding(
         padding: const EdgeInsets.only(bottom: 8, left: 2),
         child: Text(label,
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,
-                color: Colors.green[800], letterSpacing: 0.5)),
+            style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[800],
+                letterSpacing: 0.5)),
       );
 
   Widget _infoCard(List<Widget> children) => Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 6,
+                offset: const Offset(0, 2))
+          ],
         ),
         child: Column(children: children),
       );
 
-  Widget _divider() => const Divider(height: 1, indent: 52, color: Color(0xFFEEEEEE));
+  Widget _divider() =>
+      const Divider(height: 1, indent: 52, color: Color(0xFFEEEEEE));
 
   Widget _passField({
     required TextEditingController controller,

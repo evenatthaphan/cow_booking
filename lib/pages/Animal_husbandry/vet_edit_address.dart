@@ -63,18 +63,9 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       elevation: 0,
-      backgroundColor: _green,
+      backgroundColor: Colors.white,
       automaticallyImplyLeading: true,
-      iconTheme: const IconThemeData(color: Colors.white),
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1B5E20), Color(0xFF43A047)],
-          ),
-        ),
-      ),
+      iconTheme: IconThemeData(color: Colors.green[900]),
       title: Row(
         children: [
           Container(
@@ -97,7 +88,7 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
                 style: GoogleFonts.notoSansThai(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Colors.white,
+                  color: Colors.green[900],
                   height: 1.1,
                 ),
               ),
@@ -105,7 +96,7 @@ class _VetEditAddressPageState extends State<VetEditAddressPage> {
                 'แก้ไขที่อยู่',
                 style: GoogleFonts.notoSansThai(
                   fontSize: 11,
-                  color: Colors.white70,
+                  color: Colors.green[900],
                   height: 1.1,
                 ),
               ),

@@ -12,6 +12,14 @@ import 'package:cow_booking/config/internal_config.dart';
 class DataFarmers with ChangeNotifier {
   int _period = 0;
   int _lastperiod = 0;
+  int _imageVersion = 0;
+  int get imageVersion => _imageVersion;
+
+  // เรียกหลัง fetchFarmerById สำเร็จ
+  void bumpImageVersion() {
+    _imageVersion++;
+    notifyListeners();
+  }
 
   Farmers _datauser = Farmers(
     farmersId: 0,

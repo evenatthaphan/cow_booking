@@ -1,5 +1,6 @@
 import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/pages/Home/map_picker_page.dart';
+import 'package:cow_booking/share/recaptcha_webview.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -18,31 +19,32 @@ class DoctorRegis extends StatefulWidget {
 class _DoctorRegisState extends State<DoctorRegis> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController nameController            = TextEditingController();
-  final TextEditingController phoneController           = TextEditingController();
-  final TextEditingController emailController           = TextEditingController();
-  final TextEditingController addressController         = TextEditingController();
-  final TextEditingController passwordController        = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   // ── ข้อมูลจากแผนที่ ──
   double? selectedLat;
   double? selectedLng;
-  String  selectedProvince    = '';
-  String  selectedDistrict    = '';
-  String  selectedSubDistrict = '';
+  String selectedProvince = '';
+  String selectedDistrict = '';
+  String selectedSubDistrict = '';
 
-  File?   _imageFile;
+  File? _imageFile;
   String? _imageFileName;
 
-  bool isLoading        = false;
+  bool isLoading = false;
   bool _obscurePassword = true;
-  bool _obscureConfirm  = true;
+  bool _obscureConfirm = true;
 
   // ── สี ──
-  static const _green      = Color(0xFF2E7D32);
+  static const _green = Color(0xFF2E7D32);
   static const _greenLight = Color(0xFFE8F5E9);
-  static const _border     = Color(0xFFDDDDDD);
+  static const _border = Color(0xFFDDDDDD);
   static const _labelColor = Color(0xFF757575);
 
   static const _googleApiKey = 'YOUR_GOOGLE_API_KEY';
@@ -135,10 +137,10 @@ class _DoctorRegisState extends State<DoctorRegis> {
 
     if (result != null) {
       setState(() {
-        selectedLat         = result.lat;
-        selectedLng         = result.lng;
-        selectedProvince    = result.province;
-        selectedDistrict    = result.district;
+        selectedLat = result.lat;
+        selectedLng = result.lng;
+        selectedProvince = result.province;
+        selectedDistrict = result.district;
         selectedSubDistrict = result.subDistrict;
         if (addressController.text.isEmpty && result.addressDetail.isNotEmpty) {
           addressController.text = result.addressDetail;
@@ -158,8 +160,27 @@ class _DoctorRegisState extends State<DoctorRegis> {
       _showErrorDialog("กรุณาเลือกตำแหน่งที่อยู่บนแผนที่");
       return;
     }
-    // ไม่ต้องเช็ครหัสผ่านซ้ำที่นี่ เพราะ validator จัดการแล้ว
-    await showCaptchaDialog();
+
+    const siteKey = '6Leg1xUtAAAAALU0bfc2Z2Qz-xboQULyqBPCTEsd';
+
+    String? recaptchaToken;
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RecaptchaV2Page(
+          siteKey: siteKey,
+          onTokenReceived: (token) {
+            recaptchaToken = token;
+          },
+        ),
+      ),
+    );
+
+    if (recaptchaToken == null) {
+      debugPrint('⚠️ ไม่ได้รับ reCAPTCHA token');
+      return;
+    }
+
+    await submitForm();
   }
 
   Future<void> showCaptchaDialog() async {
@@ -180,7 +201,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
             if (response.statusCode == 201) {
               final data = jsonDecode(response.body);
               setState(() {
-                dialogCaptchaId   = data['captchaId'];
+                dialogCaptchaId = data['captchaId'];
                 dialogCaptchaCode = data['captcha'];
               });
             }
@@ -194,13 +215,13 @@ class _DoctorRegisState extends State<DoctorRegis> {
         if (dialogCaptchaId == null) fetchCaptcha();
 
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: Text("ยืนยันตัวตน",
               style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
           content: loading
               ? const SizedBox(
-                  height: 60,
-                  child: Center(child: CircularProgressIndicator()))
+                  height: 60, child: Center(child: CircularProgressIndicator()))
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,8 +264,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
                       controller: dialogCaptchaController,
                       decoration: InputDecoration(
                         hintText: "กรอก CAPTCHA",
-                        hintStyle:
-                            GoogleFonts.notoSansThai(color: _labelColor),
+                        hintStyle: GoogleFonts.notoSansThai(color: _labelColor),
                         border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8)),
                         contentPadding: const EdgeInsets.symmetric(
@@ -314,14 +334,14 @@ class _DoctorRegisState extends State<DoctorRegis> {
         Uri.parse('$apiEndpoint/vet/register'),
       );
 
-      request.fields['VetExpert_name']     = nameController.text.trim();
+      request.fields['VetExpert_name'] = nameController.text.trim();
       request.fields['VetExpert_password'] = passwordController.text.trim();
-      request.fields['phonenumber']        = phoneController.text.trim();
-      request.fields['VetExpert_email']    = emailController.text.trim();
-      request.fields['VetExpert_address']  = addressController.text.trim();
-      request.fields['province']           = selectedProvince;
-      request.fields['district']           = selectedDistrict;
-      request.fields['locality']           = selectedSubDistrict;
+      request.fields['phonenumber'] = phoneController.text.trim();
+      request.fields['VetExpert_email'] = emailController.text.trim();
+      request.fields['VetExpert_address'] = addressController.text.trim();
+      request.fields['province'] = selectedProvince;
+      request.fields['district'] = selectedDistrict;
+      request.fields['locality'] = selectedSubDistrict;
       if (selectedLat != null) request.fields['lat'] = selectedLat.toString();
       if (selectedLng != null) request.fields['lng'] = selectedLng.toString();
 
@@ -348,8 +368,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text("ลงทะเบียนสำเร็จ ✓",
             style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
         content: Text(message, style: GoogleFonts.notoSansThai()),
@@ -374,16 +393,14 @@ class _DoctorRegisState extends State<DoctorRegis> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text("เกิดข้อผิดพลาด",
             style: GoogleFonts.notoSansThai(fontWeight: FontWeight.w600)),
         content: Text(message, style: GoogleFonts.notoSansThai()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child:
-                Text("ตกลง", style: GoogleFonts.notoSansThai(color: _green)),
+            child: Text("ตกลง", style: GoogleFonts.notoSansThai(color: _green)),
           ),
         ],
       ),
@@ -432,7 +449,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
     );
     if (pickedFile != null) {
       setState(() {
-        _imageFile     = File(pickedFile.path);
+        _imageFile = File(pickedFile.path);
         _imageFileName = pickedFile.name;
       });
     }
@@ -558,7 +575,8 @@ class _DoctorRegisState extends State<DoctorRegis> {
             validator: validator ??
                 (value) {
                   if (!required) return null;
-                  if (value == null || value.trim().isEmpty) return "กรุณากรอก$label";
+                  if (value == null || value.trim().isEmpty)
+                    return "กรุณากรอก$label";
                   return null;
                 },
           ),
@@ -585,12 +603,10 @@ class _DoctorRegisState extends State<DoctorRegis> {
             ],
           ),
           const SizedBox(height: 6),
-
           GestureDetector(
             onTap: _openMapPicker,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
               decoration: BoxDecoration(
                 color: hasPicked ? _greenLight : Colors.white,
                 border: Border.all(
@@ -602,9 +618,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
               child: Row(
                 children: [
                   Icon(
-                    hasPicked
-                        ? Icons.location_on
-                        : Icons.location_on_outlined,
+                    hasPicked ? Icons.location_on : Icons.location_on_outlined,
                     color: hasPicked ? _green : _labelColor,
                     size: 18,
                   ),
@@ -625,7 +639,6 @@ class _DoctorRegisState extends State<DoctorRegis> {
               ),
             ),
           ),
-
           if (hasPicked) ...[
             const SizedBox(height: 8),
             Container(
@@ -639,8 +652,8 @@ class _DoctorRegisState extends State<DoctorRegis> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _addressRow('จังหวัด', selectedProvince),
-                  _addressRow('อำเภอ',   selectedDistrict),
-                  _addressRow('ตำบล',    selectedSubDistrict),
+                  _addressRow('อำเภอ', selectedDistrict),
+                  _addressRow('ตำบล', selectedSubDistrict),
                 ],
               ),
             ),
@@ -658,8 +671,8 @@ class _DoctorRegisState extends State<DoctorRegis> {
           SizedBox(
             width: 56,
             child: Text('$label:',
-                style: GoogleFonts.notoSansThai(
-                    fontSize: 12, color: _labelColor)),
+                style:
+                    GoogleFonts.notoSansThai(fontSize: 12, color: _labelColor)),
           ),
           Expanded(
             child: Text(
@@ -755,14 +768,14 @@ class _DoctorRegisState extends State<DoctorRegis> {
                   Expanded(
                     child: Text(
                       _imageFileName!,
-                      style: GoogleFonts.notoSansThai(
-                          fontSize: 12, color: _green),
+                      style:
+                          GoogleFonts.notoSansThai(fontSize: 12, color: _green),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   GestureDetector(
                     onTap: () => setState(() {
-                      _imageFile     = null;
+                      _imageFile = null;
                       _imageFileName = null;
                     }),
                     child:
@@ -822,7 +835,8 @@ class _DoctorRegisState extends State<DoctorRegis> {
                 controller: nameController,
                 required: true,
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'กรุณากรอกชื่อผู้ใช้';
+                  if (v == null || v.trim().isEmpty)
+                    return 'กรุณากรอกชื่อผู้ใช้';
                   return null;
                 },
               ),
@@ -852,10 +866,11 @@ class _DoctorRegisState extends State<DoctorRegis> {
                 keyboardType: TextInputType.emailAddress,
                 validator: (v) {
                   if (v == null || v.trim().isEmpty) return 'กรุณากรอกอีเมล';
-                  final emailRegex =
-                      RegExp(r'^[\w\.\-]+@[\w\-]+\.[a-zA-Z]{2,}$');
+                  final emailRegex = RegExp(
+                    r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$',
+                  );
                   if (!emailRegex.hasMatch(v.trim())) {
-                    return 'รูปแบบอีเมลไม่ถูกต้อง';
+                    return 'รูปแบบอีเมลไม่ถูกต้อง เช่น example@gmail.com';
                   }
                   return null;
                 },
@@ -889,6 +904,14 @@ class _DoctorRegisState extends State<DoctorRegis> {
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'กรุณากรอกรหัสผ่าน';
                   if (v.length < 8) return 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร';
+                  if (!RegExp(r'[a-zA-Z]').hasMatch(v))
+                    return 'ต้องมีตัวอักษรภาษาอังกฤษอย่างน้อย 1 ตัว';
+                  if (!RegExp(r'[0-9]').hasMatch(v))
+                    return 'ต้องมีตัวเลขอย่างน้อย 1 ตัว';
+                  if (!RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-+=\[\]\\\/`~;]')
+                      .hasMatch(v)) {
+                    return 'ต้องมีอักขระพิเศษอย่างน้อย 1 ตัว เช่น !@#\$%';
+                  }
                   return null;
                 },
               ),
@@ -929,8 +952,7 @@ class _DoctorRegisState extends State<DoctorRegis> {
                         child: Text(
                           "หลังลงทะเบียน ระบบจะรอการตรวจสอบจากผู้ดูแลก่อนอนุมัติบัญชี",
                           style: GoogleFonts.notoSansThai(
-                              fontSize: 12,
-                              color: const Color(0xFF795548)),
+                              fontSize: 12, color: const Color(0xFF795548)),
                         ),
                       ),
                     ],
@@ -958,8 +980,8 @@ class _DoctorRegisState extends State<DoctorRegis> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
                             ),
                           )
                         : Text(

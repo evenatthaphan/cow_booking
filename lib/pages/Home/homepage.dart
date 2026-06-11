@@ -142,7 +142,8 @@ class _HomepageState extends State<Homepage> {
                 children: [
                   // ── รูปพ่อพันธุ์ ──
                   imageUrl.isNotEmpty
-                      ? Image.network(imageUrl, fit: BoxFit.cover,
+                      ? Image.network(imageUrl,
+                          fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Image.asset(
                               'assets/images/imagecow.jpg',
                               fit: BoxFit.cover))
@@ -235,8 +236,7 @@ class _HomepageState extends State<Homepage> {
                             fontWeight: FontWeight.w700,
                             fontSize: 17,
                             shadows: [
-                              const Shadow(
-                                  blurRadius: 6, color: Colors.black54)
+                              const Shadow(blurRadius: 6, color: Colors.black54)
                             ],
                           ),
                           maxLines: 1,
@@ -278,8 +278,8 @@ class _HomepageState extends State<Homepage> {
       onTap: () {
         final dataBull = Provider.of<DataBull>(context, listen: false);
         dataBull.setSelectedBull(FarmbullRequestResponse.fromJson(bull));
-        Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const Cowdetailpage()));
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const Cowdetailpage()));
       },
       child: Container(
         width: 155,
@@ -383,8 +383,7 @@ class _HomepageState extends State<Homepage> {
   }
 
   // ── Section header พร้อม "ดูทั้งหมด" ──
-  Widget _buildSectionHeader(
-      String breed, List<dynamic> bulls) {
+  Widget _buildSectionHeader(String breed, List<dynamic> bulls) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 12, 10),
       child: Row(
@@ -419,8 +418,7 @@ class _HomepageState extends State<Homepage> {
             ),
             style: TextButton.styleFrom(
               foregroundColor: _green,
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
                 side: BorderSide(color: _green.withOpacity(0.3)),
@@ -474,8 +472,7 @@ class _HomepageState extends State<Homepage> {
               color: _darkGreen,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text('🏆',
-                style: TextStyle(fontSize: 14)),
+            child: const Text('🏆', style: TextStyle(fontSize: 14)),
           ),
           const SizedBox(width: 10),
           Column(
@@ -661,8 +658,8 @@ class _HomepageState extends State<Homepage> {
           child: IconButton(
             icon: const Icon(Icons.search_rounded, size: 22),
             color: Colors.white,
-            onPressed: () => Navigator.push(context,
-                MaterialPageRoute(builder: (_) => const Seachpage())),
+            onPressed: () => Navigator.push(
+                context, MaterialPageRoute(builder: (_) => const Seachpage())),
           ),
         ),
         // Profile avatar
@@ -697,8 +694,7 @@ class _HomepageState extends State<Homepage> {
                                   width: 18,
                                   height: 18,
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white),
+                                      strokeWidth: 2, color: Colors.white),
                                 );
                               },
                               errorBuilder: (_, __, ___) => const Icon(
@@ -718,19 +714,28 @@ class _HomepageState extends State<Homepage> {
       ],
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-            height: 1, color: Colors.white.withOpacity(0.1)),
+        child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
       ),
     );
   }
 
   void taptoseach() {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (_) => const Seachpage()));
+    Navigator.push(
+        context, MaterialPageRoute(builder: (_) => const Seachpage()));
   }
 
   void detailpage() {
-    Navigator.push(context,
-        MaterialPageRoute(builder: (_) => const Cowdetailpage()));
+    Navigator.push(
+        context, MaterialPageRoute(builder: (_) => const Cowdetailpage()));
+  }
+
+  ImageProvider _profileImage(String url) {
+    if (url.isEmpty) {
+      return const NetworkImage(
+          'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png');
+    }
+    // ✅ เพิ่ม timestamp ทำให้ Flutter มองว่าเป็น URL ใหม่ทุกครั้ง
+    final busted = '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+    return NetworkImage(busted);
   }
 }

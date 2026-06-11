@@ -16,6 +16,46 @@ class Homepagedoc extends StatefulWidget {
 }
 
 class _HomepagedocState extends State<Homepagedoc> {
+  bool _isLoading = true;
+  List<BookingResponse> _pending  = [];
+  List<BookingResponse> _accepted = [];
+  List<BookingResponse> _rejected = [];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _fetchBookings());
+  }
+
+  Future<void> _fetchBookings() async {
+    if (!mounted) return;
+    final vetId = context.read<DataVetExpert>().datauser.id;
+    setState(() => _isLoading = true);
+
+    try {
+      final res = await http.get(
+        Uri.parse('$apiEndpoint/queuebook/bookings/vet/$vetId'),
+      );
+      if (res.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(res.body);
+        final all = data.map((e) => BookingResponse.fromJson(e)).toList();
+        setState(() {
+          _pending  = all.where((b) => b.bookingsStatus == 'pending').toList();
+          _accepted = all.where((b) => b.bookingsStatus == 'accepted').toList();
+          _rejected = all.where((b) => b.bookingsStatus == 'rejected').toList();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('เกิดข้อผิดพลาด: $e'), backgroundColor: Colors.red),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -23,187 +63,117 @@ class _HomepagedocState extends State<Homepagedoc> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F7F2),
         appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+          backgroundColor: Colors.white,
           elevation: 0,
           automaticallyImplyLeading: false,
           title: Row(
             children: [
               Container(
-                width: 32,
-                height: 32,
+                width: 32, height: 32,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Center(
-                  child: Text('🐄', style: TextStyle(fontSize: 16)),
-                ),
+                child: const Center(child: Text('🐄', style: TextStyle(fontSize: 16))),
               ),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Cow Booking',
-                    style: GoogleFonts.notoSansThai(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.green[900],
-                      height: 1.1,
-                    ),
-                  ),
-                  Text(
-                    'หน้าหลัก',
-                    style: GoogleFonts.notoSansThai(
-                      fontSize: 11,
-                      color: Colors.green[900],
-                      height: 1.1,
-                    ),
-                  ),
+                  Text('Cow Booking',
+                      style: GoogleFonts.notoSansThai(
+                          fontSize: 16, fontWeight: FontWeight.w700,
+                          color: Colors.green[900], height: 1.1)),
+                  Text('หน้าหลัก',
+                      style: GoogleFonts.notoSansThai(
+                          fontSize: 11, color: Colors.green[900], height: 1.1)),
                 ],
               ),
             ],
           ),
           actions: [
             GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const VetProfilePage()),
-              ),
+              onTap: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const VetProfilePage())),
               child: Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: Consumer<DataVetExpert>(
-                  builder: (context, dataVet, _) {
+                  builder: (_, dataVet, __) {
                     final imageUrl = dataVet.datauser.profileImage;
                     return CircleAvatar(
                       radius: 20,
                       backgroundImage: imageUrl.isNotEmpty
                           ? NetworkImage(imageUrl)
                           : const NetworkImage(
-                              'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png',
-                            ),
+                              'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png'),
                     );
                   },
                 ),
               ),
             ),
           ],
+          bottom: const TabBar(
+            indicatorColor: Colors.green,
+            indicatorWeight: 3,
+            labelColor: Colors.green,
+            labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            unselectedLabelColor: Colors.grey,
+            tabs: [
+              Tab(text: "คำขอ"),
+              Tab(text: "ตอบรับแล้ว"),
+              Tab(text: "ปฏิเสธ"),
+            ],
+          ),
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Tab bar 
-            Container(
-              color: Colors.white,
-              child: const TabBar(
-                indicatorColor: Colors.green,
-                indicatorWeight: 3,
-                labelColor: Colors.green,
-                labelStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                unselectedLabelColor: Colors.grey,
-                tabs: [
-                  Tab(text: "คำขอ"),
-                  Tab(text: "ตอบรับแล้ว"),
-                  Tab(text: "ปฏิเสธ"),
-                ],
-              ),
-            ),
-            Expanded(
-              child: TabBarView(
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: Colors.green))
+            : TabBarView(
                 children: [
-                  _buildBookingList('pending'),
-                  _buildBookingList('accepted'),
-                  _buildBookingList('rejected'),
+                  _buildList(_pending,  'pending',  'ยังไม่มีคำขอการจอง'),
+                  _buildList(_accepted, 'accepted', 'ยังไม่มีรายการที่ตอบรับแล้ว'),
+                  _buildList(_rejected, 'rejected', 'ยังไม่มีรายการที่ปฏิเสธ'),
                 ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  //  API 
-  Future<List<BookingResponse>> fetchBookings(int vetId, String status) async {
-    final response = await http.get(
-      Uri.parse('$apiEndpoint/queuebook/bookings/vet/$vetId'),
+  Widget _buildList(List<BookingResponse> list, String status, String emptyMsg) {
+    return RefreshIndicator(
+      color: Colors.green,
+      onRefresh: _fetchBookings,   // ← ดึงใหม่ทั้งหมดเมื่อเลื่อนลง
+      child: list.isEmpty
+          ? ListView(              // ← ต้องเป็น ListView ถึงจะ pull-to-refresh ได้แม้ว่าง
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.inbox_outlined, size: 56, color: Colors.grey[300]),
+                      const SizedBox(height: 10),
+                      Text(emptyMsg,
+                          style: TextStyle(fontSize: 15, color: Colors.grey[500])),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : ListView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+              itemCount: list.length,
+              itemBuilder: (_, i) => _bookingCard(list[i], status),
+            ),
     );
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data
-          .map((e) => BookingResponse.fromJson(e))
-          .where((b) => b.bookingsStatus == status)
-          .toList();
-    } else {
-      throw Exception('Failed to load bookings');
-    }
   }
 
   void _goToDetail(BookingResponse booking) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => DetailqueuePage(booking: booking)),
-    );
+    Navigator.push(context,
+        MaterialPageRoute(builder: (_) => DetailqueuePage(booking: booking)));
   }
 
-  // List builder 
-  Widget _buildBookingList(String status) {
-    final vetId = Provider.of<DataVetExpert>(context, listen: false).datauser.id;
-
-    final emptyMessages = {
-      'pending': 'ยังไม่มีคำขอการจอง',
-      'accepted': 'ยังไม่มีรายการที่ตอบรับแล้ว',
-      'rejected': 'ยังไม่มีรายการที่ปฏิเสธ',
-    };
-
-    return FutureBuilder<List<BookingResponse>>(
-      future: fetchBookings(vetId, status),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(color: Colors.green),
-          );
-        }
-        if (snapshot.hasError) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.wifi_off, size: 48, color: Colors.grey[400]),
-                const SizedBox(height: 8),
-                Text('เกิดข้อผิดพลาด', style: TextStyle(color: Colors.grey[600])),
-              ],
-            ),
-          );
-        }
-
-        final bookings = snapshot.data ?? [];
-        if (bookings.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.inbox_outlined, size: 56, color: Colors.grey[300]),
-                const SizedBox(height: 10),
-                Text(
-                  emptyMessages[status] ?? '-',
-                  style: TextStyle(fontSize: 15, color: Colors.grey[500]),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-          itemCount: bookings.length,
-          itemBuilder: (context, index) => _bookingCard(bookings[index], status),
-        );
-      },
-    );
-  }
-
-  // Card 
   Widget _bookingCard(BookingResponse booking, String status) {
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
@@ -211,17 +181,13 @@ class _HomepagedocState extends State<Homepagedoc> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.06),
+              blurRadius: 8, offset: const Offset(0, 3)),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -235,39 +201,29 @@ class _HomepagedocState extends State<Homepagedoc> {
                   backgroundColor: Colors.green[100],
                   child: Text(
                     booking.farmersName.isNotEmpty ? booking.farmersName[0] : '?',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green[800],
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold,
+                        color: Colors.green[800], fontSize: 16),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: Text(
-                    booking.farmersName,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
-                    ),
-                  ),
+                  child: Text(booking.farmersName,
+                      style: const TextStyle(fontSize: 16,
+                          fontWeight: FontWeight.bold, color: Color(0xFF1A1A1A))),
                 ),
                 _statusBadge(status),
               ],
             ),
           ),
-
-          // เนื้อหา
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Column(
               children: [
                 _infoRow(Icons.calendar_today,
-                  '${DateFormat('dd MMM yyyy', 'th').format(booking.scheduleDate)}  •  ${booking.scheduleTime}'),
+                    '${DateFormat('dd MMM yyyy', 'th').format(booking.scheduleDate)}  •  ${booking.scheduleTime}'),
                 const SizedBox(height: 8),
                 _infoRow(Icons.pets,
-                  '${booking.bullsName}  (${booking.bullsBreed})  —  ${booking.bookingsDose} โดส'),
+                    '${booking.bullsName}  (${booking.bullsBreed})  —  ${booking.bookingsDose} โดส'),
                 if (booking.bookingsDetailBull.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   _infoRow(Icons.notes, booking.bookingsDetailBull),
@@ -275,8 +231,6 @@ class _HomepagedocState extends State<Homepagedoc> {
               ],
             ),
           ),
-
-          // ปุ่ม
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
             child: Align(
@@ -299,37 +253,31 @@ class _HomepagedocState extends State<Homepagedoc> {
     );
   }
 
-  Widget _infoRow(IconData icon, String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, size: 16, color: Colors.green[600]),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(text, style: const TextStyle(fontSize: 14, color: Color(0xFF444444))),
-        ),
-      ],
-    );
-  }
+  Widget _infoRow(IconData icon, String text) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: Colors.green[600]),
+          const SizedBox(width: 8),
+          Expanded(
+              child: Text(text,
+                  style: const TextStyle(fontSize: 14, color: Color(0xFF444444)))),
+        ],
+      );
 
   Widget _statusBadge(String status) {
     final map = {
-      'pending':  ('รอตอบรับ',   Colors.orange,              const Color(0xFFFFF3E0)),
-      'accepted': ('ตอบรับแล้ว', Colors.green,               const Color(0xFFE8F5E9)),
-      'rejected': ('ปฏิเสธ',     Colors.red,                 const Color(0xFFFFEBEE)),
+      'pending':  ('รอตอบรับ',   Colors.orange, const Color(0xFFFFF3E0)),
+      'accepted': ('ตอบรับแล้ว', Colors.green,  const Color(0xFFE8F5E9)),
+      'rejected': ('ปฏิเสธ',     Colors.red,    const Color(0xFFFFEBEE)),
     };
     final info = map[status] ?? ('ไม่ทราบ', Colors.grey, Colors.grey[100]!);
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: info.$3,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        info.$1,
-        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: info.$2),
-      ),
+          color: info.$3, borderRadius: BorderRadius.circular(20)),
+      child: Text(info.$1,
+          style: TextStyle(fontSize: 12,
+              fontWeight: FontWeight.bold, color: info.$2)),
     );
   }
 }

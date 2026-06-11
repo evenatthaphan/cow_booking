@@ -393,6 +393,18 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
       return;
     }
 
+    final stock = int.tryParse(_stockCtrl.text) ?? -1;
+    final price = double.tryParse(_priceCtrl.text) ?? -1;
+
+    if (stock <= 0 || stock > 10) {
+      _showSnack('จำนวนโดสต้องเป็นตัวเลข 1-10', isError: true);
+      return;
+    }
+    if (price <= 0) {
+      _showSnack('ราคาต่อโดสต้องมากกว่า 0', isError: true);
+      return;
+    }
+
     setState(() => _isSaving = true);
 
     try {
@@ -415,8 +427,8 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
         body: jsonEncode({
           'vet_id': vetId,
           'bulls_id': _selectedBull!['bulls_id'],
-          'bulls_semen_stock': int.tryParse(_stockCtrl.text) ?? 0,
-          'bulls_price_per_dose': double.tryParse(_priceCtrl.text) ?? 0,
+          'bulls_semen_stock': stock,
+          'bulls_price_per_dose': price,
           'images': urls, // ส่ง [] ถ้าไม่มีรูป
         }),
       );

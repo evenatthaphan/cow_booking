@@ -3,6 +3,7 @@ import 'package:cow_booking/config/internal_config.dart';
 import 'package:cow_booking/model/response/bullstocks_response.dart';
 import 'package:cow_booking/pages/farmers/farmmer_booking.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -134,8 +135,13 @@ class _BookingpageState extends State<Bookingpage> {
         ? bullList.firstWhere((b) => b.vetBullId == selectedBullId)
         : null;
 
-    if (bull == null || _doseController.text.isEmpty) {
-      _showSnackbar('กรุณาเลือกวัวและระบุจำนวนโดส', Colors.red);
+    final dose = int.tryParse(_doseController.text.trim());
+    if (bull == null) {
+      _showSnackbar('กรุณาเลือกวัว', Colors.red);
+      return;
+    }
+    if (dose == null || dose <= 0) {
+      _showSnackbar('จำนวนโดสต้องเป็นตัวเลขและต้องมากกว่า 0', Colors.red);
       return;
     }
 
@@ -171,12 +177,12 @@ class _BookingpageState extends State<Bookingpage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _confirmRow(Icons.person_outline,       'ผู้จอง',       dataFarmer.datauser.farmersName),
-            _confirmRow(Icons.medical_services_outlined, 'สัตวบาล', vetName ?? '-'),
-            _confirmRow(Icons.calendar_today,       'วันที่',       dateStr),
-            _confirmRow(Icons.access_time,          'เวลา',        widget.selectedTime),
-            _confirmRow(Icons.pets,                 'พ่อพันธุ์',   '${bull.bullname} (${bull.bullbreed})'),
-            _confirmRow(Icons.science_outlined,     'จำนวนโดส',    '${_doseController.text} โดส'),
+            _confirmRow(Icons.person_outline,           'ผู้จอง',      dataFarmer.datauser.farmersName),
+            _confirmRow(Icons.medical_services_outlined, 'สัตวบาล',    vetName ?? '-'),
+            _confirmRow(Icons.calendar_today,            'วันที่',      dateStr),
+            _confirmRow(Icons.access_time,               'เวลา',       widget.selectedTime),
+            _confirmRow(Icons.pets,                      'พ่อพันธุ์',  '${bull.bullname} (${bull.bullbreed})'),
+            _confirmRow(Icons.science_outlined,          'จำนวนโดส',   '${_doseController.text} โดส'),
             if (_detailController.text.isNotEmpty)
               _confirmRow(Icons.notes, 'รายละเอียด', _detailController.text),
           ],
@@ -220,12 +226,12 @@ class _BookingpageState extends State<Bookingpage> {
 
   Future<void> _submitBooking(int farmerId) async {
     final body = {
-      "farmer_id":    farmerId,
+      "farmer_id":     farmerId,
       "vet_expert_id": widget.vetId,
-      "bull_id":      selectedBullId,
-      "dose":         int.parse(_doseController.text),
-      "schedule_id":  widget.scheduleId,
-      "detailBull":   _detailController.text,
+      "bull_id":       selectedBullId,
+      "dose":          int.parse(_doseController.text),
+      "schedule_id":   widget.scheduleId,
+      "detailBull":    _detailController.text,
     };
 
     try {
@@ -346,13 +352,34 @@ class _BookingpageState extends State<Bookingpage> {
                   const SizedBox(height: 16),
 
                   // ── จำนวนโดส + รายละเอียด ─────────────────────────────
-                  _sectionLabel('รายละเอียดการจอง'),
+                  _sectionLabel('รายละเอียดการจอง(ไม่มีให้ใส่ - )'),
                   _infoCard([
-                    _inputField(
-                      controller: _doseController,
-                      label: 'จำนวนโดส',
-                      icon: Icons.science_outlined,
-                      keyboardType: TextInputType.number,
+                    // ── จำนวนโดส (ตัวเลขเท่านั้น) ──
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: Row(
+                        children: [
+                          Icon(Icons.science_outlined, size: 20, color: Colors.green[600]),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextFormField(
+                              controller: _doseController,
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.digitsOnly,
+                                LengthLimitingTextInputFormatter(2), // สูงสุด 99 โดส
+                              ],
+                              decoration: const InputDecoration(
+                                labelText: 'จำนวนโดส',
+                                labelStyle: TextStyle(fontSize: 13, color: Colors.grey),
+                                border: InputBorder.none,
+                                suffixText: 'โดส',
+                                suffixStyle: TextStyle(color: Colors.grey, fontSize: 13),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const Divider(height: 1, indent: 52, color: Color(0xFFEEEEEE)),
                     _inputField(

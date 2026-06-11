@@ -161,11 +161,23 @@ class _VetBullListPageState extends State<VetBullListPage> {
                     onPressed: saving
                         ? null
                         : () async {
+                            final stock = int.tryParse(stockCtrl.text) ?? -1;
+                            final price = double.tryParse(priceCtrl.text) ?? -1;
+
+                            if (stock <= 0 || stock > 10) {
+                              _showSnack('จำนวนโดสต้องเป็นตัวเลข 1-10', isError: true);
+                              return;
+                            }
+                            if (price <= 0) {
+                              _showSnack('ราคาต่อโดสต้องมากกว่า 0', isError: true);
+                              return;
+                            }
+
                             setD(() => saving = true);
                             await _updateBull(
                               vetBullId: bull['vet_bulls_id'],
-                              stock: int.tryParse(stockCtrl.text) ?? 0,
-                              price: double.tryParse(priceCtrl.text) ?? 0,
+                              stock: stock,
+                              price: price,
                             );
                             if (ctx.mounted) Navigator.pop(ctx);
                           },

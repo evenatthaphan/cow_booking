@@ -99,8 +99,7 @@ class _ViewprofileState extends State<Viewprofile> {
                   Consumer<DataFarmers>(
                     builder: (context, dataFarmer, _) {
                       final imageUrl = dataFarmer.datauser.farmersProfileImage;
-                      return CircleAvatar(
-                        radius: 44,
+                      return CircleAvatar(                        key: ValueKey(imageUrl),                        radius: 44,
                         backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
                             ? NetworkImage(imageUrl)
                             : const NetworkImage(
@@ -143,10 +142,17 @@ class _ViewprofileState extends State<Viewprofile> {
                       iconColor: Colors.green,
                       label: "แก้ไขข้อมูลส่วนตัว",
                       subtitle: "ชื่อ, เบอร์โทร, รูปโปรไฟล์",
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const Editprofilepage()),
-                      ),
+                      onTap: () async {
+                        final farmerId = context.read<DataFarmers>().datauser.farmersId;
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const Editprofilepage()),
+                        );
+                        if (!mounted) return;
+                        if (farmerId != 0) {
+                          await context.read<DataFarmers>().fetchFarmerById(farmerId);
+                        }
+                      },
                     ),
                     const Divider(height: 1, indent: 56, color: Color(0xFFEEEEEE)),
                     _menuItem(

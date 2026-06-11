@@ -16,11 +16,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   int _step = 1;
   bool _loading = false;
 
-  final _phoneController       = TextEditingController();
-  final _otpController         = TextEditingController();
-  final _newPassController     = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _otpController = TextEditingController();
+  final _newPassController = TextEditingController();
   final _confirmPassController = TextEditingController();
-  bool _obscureNew     = true;
+  bool _obscureNew = true;
   bool _obscureConfirm = true;
 
   // Firebase
@@ -118,12 +118,24 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   // ---- Step 3: Reset Password ในฐานข้อมูล ----
   Future<void> _resetPassword() async {
-    final newPass     = _newPassController.text.trim();
+    final newPass = _newPassController.text.trim();
     final confirmPass = _confirmPassController.text.trim();
-    final phone       = _phoneController.text.trim();
+    final phone = _phoneController.text.trim();
 
     if (newPass.length < 8) {
       _showError('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร');
+      return;
+    }
+    if (!RegExp(r'[a-zA-Z]').hasMatch(newPass)) {
+      _showError('รหัสผ่านต้องมีตัวอักษรภาษาอังกฤษอย่างน้อย 1 ตัว');
+      return;
+    }
+    if (!RegExp(r'[0-9]').hasMatch(newPass)) {
+      _showError('รหัสผ่านต้องมีตัวเลขอย่างน้อย 1 ตัว');
+      return;
+    }
+    if (!RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-+=\[\]\\\/`~;]').hasMatch(newPass)) {
+      _showError('รหัสผ่านต้องมีอักขระพิเศษอย่างน้อย 1 ตัว เช่น !@#\$%');
       return;
     }
     if (newPass != confirmPass) {
@@ -239,7 +251,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 Expanded(
                   child: Container(
                     height: 2,
-                    color: (i + 1) < _step ? Colors.green[700] : Colors.grey[300],
+                    color:
+                        (i + 1) < _step ? Colors.green[700] : Colors.grey[300],
                   ),
                 ),
             ],
@@ -255,7 +268,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       children: [
         Text('กรอกเบอร์โทรศัพท์',
             style: GoogleFonts.notoSansThai(
-                fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green[900])),
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[900])),
         const SizedBox(height: 8),
         Text('ระบบจะส่งรหัส OTP ไปยัง SMS ของคุณ',
             style: GoogleFonts.notoSansThai(fontSize: 14, color: Colors.grey)),
@@ -277,7 +292,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       children: [
         Text('กรอกรหัส OTP',
             style: GoogleFonts.notoSansThai(
-                fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green[900])),
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[900])),
         const SizedBox(height: 8),
         Text('รหัส 6 หลักถูกส่งไปยัง ${_phoneController.text}',
             style: GoogleFonts.notoSansThai(fontSize: 14, color: Colors.grey)),
@@ -307,16 +324,20 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       children: [
         Text('ตั้งรหัสผ่านใหม่',
             style: GoogleFonts.notoSansThai(
-                fontSize: 22, fontWeight: FontWeight.bold, color: Colors.green[900])),
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[900])),
         const SizedBox(height: 8),
-        Text('รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
+        Text('รหัสผ่านต้องมีอย่างน้อย 8 ตัว ตัวอักษร ตัวเลข และอักขระพิเศษ',
             style: GoogleFonts.notoSansThai(fontSize: 14, color: Colors.grey)),
         const SizedBox(height: 30),
         TextField(
           controller: _newPassController,
           obscureText: _obscureNew,
           decoration: _inputDecorationSuffix(
-            'รหัสผ่านใหม่', Icons.lock_outline, _obscureNew,
+            'รหัสผ่านใหม่',
+            Icons.lock_outline,
+            _obscureNew,
             () => setState(() => _obscureNew = !_obscureNew),
           ),
         ),
@@ -325,7 +346,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           controller: _confirmPassController,
           obscureText: _obscureConfirm,
           decoration: _inputDecorationSuffix(
-            'ยืนยันรหัสผ่านใหม่', Icons.lock, _obscureConfirm,
+            'ยืนยันรหัสผ่านใหม่',
+            Icons.lock,
+            _obscureConfirm,
             () => setState(() => _obscureConfirm = !_obscureConfirm),
           ),
         ),
@@ -355,7 +378,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       labelStyle: GoogleFonts.notoSansThai(),
       prefixIcon: Icon(icon),
       suffixIcon: IconButton(
-        icon: Icon(obscure ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+        icon: Icon(obscure ? Icons.visibility_off : Icons.visibility,
+            color: Colors.grey),
         onPressed: toggle,
       ),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -374,13 +398,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         onPressed: _loading ? null : onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: Colors.green[900],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
         child: _loading
-            ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+            ? const CircularProgressIndicator(
+                color: Colors.white, strokeWidth: 2)
             : Text(label,
                 style: GoogleFonts.notoSansThai(
-                    fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
       ),
     );
   }

@@ -30,10 +30,10 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
 
   // state
   int _totalBookings = 0;
-  int _totalLikes    = 0;
-  int _successRate   = 0;
+  int _totalLikes = 0;
+  int _successRate = 0;
 
-   @override
+  @override
   void initState() {
     super.initState();
     _fetchStats();
@@ -41,7 +41,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
 
   // fetch ใน initState
   Future<void> _fetchStats() async {
-    final farmer_id = Provider.of<DataFarmers>(context, listen: false).datauser.farmersId;
+    final farmer_id =
+        Provider.of<DataFarmers>(context, listen: false).datauser.farmersId;
     try {
       final res = await http.get(
         Uri.parse('$apiEndpoint/farmer/farmers/stats/$farmer_id'),
@@ -50,13 +51,12 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
         final data = jsonDecode(res.body);
         setState(() {
           _totalBookings = data['total_bookings'] ?? 0;
-          _totalLikes    = data['total_likes']    ?? 0;
-          _successRate   = data['success_rate']   ?? 0;
+          _totalLikes = data['total_likes'] ?? 0;
+          _successRate = data['success_rate'] ?? 0;
         });
       }
     } catch (_) {}
   }
-  
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
@@ -113,8 +113,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
       ),
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
-        child: Container(
-            height: 1, color: Colors.white.withOpacity(0.1)),
+        child: Container(height: 1, color: Colors.white.withOpacity(0.1)),
       ),
     );
   }
@@ -127,9 +126,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
     return Scaffold(
       appBar: _buildAppBar(),
       backgroundColor: _bgColor,
-      body: isLoggedIn
-          ? _buildLoggedInView(context)
-          : _buildGuestView(context),
+      body: isLoggedIn ? _buildLoggedInView(context) : _buildGuestView(context),
     );
   }
 
@@ -148,8 +145,6 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
       ),
     );
   }
-
-
 
   Widget _buildProfileCard(BuildContext context) {
     return Transform.translate(
@@ -179,7 +174,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                     return Stack(
                       children: [
                         Container(
-                          width: 64, height: 64,
+                          width: 64,
+                          height: 64,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 3),
@@ -192,6 +188,7 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                             ],
                           ),
                           child: CircleAvatar(
+                            key: ValueKey(imageUrl),
                             radius: 32,
                             backgroundImage: imageUrl.isNotEmpty
                                 ? NetworkImage(imageUrl)
@@ -200,9 +197,11 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                           ),
                         ),
                         Positioned(
-                          bottom: 2, right: 2,
+                          bottom: 2,
+                          right: 2,
                           child: Container(
-                            width: 14, height: 14,
+                            width: 14,
+                            height: 14,
                             decoration: BoxDecoration(
                               color: _green500,
                               shape: BoxShape.circle,
@@ -231,7 +230,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            Icon(Icons.phone, size: 13, color: Colors.grey[500]),
+                            Icon(Icons.phone,
+                                size: 13, color: Colors.grey[500]),
                             const SizedBox(width: 4),
                             Text(
                               data.datauser.farmersPhonenumber,
@@ -250,7 +250,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                   onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const Viewprofile())),
                   child: Container(
-                    width: 32, height: 32,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: const Color(0xFFf0f7f0),
@@ -286,13 +287,15 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
         children: [
           Text(value,
               style: GoogleFonts.notoSansThai(
-                fontSize: 18, fontWeight: FontWeight.w700,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
                 color: _green700,
               )),
           const SizedBox(height: 2),
           Text(label,
               style: GoogleFonts.notoSansThai(
-                fontSize: 11, color: const Color(0xFF8aab8a),
+                fontSize: 11,
+                color: const Color(0xFF8aab8a),
               )),
         ],
       ),
@@ -302,7 +305,6 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
   Widget _buildStatDivider() {
     return Container(width: 1, height: 30, color: const Color(0xFFf0f0f0));
   }
-
 
   Widget _buildMenuSection(BuildContext context) {
     return Transform.translate(
@@ -316,7 +318,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
               padding: const EdgeInsets.only(left: 2, bottom: 10),
               child: Text('เมนูหลัก',
                   style: GoogleFonts.notoSansThai(
-                    fontSize: 12, fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
                     color: const Color(0xFF8aab8a),
                     letterSpacing: 0.5,
                   )),
@@ -328,7 +331,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10, offset: const Offset(0, 2),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -341,8 +345,10 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                     iconBg: const Color(0xFFfff8e1),
                     iconColor: const Color(0xFFF9A825),
                     isLast: false,
-                    onTap: () => Navigator.push(context,
-                        MaterialPageRoute(builder: (_) => const FavoritePage())),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const FavoritePage())),
                   ),
                   _buildMenuItem(
                     title: 'ประวัติการผสม',
@@ -353,8 +359,11 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                     isLast: false,
                     onTap: () {
                       final id = context.read<DataFarmers>().datauser.farmersId;
-                      Navigator.push(context, MaterialPageRoute(
-                          builder: (_) => InseminationHistoryPage(farmerId: id)));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) =>
+                                  InseminationHistoryPage(farmerId: id)));
                     },
                   ),
                   _buildMenuItem(
@@ -364,8 +373,10 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                     iconBg: const Color(0xFFe3f2fd),
                     iconColor: const Color(0xFF1976D2),
                     isLast: true,
-                    onTap: () => Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => const InseminationDashboardPage())),
+                    onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const InseminationDashboardPage())),
                   ),
                 ],
               ),
@@ -392,13 +403,13 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
         decoration: BoxDecoration(
           border: isLast
               ? null
-              : const Border(
-                  bottom: BorderSide(color: Color(0xFFf5f5f5))),
+              : const Border(bottom: BorderSide(color: Color(0xFFf5f5f5))),
         ),
         child: Row(
           children: [
             Container(
-              width: 38, height: 38,
+              width: 38,
+              height: 38,
               decoration: BoxDecoration(
                 color: iconBg,
                 borderRadius: BorderRadius.circular(12),
@@ -412,18 +423,19 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                 children: [
                   Text(title,
                       style: GoogleFonts.notoSansThai(
-                        fontSize: 15, fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF1a2e1a),
                       )),
                   Text(subtitle,
                       style: GoogleFonts.notoSansThai(
-                        fontSize: 12, color: const Color(0xFF8aab8a),
+                        fontSize: 12,
+                        color: const Color(0xFF8aab8a),
                       )),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right,
-                color: Color(0xFFc5d9c5), size: 20),
+            const Icon(Icons.chevron_right, color: Color(0xFFc5d9c5), size: 20),
           ],
         ),
       ),
@@ -445,7 +457,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10, offset: const Offset(0, 2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -453,7 +466,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
               children: [
                 Container(
                   margin: const EdgeInsets.all(16),
-                  width: 38, height: 38,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
                     color: const Color(0xFFfdecea),
                     borderRadius: BorderRadius.circular(12),
@@ -487,7 +501,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 90, height: 90,
+                    width: 90,
+                    height: 90,
                     decoration: BoxDecoration(
                       color: const Color(0xFFe8f5e9),
                       shape: BoxShape.circle,
@@ -498,20 +513,24 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                   const SizedBox(height: 20),
                   Text('คุณยังไม่ได้เข้าสู่ระบบ',
                       style: GoogleFonts.notoSansThai(
-                        fontSize: 18, fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF1a2e1a),
                       )),
                   const SizedBox(height: 8),
                   Text('เข้าสู่ระบบเพื่อใช้งานฟีเจอร์ทั้งหมด',
                       style: GoogleFonts.notoSansThai(
-                        fontSize: 13, color: Colors.grey[500],
+                        fontSize: 13,
+                        color: Colors.grey[500],
                       )),
                   const SizedBox(height: 32),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const ChooseLogin())),
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ChooseLogin())),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: _green700,
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -521,7 +540,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                       ),
                       child: Text('เข้าสู่ระบบ',
                           style: GoogleFonts.notoSansThai(
-                            fontSize: 16, color: Colors.white,
+                            fontSize: 16,
+                            color: Colors.white,
                             fontWeight: FontWeight.w600,
                           )),
                     ),
@@ -530,8 +550,10 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton(
-                      onPressed: () => Navigator.push(context,
-                          MaterialPageRoute(builder: (_) => const Chooseregis())),
+                      onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const Chooseregis())),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: _green700, width: 1.5),
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -540,7 +562,8 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
                       ),
                       child: Text('สมัครสมาชิก',
                           style: GoogleFonts.notoSansThai(
-                            fontSize: 16, color: _green700,
+                            fontSize: 16,
+                            color: _green700,
                             fontWeight: FontWeight.w600,
                           )),
                     ),
@@ -561,5 +584,15 @@ class _FarmerprofilepageState extends State<Farmerprofilepage> {
     context.read<DataFarmers>().clear();
     if (!mounted) return;
     setState(() {});
+  }
+
+  ImageProvider _profileImage(String url) {
+    if (url.isEmpty) {
+      return const NetworkImage(
+          'https://www.pngall.com/wp-content/uploads/5/User-Profile-PNG-Image.png');
+    }
+    // ✅ เพิ่ม timestamp ทำให้ Flutter มองว่าเป็น URL ใหม่ทุกครั้ง
+    final busted = '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+    return NetworkImage(busted);
   }
 }
