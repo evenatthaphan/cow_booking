@@ -16,27 +16,87 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-// Background handler ต้องอยู่นอก class
+//Global key สำหรับแสดง SnackBar จากทุกหน้า
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
+// Background handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
 }
 
 void main(List<String> arguments) async {
-  WidgetsFlutterBinding.ensureInitialized(); // async ก่อน runApp
-  // await fetchSomething();
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await dotenv.load(fileName: ".env");
 
-  await dotenv.load(fileName: ".env"); // โหลด .env
-  // Background handler
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-  // ขอ permission
   await FirebaseMessaging.instance.requestPermission();
-  // set mapbox token
-  MapboxOptions.setAccessToken(
-    dotenv.env['MAPBOX_ACCESS_TOKEN']!,
-  );
+
+  // ✅ Foreground handler — แสดง SnackBar เมื่อ app เปิดอยู่
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    final title = message.notification?.title ?? '';
+    final body = message.notification?.body ?? '';
+
+    debugPrint('📩 Foreground: $title');
+
+    scaffoldMessengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: GoogleFonts.notoSansThai(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              body,
+              style: GoogleFonts.notoSansThai(
+                color: Colors.white,
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green[800],
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 5),
+        action: SnackBarAction(
+          label: 'ตกลง',
+          textColor: Colors.white,
+          onPressed: () {},
+        ),
+      ),
+    );
+  });
+
+  // ✅ Notification tap handler — เมื่อผู้ใช้แตะการแจ้งเตือน (app still open)
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    debugPrint('📲 Notification tapped: ${message.notification?.title}');
+    // คุณสามารถนำทางไปหน้าที่ต้องการตามข้อมูลในการแจ้งเตือน
+  });
+
+  // ✅ Terminated state handler — เมื่อ app เปิดจากการแจ้งเตือนในสถานะปิด
+  RemoteMessage? initialMessage =
+      await FirebaseMessaging.instance.getInitialMessage();
+  if (initialMessage != null) {
+    debugPrint(
+        '📲 App opened from notification: ${initialMessage.notification?.title}');
+    // จัดการการนำทาง
+  }
+
+  MapboxOptions.setAccessToken(dotenv.env['MAPBOX_ACCESS_TOKEN']!);
 
   runApp(
     MultiProvider(
@@ -70,32 +130,23 @@ class MyApp extends StatelessWidget {
           await context.read<DataFarmers>().fetchFarmerById(userId);
           return Homepage();
         }
-
         if (userType == 'vet') {
           await context.read<DataVetExpert>().fetchVetById(userId);
           return Homepagedoc();
         }
-
-        // เพิ่มเช็กของ Admin เข้าไปด้วยเพื่อไม่ให้หลุดหน้าล็อกอิน
         if (userType == 'admin') {
-          // สมมติว่าใน DataAdmin มีฟังก์ชันดึงข้อมูลตาม ID เช่นกัน
-          // await context.read<DataAdmin>().fetchAdminById(userId);
-          return const AdminDashboardPage(); // หรือหน้า Dashboard ของคุณ
+          return const AdminDashboardPage();
         }
       } catch (e) {
         print(
             "เกิดข้อผิดพลาดในการดึงข้อมูล (อาจเพราะเซิร์ฟเวอร์ Render กำลังตื่น): $e");
-
-        // เพื่อป้องกันไม่ให้ข้อมูลล็อกอินหายเวลาเซิร์ฟเวอร์ Render ตอบกลับช้า
-        // ทางเลือก: หากดึงข้อมูลไม่สำเร็จเนื่องจากเซิร์ฟเวอร์หลับ แต่เครื่องมีข้อมูลอยู่แล้ว
-        // ก็ปล่อยให้เข้าหน้า Home ไปก่อนได้เลย
         if (userType == 'farmer') return Homepage();
         if (userType == 'vet') return Homepagedoc();
         if (userType == 'admin') return const AdminDashboardPage();
       }
     }
 
-    return Homepage(); //
+    return Homepage();
   }
 
   @override
@@ -103,10 +154,10 @@ class MyApp extends StatelessWidget {
     return FutureBuilder<Widget>(
       future: _getStartPage(context),
       builder: (context, snapshot) {
-        // waittng SharedPreferences load
         if (snapshot.connectionState == ConnectionState.waiting) {
           return GetMaterialApp(
             debugShowCheckedModeBanner: false,
+            scaffoldMessengerKey: scaffoldMessengerKey, // ✅
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
@@ -114,18 +165,17 @@ class MyApp extends StatelessWidget {
             home: Scaffold(
               backgroundColor: Colors.white,
               body: Center(
-                child: CircularProgressIndicator(
-                  color: Colors.green[900],
-                ),
+                child: CircularProgressIndicator(color: Colors.green[900]),
               ),
             ),
           );
         }
 
-        // if download sucess
         if (snapshot.hasData) {
           return GetMaterialApp(
             title: 'App Demo',
+            scaffoldMessengerKey: scaffoldMessengerKey, // ✅
+            debugShowCheckedModeBanner: false,
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
@@ -139,11 +189,13 @@ class MyApp extends StatelessWidget {
               textTheme: GoogleFonts.notoSansThaiTextTheme(),
               primarySwatch: Colors.green,
             ),
-            home: snapshot.data, //
+            home: snapshot.data,
           );
         }
-        return const GetMaterialApp(
-          home: Scaffold(
+
+        return GetMaterialApp(
+          scaffoldMessengerKey: scaffoldMessengerKey, // ✅
+          home: const Scaffold(
             body: Center(child: Text('เกิดข้อผิดพลาดในการโหลดหน้าเริ่มต้น')),
           ),
         );

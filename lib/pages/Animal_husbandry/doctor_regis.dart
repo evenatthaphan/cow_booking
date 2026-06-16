@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class DoctorRegis extends StatefulWidget {
   const DoctorRegis({super.key});
@@ -329,6 +330,15 @@ class _DoctorRegisState extends State<DoctorRegis> {
   Future<void> submitForm() async {
     setState(() => isLoading = true);
     try {
+      // ✅ ดึง FCM token ก่อน submit
+      String? fcmToken;
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+        debugPrint('FCM Token ตอนสมัคร: $fcmToken');
+      } catch (e) {
+        debugPrint('FCM error: $e');
+      }
+
       var request = http.MultipartRequest(
         'POST',
         Uri.parse('$apiEndpoint/vet/register'),
@@ -344,6 +354,8 @@ class _DoctorRegisState extends State<DoctorRegis> {
       request.fields['locality'] = selectedSubDistrict;
       if (selectedLat != null) request.fields['lat'] = selectedLat.toString();
       if (selectedLng != null) request.fields['lng'] = selectedLng.toString();
+      if (fcmToken != null)
+        request.fields['fcm_token'] = fcmToken; 
 
       request.files.add(
         await http.MultipartFile.fromPath('VetExpert_PL', _imageFile!.path),

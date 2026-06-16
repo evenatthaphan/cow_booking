@@ -269,8 +269,8 @@ class _ChooseLoginState extends State<ChooseLogin> {
                   child: FilledButton(
                     onPressed: _handleLoginSubmit,
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all<Color>(
-                          Colors.green[900]!),
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(Colors.green[900]!),
                     ),
                     child: Text(
                       'เข้าสู่ระบบ',
@@ -358,8 +358,11 @@ class _ChooseLoginState extends State<ChooseLogin> {
           await prefs.setString('userType', 'vet');
           await prefs.setInt('userId', vet.id);
 
+          debugPrint('🔑 กำลังขอ FCM token...');
+
           try {
             final fcmToken = await FirebaseMessaging.instance.getToken();
+            debugPrint('=============================');
             debugPrint('FCM Token: $fcmToken');
             if (fcmToken != null) {
               final fcmRes = await http.post(
@@ -371,6 +374,9 @@ class _ChooseLoginState extends State<ChooseLogin> {
                 }),
               );
               debugPrint('FCM update: ${fcmRes.statusCode} ${fcmRes.body}');
+              debugPrint('FCM update status: ${fcmRes.statusCode}');
+              debugPrint('FCM update body: ${fcmRes.body}');
+              debugPrint('=============================');
             }
           } catch (e) {
             debugPrint('FCM error: $e');

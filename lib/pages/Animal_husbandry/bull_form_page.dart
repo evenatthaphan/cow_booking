@@ -72,7 +72,7 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
   }
 
   // ── โหลดวัวในฟาร์ม ────────────────────────────────────────────────────────
-  Future<void> _fetchBullsInFarm(int farmId) async {
+  Future<void> _fetchBullsInFarm(int farmId, {int? selectedBullId}) async {
     setState(() {
       _loadingBulls = true;
       _bullsInFarm = [];
@@ -82,8 +82,19 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
       final res = await http
           .get(Uri.parse('$apiEndpoint/vet/vet-bulls/bulls-in-farm/$farmId'));
       if (res.statusCode == 200) {
+        final bulls = List<Map<String, dynamic>>.from(jsonDecode(res.body));
+        Map<String, dynamic>? newSelected;
+        if (selectedBullId != null) {
+          for (final bull in bulls) {
+            if (bull['bulls_id'] == selectedBullId) {
+              newSelected = bull;
+              break;
+            }
+          }
+        }
         setState(() {
-          _bullsInFarm = List<Map<String, dynamic>>.from(jsonDecode(res.body));
+          _bullsInFarm = bulls;
+          _selectedBull = newSelected;
         });
       }
     } catch (_) {
@@ -329,35 +340,67 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
                         : () async {
                             setD(() => saving = true);
                             try {
-                              final res = await http.post(
-                                Uri.parse(
-                                    '$apiEndpoint/vet/vet-bulls/bulls/create'),
+                              final age = int.tryParse(ageCtrl.text.trim());
+                              final body = {
+                                'bulls_name': nameCtrl.text.trim(),
+                                'bulls_breed': breedCtrl.text.trim(),
+                                'ref_farm_id': _selectedFarm!['frams_id'],
+                                if (age != null) 'bulls_age': age,
+                              };
+                              final primaryUrl = Uri.parse('$apiEndpoint/vet/bulls/create');
+                              final fallbackUrl = Uri.parse('$apiEndpoint/vet/vet-bulls/bulls/create');
+
+                              var res = await http.post(
+                                primaryUrl,
                                 headers: {'Content-Type': 'application/json'},
-                                body: jsonEncode({
-                                  'bulls_name': nameCtrl.text.trim(),
-                                  'bulls_breed': breedCtrl.text.trim(),
-                                  'bulls_age': int.tryParse(ageCtrl.text),
-                                  'ref_farm_id': _selectedFarm!['frams_id'],
-                                }),
+                                body: jsonEncode(body),
                               );
+                              if (res.statusCode == 404) {
+                                res = await http.post(
+                                  fallbackUrl,
+                                  headers: {'Content-Type': 'application/json'},
+                                  body: jsonEncode(body),
+                                );
+                              }
                               if (!ctx.mounted) return;
                               Navigator.pop(ctx);
-                              if (res.statusCode == 201) {
+                              if (res.statusCode >= 200 && res.statusCode < 300) {
                                 final data = jsonDecode(res.body);
-                                final newBull = {
-                                  'bulls_id': data['bulls_id'],
-                                  'bulls_name': nameCtrl.text.trim(),
-                                  'bulls_breed': breedCtrl.text.trim(),
-                                };
-                                setState(() {
-                                  _bullsInFarm.add(newBull);
-                                  _selectedBull = newBull;
-                                });
+                                print('create bull response: $data');
+                                final rawId = data['bulls_id'] ?? data['id'];
+                                final newBullId = rawId is int
+                                    ? rawId
+                                    : int.tryParse(rawId?.toString() ?? '');
+                                if (newBullId != null) {
+                                  _fetchBullsInFarm(
+                                    _selectedFarm!['frams_id'],
+                                    selectedBullId: newBullId,
+                                  );
+                                } else {
+                                  setState(() {
+                                    _bullsInFarm.add({
+                                      'bulls_id': rawId,
+                                      'bulls_name': nameCtrl.text.trim(),
+                                      'bulls_breed': breedCtrl.text.trim(),
+                                    });
+                                    _selectedBull = _bullsInFarm.last;
+                                  });
+                                }
                                 _showSnack('เพิ่มข้อมูลวัวสำเร็จ ✓');
+                              } else {
+                                final errorBody = res.body.isNotEmpty
+                                    ? jsonDecode(res.body)
+                                    : null;
+                                _showSnack(
+                                  errorBody != null
+                                      ? errorBody['error'] ?? 'เกิดข้อผิดพลาด'
+                                      : 'เกิดข้อผิดพลาด',
+                                  isError: true,
+                                );
                               }
-                            } catch (_) {
+                            } catch (e) {
                               if (ctx.mounted) Navigator.pop(ctx);
-                              _showSnack('เกิดข้อผิดพลาด', isError: true);
+                              _showSnack('เกิดข้อผิดพลาด: $e', isError: true);
                             }
                           },
                     style: ElevatedButton.styleFrom(
@@ -386,7 +429,7 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
     );
   }
 
-  // บันทึก 
+  // บันทึก
   Future<void> _save() async {
     if (_selectedBull == null) {
       _showSnack('กรุณาเลือกวัว', isError: true);
@@ -405,33 +448,36 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
       return;
     }
 
-    setState(() => _isSaving = true);
+    setState(() {
+      _isSaving = true;
+      _isUploading = _imageFiles.isNotEmpty;
+    });
 
     try {
-      final urls = <String>[];
+      final vetId = context.read<DataVetExpert>().datauser.id;
 
-      // Upload รูปเฉพาะเมื่อมีรูป
-      if (_imageFiles.isNotEmpty) {
-        setState(() => _isUploading = true);
-        for (final file in _imageFiles) {
-          final url = await _uploadToCloudinary(file);
-          if (url != null) urls.add(url);
-        }
-        setState(() => _isUploading = false);
+      // ส่งแบบ multipart
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$apiEndpoint/vet/vets-bulls/add'),
+      );
+
+      // fields
+      request.fields['vet_id'] = vetId.toString();
+      request.fields['bulls_id'] = _selectedBull!['bulls_id'].toString();
+      request.fields['bulls_semen_stock'] = stock.toString();
+      request.fields['bulls_price_per_dose'] = price.toString();
+
+      // แนบไฟล์รูป
+      for (final file in _imageFiles) {
+        request.files
+            .add(await http.MultipartFile.fromPath('images', file.path));
       }
 
-      final vetId = context.read<DataVetExpert>().datauser.id;
-      final res = await http.post(
-        Uri.parse('$apiEndpoint/vet/vet-bulls/add'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'vet_id': vetId,
-          'bulls_id': _selectedBull!['bulls_id'],
-          'bulls_semen_stock': stock,
-          'bulls_price_per_dose': price,
-          'images': urls, // ส่ง [] ถ้าไม่มีรูป
-        }),
-      );
+      setState(() => _isUploading = false);
+
+      final streamed = await request.send();
+      final res = await http.Response.fromStream(streamed);
 
       if (!mounted) return;
 
@@ -452,6 +498,71 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
         });
     }
   }
+  // Future<void> _save() async {
+  //   if (_selectedBull == null) {
+  //     _showSnack('กรุณาเลือกวัว', isError: true);
+  //     return;
+  //   }
+
+  //   final stock = int.tryParse(_stockCtrl.text) ?? -1;
+  //   final price = double.tryParse(_priceCtrl.text) ?? -1;
+
+  //   if (stock <= 0 || stock > 10) {
+  //     _showSnack('จำนวนโดสต้องเป็นตัวเลข 1-10', isError: true);
+  //     return;
+  //   }
+  //   if (price <= 0) {
+  //     _showSnack('ราคาต่อโดสต้องมากกว่า 0', isError: true);
+  //     return;
+  //   }
+
+  //   setState(() => _isSaving = true);
+
+  //   try {
+  //     final urls = <String>[];
+
+  //     // Upload รูปเฉพาะเมื่อมีรูป
+  //     if (_imageFiles.isNotEmpty) {
+  //       setState(() => _isUploading = true);
+  //       for (final file in _imageFiles) {
+  //         final url = await _uploadToCloudinary(file);
+  //         if (url != null) urls.add(url);
+  //       }
+  //       setState(() => _isUploading = false);
+  //     }
+
+  //     final vetId = context.read<DataVetExpert>().datauser.id;
+  //     final res = await http.post(
+  //       Uri.parse('$apiEndpoint/vet/vet-bulls/add'),
+  //       headers: {'Content-Type': 'application/json'},
+  //       body: jsonEncode({
+  //         'vet_id': vetId,
+  //         'bulls_id': _selectedBull!['bulls_id'],
+  //         'bulls_semen_stock': stock,
+  //         'bulls_price_per_dose': price,
+  //         'images': urls, // ส่ง [] ถ้าไม่มีรูป
+  //       }),
+  //     );
+
+  //     if (!mounted) return;
+
+  //     if (res.statusCode == 201) {
+  //       _showSnack('เพิ่มวัวเข้าสต็อกสำเร็จ ✓');
+  //       Navigator.pop(context, true);
+  //     } else {
+  //       final body = jsonDecode(res.body);
+  //       _showSnack(body['error'] ?? 'เกิดข้อผิดพลาด', isError: true);
+  //     }
+  //   } catch (e) {
+  //     _showSnack('เกิดข้อผิดพลาด: $e', isError: true);
+  //   } finally {
+  //     if (mounted)
+  //       setState(() {
+  //         _isSaving = false;
+  //         _isUploading = false;
+  //       });
+  //   }
+  // }
 
   void _showSnack(String msg, {bool isError = false}) {
     if (!mounted) return;
@@ -605,13 +716,31 @@ class _AddBullStockPageState extends State<AddBullStockPage> {
                           ),
                     const SizedBox(height: 10),
                     OutlinedButton.icon(
-                      onPressed: _showCreateBullDialog,
-                      icon: Icon(Icons.add, size: 16, color: Colors.brown[600]),
-                      label: Text('วัวไม่มีในระบบ เพิ่มใหม่',
-                          style: TextStyle(
-                              color: Colors.brown[600], fontSize: 13)),
+                      onPressed: _selectedFarm == null
+                          ? null
+                          : _showCreateBullDialog,
+                      icon: Icon(
+                        Icons.add,
+                        size: 16,
+                        color: _selectedFarm == null
+                            ? Colors.grey[400]
+                            : Colors.brown[600],
+                      ),
+                      label: Text(
+                        'วัวไม่มีในระบบ เพิ่มใหม่',
+                        style: TextStyle(
+                          color: _selectedFarm == null
+                              ? Colors.grey[400]
+                              : Colors.brown[600],
+                          fontSize: 13,
+                        ),
+                      ),
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.brown[300]!),
+                        side: BorderSide(
+                          color: _selectedFarm == null
+                              ? Colors.grey[300]!
+                              : Colors.brown[300]!,
+                        ),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),

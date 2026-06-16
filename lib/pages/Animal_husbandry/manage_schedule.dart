@@ -325,17 +325,27 @@ class _ManageschedulePageState extends State<ManageschedulePage> {
   Future<void> _addAvailableTimes(DateTime day, List<String> times) async {
     final vet = context.read<DataVetExpert>().datauser;
     final uri = Uri.parse('$apiEndpoint/vet/vet/schedule');
+
+    final existingTimes = _getEventsForDay(day).map((e) => e['time']?.toString() ?? '').toSet();
+    final combinedTimes = {
+      ...existingTimes,
+      ...times,
+    }.where((t) => t.isNotEmpty).toList()
+      ..sort();
+
     final body = {
-      "vet_expert_id":  vet.id,
+      "vet_expert_id": vet.id,
       "available_date": day.toIso8601String().split("T")[0],
-      "available_time": times,
+      "available_time": combinedTimes,
     };
 
     try {
       final res = await http.post(uri,
           headers: {"Content-Type": "application/json"},
           body: jsonEncode(body));
-      if (res.statusCode == 201) await _fetchSchedules();
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        await _fetchSchedules();
+      }
     } catch (e) {
       debugPrint("Error adding times: $e");
     }
