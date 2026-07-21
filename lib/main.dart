@@ -34,7 +34,7 @@ void main(List<String> arguments) async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await FirebaseMessaging.instance.requestPermission();
 
-  // ✅ Foreground handler — แสดง SnackBar เมื่อ app เปิดอยู่
+  // Foreground handler — แสดง SnackBar เมื่อ app เปิดอยู่
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
     final title = message.notification?.title ?? '';
     final body = message.notification?.body ?? '';
@@ -81,13 +81,13 @@ void main(List<String> arguments) async {
     );
   });
 
-  // ✅ Notification tap handler — เมื่อผู้ใช้แตะการแจ้งเตือน (app still open)
+  // Notification tap handler — เมื่อผู้ใช้แตะการแจ้งเตือน (app still open)
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
     debugPrint('📲 Notification tapped: ${message.notification?.title}');
     // คุณสามารถนำทางไปหน้าที่ต้องการตามข้อมูลในการแจ้งเตือน
   });
 
-  // ✅ Terminated state handler — เมื่อ app เปิดจากการแจ้งเตือนในสถานะปิด
+  // Terminated state handler — เมื่อ app เปิดจากการแจ้งเตือนในสถานะปิด
   RemoteMessage? initialMessage =
       await FirebaseMessaging.instance.getInitialMessage();
   if (initialMessage != null) {
@@ -157,7 +157,7 @@ class MyApp extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return GetMaterialApp(
             debugShowCheckedModeBanner: false,
-            scaffoldMessengerKey: scaffoldMessengerKey, // ✅
+            scaffoldMessengerKey: scaffoldMessengerKey, // 
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
@@ -174,7 +174,7 @@ class MyApp extends StatelessWidget {
         if (snapshot.hasData) {
           return GetMaterialApp(
             title: 'App Demo',
-            scaffoldMessengerKey: scaffoldMessengerKey, // ✅
+            scaffoldMessengerKey: scaffoldMessengerKey, // 
             debugShowCheckedModeBanner: false,
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
@@ -194,7 +194,7 @@ class MyApp extends StatelessWidget {
         }
 
         return GetMaterialApp(
-          scaffoldMessengerKey: scaffoldMessengerKey, // ✅
+          scaffoldMessengerKey: scaffoldMessengerKey, // 
           home: const Scaffold(
             body: Center(child: Text('เกิดข้อผิดพลาดในการโหลดหน้าเริ่มต้น')),
           ),
